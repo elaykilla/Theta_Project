@@ -1,0 +1,164 @@
+/*
+* @author: ELay Maiga
+* This class contains all the methods related to calculating coordinates and making projections
+* from 2D to 3D or vice-versa.
+*/
+
+
+
+
+
+
+/*Given a point (i,j) in a 2D image of Rows * Cols points, this function returns the coordinates of that point on 
+* a Sphere of Radius r centered around (0,0)
+* @INPUTS
+* 	(i,j): the pixel coordinates of the point on the image
+*	r: the radius of the sphere
+*	rows: the height of the image
+* 	cols: the width of the image
+* @Outputs 
+* 	(x,y,z) are the cartesian coordinates of the point on the surface of the sphere
+*/
+void sphereCoordinates(int i, int j, double r, int rows, int cols, double &x, double &y, double &z)
+{
+ 	//Convert from (i,j) pixel values to (theta,phi) angle values 
+ 	double theta,phi;
+	theta = i * PI/rows ;
+	phi = j * 2*PI/cols;
+	
+	//Convert from (theta,phi) geographic values to (x,y,z) cartesian values
+	x = r * sin(theta) * cos(phi);
+	y = r * sin(theta) * sin(phi);
+	z = r * cos(theta);
+}
+
+/**
+* This is the inverse of the previous functions. Given a point on the surface of the sphere, it gives its (i,j) pixel 
+* coordinates
+*/
+void pixelCoordinates(double x, double y, double z, double r, int rows, int cols, int &i, int &j )
+{
+ 	//Convert (x,y,z) cartesian values from to (theta,phi) geographic values
+ 	double theta,phi;
+ 	theta = acos(z/r);
+ 	phi = atan2(y,x);
+ 	
+ 	
+ 	//Convert from  (theta,phi) angle values to (i,j) pixel values  
+ 	i  = theta * rows/PI;
+ 	j = phi * cols/(2*PI);
+}
+
+/**This functions returns 2 points of intersection between 
+*	- the line passing by u parrallel to the the x axis
+*	- the sphere centered at (0,0)
+*/
+void circularXcut(PointXYZ u, double r, PointXYZ Tmin,  PointXYZ Tmax)
+{
+        double ux,uy,uz,tx,ty,tz;
+     
+     //Get the coordinates of u
+     uy = ty = u.y;
+     ux = u.x;
+     uz = tz = u.z;
+     
+     //Calcule the coordinates of ty
+     tx = sqrt(r - ty*ty - tz*tz);
+     
+     //Set the Points coordinates
+     
+     Tmin.y = Tmax.y = ty;
+     Tmin.z = Tmax.z = tz;
+     
+     Tmin.x = tx*(-1);
+     Tmax.x = tx;
+}
+
+/** 
+* This functions returns 2 points of intersection between 
+*	- the line passing by u parrallel to the the y axis
+*	- the sphere centered at (0,0)
+*/
+void circularYcut(PointXYZ u, double r, PointXYZ Tmin, PointXYZ Tmax)
+{
+     double ux,uy,uz,tx,ty,tz;
+     
+     //Get the coordinates of u
+     ux = tx = u.x;
+     uy = u.y;
+     uz = tz = u.z;
+     
+     //Calcule the coordinates of ty
+     ty = sqrt(r - tx*tx - tz*tz);
+     
+     //Set the Points coordinates
+     
+     Tmin.x = Tmax.x = tx;
+     Tmin.z = Tmax.z = tz;
+     
+     Tmin.y = ty*(-1);
+     Tmax.y = ty;
+}
+
+/**
+* This functions returns 2 points of intersection between 
+*	- the line passing by u parrallel to the the z axis
+*	- the sphere centered at (0,0)
+*/
+void circularZcut(PointXYZ u, double r, PointXYZ Tmin, PointXYZ Tmax)
+{
+        double ux,uy,uz,tx,ty,tz;
+     
+     //Get the coordinates of u
+     ux = tx = u.x;
+     uz = u.z;
+     uy = ty = u.y;
+     
+     //Calcule the coordinates of ty
+     tz = sqrt(r - tx*tx - ty*ty);
+     
+     //Set the Points coordinates
+     
+     Tmin.x = Tmax.x = tx;
+     Tmin.y = Tmax.y = ty;
+     
+     Tmin.z = tz*(-1);
+     Tmax.z = tz;
+}
+
+
+
+/**This function returns the center of the ith sphere when rotating around an angle alpha 
+and radius r
+*	@Input variables:
+*	alpha: rotating angle in degrees
+*	i: the number of rotation
+*	r: the radius of the rotating cercle
+*
+*	@Output Variables:
+*	xc: x coordinate of the center
+*	yc: y coordinate of the center
+*/
+void sphereCenter(double alpha, int i, double r, double &xc, double &yc){
+	double alphaRad = (alpha/180)*PI;
+	xc = r * cos(i*alphaRad);
+	yc = r * sin(i*alphaRad);
+}
+
+
+/**
+
+*/
+void translateCenter(double xc, double yc, double &x, double &y){
+	x = x - xc;
+	y = y - yc;
+
+}
+
+
+
+/** 
+* This function, given a point u(ux,uy,uz) located inside the sphere, gives the Points Pmin, Pmax, Tmin and Tmax
+* which correspond to the intersection between a horizontal line 
+*/
+

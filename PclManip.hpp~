@@ -56,7 +56,7 @@
 PointCloud<PointXYZRGB>::Ptr EquiToSphere(Mat ori, double r, double xc, double yc){
 	//We define our point cloud and a Point
 	PointCloud<PointXYZRGB>::Ptr cloud (new PointCloud<PointXYZRGB>);
-	PointCloud<PointXYZRGB>::Ptr vectorCloud (new PointCloud<PointXYZRGB>);
+	PointCloud<PointXYZRGB>::Ptr vectorCloud Cloud (new PointCloud<PointXYZRGB>);
 	
 	
 	PointXYZRGB iPoint;

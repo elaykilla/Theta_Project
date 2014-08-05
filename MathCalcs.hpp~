@@ -83,8 +83,8 @@ int closestImDirection(PointXYZRGB u, PointXYZRGB v, double alpha ){
 	projectXY(u,x,y);
 	projectXY(v,xv,yv);
 	
-	cout << "v.x: " << v.x << endl;
-	cout << "v.y: " << v.y << endl;
+	cout << "v.x: " << xv << endl;
+	cout << "v.y: " << xv << endl;
 	cout << "xv: " << xv << endl;
 	//Alpha prime is the angle between the vector u->v and the X axis
 	alpha_prime = acos(xv/norm(v)); 

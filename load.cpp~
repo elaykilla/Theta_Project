@@ -23,7 +23,7 @@ const double radius = 1;
 const double phi0 = 0.0;
 const double phi1 = 2*PI;
 const double theta0 = 0.0;
-const double theta1 = PI;
+cont double theta1 = PI;
 /************************************************* Setup **************************************************/
 void setupImageAndClouds(string name, vector<Mat> &images, vector<PointCloud<PointXYZRGB>::Ptr> &cloud){
 
