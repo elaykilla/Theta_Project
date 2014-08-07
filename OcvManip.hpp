@@ -8,7 +8,7 @@
 #define OcvManip
 
 #include"MathCalcs.hpp"
-
+//#include "boost_headers.hpp"
 
 
 
@@ -16,25 +16,25 @@
 /***************************************************Image Manipulation Cv***********************************************/
 
 /**
-* This function takes the image prefix name, adds the position i and saves in a Mat
+* This function takes the image prefix name, adds the position i and saves in a cv::Mat
 *
 *
 */
-void loadImagei(string name, int i, Mat &image){
+void loadImagei(string name, int i, cv::Mat &image){
 	ostringstream file;
 	file << name <<i << ".jpg" ; 
-	image = imread(file.str(),CV_LOAD_IMAGE_COLOR);
+	image = cv::imread(file.str(),1);
 }
 
 /**
 * This function returns a cv::vector containing the Keypoints from the input image using SURF
 */
-vector<KeyPoint> get2DKeypoints(Mat image){
+vector<cv::KeyPoint> get2DKeypoints(cv::Mat image){
 //-- Step 1: Detect the keypoints using SURF Detector
   int minHessian = 400;
   
-  SurfFeatureDetector detector( minHessian );
-  vector<KeyPoint> keypoints;
+  cv::SurfFeatureDetector detector( minHessian );
+  vector<cv::KeyPoint> keypoints;
   
   detector.detect( image, keypoints );
   

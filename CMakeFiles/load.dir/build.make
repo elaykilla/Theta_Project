@@ -146,6 +146,7 @@ load: /usr/local/lib/libopencv_features2d.so.2.4.8
 load: /usr/local/lib/libopencv_core.so.2.4.8
 load: /usr/local/lib/libopencv_contrib.so.2.4.8
 load: /usr/local/lib/libopencv_calib3d.so.2.4.8
+load: /usr/lib/x86_64-linux-gnu/libboost_log.a
 load: /usr/lib/libpcl_common.so
 load: /usr/lib/libpcl_kdtree.so
 load: /usr/lib/libpcl_octree.so
@@ -164,6 +165,7 @@ load: /usr/lib/libpcl_people.so
 load: /usr/lib/libpcl_outofcore.so
 load: /usr/lib/libpcl_tracking.so
 load: /usr/lib/libpcl_apps.so
+load: /usr/lib/x86_64-linux-gnu/libboost_log.a
 load: /usr/lib/libvtkViews.so.5.8.0
 load: /usr/lib/libvtkInfovis.so.5.8.0
 load: /usr/lib/libvtkWidgets.so.5.8.0

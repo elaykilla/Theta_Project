@@ -10,7 +10,7 @@
 #include <pcl/impl/point_types.hpp>
 
 
-//#include <pcl/kdtree/kdtree_flann.h>
-//#include <pcl/keypoints/sift_keypoint.h>
+#include <pcl/kdtree/kdtree_flann.h>
+#include <pcl/keypoints/sift_keypoint.h>
 
 using namespace pcl;

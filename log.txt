@@ -1,0 +1,4 @@
+Scanning dependencies of target load
+[100%] Building CXX object CMakeFiles/load.dir/load.cpp.o
+Linking CXX executable load
+[100%] Built target load

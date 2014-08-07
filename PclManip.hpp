@@ -8,6 +8,7 @@
 #define PclMnip
 
 #include"MathCalcs.hpp"
+//#include "boost_headers.hpp"
 
 /***************************************************Image Manipulation PCL***********************************************/
 /**
@@ -40,11 +41,11 @@
 //}
 
 /**
-*This function takes an input image in Equirectangular pixel coordinates (i,j) Mat and returns 
+*This function takes an input image in Equirectangular pixel coordinates (i,j) cv::Mat and returns 
 * a Point cloud. The point cloud is the Spherical projection of this image onto a sphere of
 * radius r and centered in (xc,yc);
 * @Inputs
-* Cv::Mat ori: the input image
+* Cv::cv::Mat ori: the input image
 * double r : the radius of the sphere
 * double xc and yc: the (x,y) coordinates of the center of the Sphere
 *
@@ -53,7 +54,7 @@
 * Ptr cloud : a point cloud of the sphere
 * Ptr VctCloud: A vector cloud of vectors (Sc,Pt) with Sc being the center of the sphere.
 */
-PointCloud<PointXYZRGB>::Ptr EquiToSphere(Mat ori, double r, double xc, double yc){
+PointCloud<PointXYZRGB>::Ptr EquiToSphere(cv::Mat ori, double radius, double xc, double yc){
 	//We define our point cloud and a Point
 	PointCloud<PointXYZRGB>::Ptr cloud (new PointCloud<PointXYZRGB>);
 	PointCloud<PointXYZRGB>::Ptr vectorCloud (new PointCloud<PointXYZRGB>);
@@ -61,18 +62,22 @@ PointCloud<PointXYZRGB>::Ptr EquiToSphere(Mat ori, double r, double xc, double y
 	
 	PointXYZRGB iPoint;
 	PointXYZRGB iVect;
+	PointXYZRGB t;
+	t.x = xc;
+	t.y = yc;
+	double normt = norm(t);
 	
 	//Math variables
 	double theta,phi,x,y,z;
-	double radius = r;
+	//double radius = r;
 	
 	//Receive the size 
-	Size s = ori.size();
+	cv::Size s = ori.size();
 	int rows = s.height;
 	int cols = s.width;
 	
 	//Color vector 
-	Vec3b colorOri;
+	cv::Vec3b colorOri;
 	
 	//For each pixel value we calculate it's new cooridnates and assign the pixel value to those
 	//coordinates
@@ -85,35 +90,74 @@ PointCloud<PointXYZRGB>::Ptr EquiToSphere(Mat ori, double r, double xc, double y
 			sphereCoordinates(i,j,radius,rows,cols,x,y,z);
 			
 			//Put the coordinates in a PointXYZ and shift center to (xc,yc,0)
-			iPoint.x = x + xc;
-			iPoint.y = y + yc;
+			
+			
+//			
+			iPoint.x = x;// + xc;
+			iPoint.y = y; //+ yc;
+			//Knowing the Center, apply rotation and translation from world Center
+//			iPoint.x = ((x*xc/normt)-(y*yc/normt)) + xc;
+//			iPoint.y = ((x*yc/normt) + (y*xc/normt)) + yc;
+			
+//			if(rand()%10000<1){
+//				cout << "xp: " << xp << endl;
+//			}
 			iPoint.z = z;
 				
 				
 			//Put the coordinates of the vector directed from iPoint to Sc(xc,yc,0)
-			iVect.x = x;
-			iVect.y = y;
-			iVect.z = z;
+//			iVect.x = x;
+//			iVect.y = y;
+//			iVect.z = z;
 				
 			//Add pixel color values
-			colorOri = ori.at<Vec3b>(i, j);
+			colorOri = ori.at<cv::Vec3b>(i, j);
 		       	iPoint.b = iVect.b = colorOri[0];
 			iPoint.g = iVect.g = colorOri[1];
 			iPoint.r = iVect.r = colorOri[2];			
 			cloud->points.push_back(iPoint);	
-			vectorCloud->points.push_back(iVect);		       						
+//			vectorCloud->points.push_back(iVect);		       						
 		}
 		
 	}
 	
 	return cloud;
 }
+
+/**
+*This function takes an input a PointCloud of points on a Sphere (not necessarily the full sphere) and returns a PointCloud of 
+*those points with x= i and y = j being the pixel coordinates. It also takes the radius and original input image
+* 
+*/
+ void sphere2Equi(cv::Mat ori, double r,PointCloud<PointXYZRGB>::Ptr spherePts, PointCloud<PointXYZRGB>::Ptr &result){
+	double rows = ori.rows;
+	double cols = ori.cols;
+	
+	PointXYZRGB po,pi;
+	int i,j;
+	
+	cv::Vec3b colorOri;
+	
+	
+	for(int n=0;n<spherePts->size();n++){
+		po = spherePts->points[n];
+		pixelCoordinates(po.x,po.y,po.z,r,rows,cols,i,j);
+		pi.x = i;
+		pi.y =j;
+		//cout << "pi: " << pi << endl;
+		colorOri = ori.at<cv::Vec3b>(i, j);
+		pi.r =  colorOri[2];	
+		pi.g =  colorOri[1];
+		pi.b =  colorOri[0];
+		result->push_back(pi);
+	}	
+}
 /**
 *This function takes an input image in Equirectangular pixel coordinates (i,j) and returns 
 * a Point cloud. The point cloud is the Spherical projection of this image onto a sphere of
 * radius r and centered in (xc,yc);
 * @Inputs
-* Cv::Mat ori: the input image
+* Cv::cv::Mat ori: the input image
 * double r : the radius of the sphere
 *
 * @Output
@@ -177,4 +221,107 @@ void hPointLine(PointXYZRGB o, PointXYZRGB u, vector<PointXYZRGB> &line)
 }
 
 
+/*
+* Given a point u and a pointcloud cloud, this function returns the mean value of K nearest neighbors
+*/
+
+void kMeanValue(PointXYZRGB &u, PointCloud<PointXYZRGB>::Ptr &cloud, PointCloud<PointXYZRGB>::Ptr &outCloud, int K){
+	//cout<< "cloud size in KmeanValue: " << cloud->size() << endl;
+	double rt,gt,bt, xt, yt, zt;
+	PointXYZRGB p;
+	
+	
+	//PointCloud<PointXYZRGB>::Ptr sight (new PointCloud<PointXYZRGB>);
+	//sight->points.resize(cloud->size());
+//	for (size_t i = 0; i < cloud.points.size (); ++i)
+//	{
+//	    	//sight->points[i] = cloud->points[i];
+//	    	sight->points.push_back(cloud.points[i]);
+//	    	//cout << "cloud points numb: " << i << " coord: " << cloud->points[i] <<endl;
+//	}
+	
+	
+	//cloud->points.resize(cloud->width*cloud->height);
+	//cloud->points.push_back(p);
+	KdTreeFLANN<PointXYZRGB> kdtree;
+	kdtree.setInputCloud (cloud);
+	
+	
+	vector<int> pointIdxNKNSearch(K);
+	vector<float> pointNKNSquaredDistance(K);
+	if ( kdtree.nearestKSearch (u, K, pointIdxNKNSearch, pointNKNSquaredDistance) > 0 ){
+		xt = yt = zt = 0;
+		//cout << "pointIdxNKNSearch.size (): " << pointIdxNKNSearch.size () <<endl;
+		for (size_t i = 0; i < pointIdxNKNSearch.size (); ++i){
+			p = cloud->points[ pointIdxNKNSearch[i] ];
+			//cout << "pxb: " << p.x <<" pyb: " << p.y <<" pzb: " << p.z <<endl;
+//	      		std::cout << "    "  <<   p.x 
+//		        << " " << p.y 
+//		        << " " << p.z 
+//		        << " (squared distance: " << pointNKNSquaredDistance[i] << ")" << std::endl;
+		        
+		        xt += p.x;
+		        yt += p.y;
+		        zt += p.z;
+		        rt += p.r;
+		        gt += p.g;
+		        bt += p.b; 
+	  	}	
+	
+	}
+	
+	int t = pointIdxNKNSearch.size();
+	//cout << "size: " << t << endl; 
+	//cout << "xt: " << xt <<" yt: " << yt <<" zt: " << zt <<endl;
+	p.x = xt/t;
+	p.y = yt/t;
+	p.z = zt/t;
+	p.r = rt/t;
+	p.g = gt/t;
+	p.b = bt/t;
+	//cout << "px: " << p.x <<" py: " << p.y <<" pz: " << p.z <<endl;
+	//cout << "--------------------------------------------------------" << endl;
+	
+	outCloud->points.push_back(p);
+	return;
+}
+
+
+/**
+* This function is intended to be used when multi-threading. 
+* Given an Array of points, the id of the thread i , the total number of threads n, an input pointCloud and an Output pointCloud
+* it first separates the array into n equal parts. Then it retrieves the KmeanValue for the part of the array that concerns the 
+* thread in question.
+* 
+*/
+void multiKMeanValue(vector<PointXYZRGB> points, int id, int nbThreads, PointCloud<PointXYZRGB>::Ptr cloud,PointCloud<PointXYZRGB>::Ptr &outCloud, int k ){
+
+	int size = points.size();
+	//cout<< "points size: "<< size << endl;
+	int perT = (int)(size/nbThreads);
+	//cout << "perT: " << perT << endl;
+	int start = (id-1)*perT;
+	//cout << "start: " << start << endl;
+	int end;
+	if(id<nbThreads){
+		end = id*perT; 
+	}
+	else{
+		end = size;
+	}
+	
+	//cout<< "end: " << end << endl;
+	for(int i = start; i<end;i++){
+		cout << "i: " << i <<endl; 
+		PointXYZRGB p = points[i];
+		kMeanValue(p,cloud,outCloud,k);
+	}
+	
+	return;
+}
+
+void testfunction(){
+	cout << "test function called" << endl;
+	return;
+}
 #endif
