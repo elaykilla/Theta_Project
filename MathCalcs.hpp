@@ -42,7 +42,7 @@ void projectXY(PointXYZRGB u, double &x, double &y){
 /** Given a point defined by it's (x,y,z) cartesian coordinates, this functions returns it's spherical (r,theta,phi) coordinates 
 *
 */
-void cartesian2Spheric(PointXYZRGB p, double &r, double &theta, double &phi){
+void cartesian2Spheric(PointXYZRGB p, double r, double &theta, double &phi){
 	r = sqrt(p.x*p.x + p.y*p.y + p.z*p.z);
 	theta = acos(p.z/r);
 	phi = atan2(p.y,p.x);
@@ -231,7 +231,7 @@ and radius r
 *	yc: y coordinate of the center
 */
 void sphereCenter(double alpha, int i, double r, double &xc, double &yc){
-	double alphaRad = (alpha/180)*PI;
+	double alphaRad = -(alpha/180)*PI;
 	xc = r * cos(i*alphaRad);
 	yc = r * sin(i*alphaRad);
 }
@@ -264,6 +264,8 @@ PointXYZRGB project2Sphere(PointXYZRGB u, PointXYZRGB v, double r, bool &project
 	double t1,t2;
 	double deltap,dotp1,dotp2;
 	
+	//cout << "norm u: " << norm(u);
+	//cout << " radius in project2Sphere: " << r <<endl;
 	if(norm(u)<r){
 		a = v.x*v.x + v.y*v.y + v.z*v.z;
 		b = u.x*v.x + u.y*v.y + u.z*v.z;
@@ -302,12 +304,43 @@ PointXYZRGB project2Sphere(PointXYZRGB u, PointXYZRGB v, double r, bool &project
 	
 	//If the point is not within the sphere then there is no inner projection of this point
 	else{
+		//cout << "Point not within the sphere" << endl;
 		projected = false;
 		return u;
 	
 	}
 }
-
+/**
+* This function, given a Point u (ux,uy,uz) and a direction vector v(vx,vy,vz), and angle alpha compared to v and a radius r
+* returns the intersection point between the sphere and the line from u parallel to ()v+alpha)
+*/
+PointXYZRGB project2SphereWithAngle(PointXYZRGB u, PointXYZRGB v, double alpha, double beta, double r, bool &projected){
+	
+	PointXYZRGB p;
+	double alpharad = alpha*PI/180;
+	double betarad = beta*PI/180;
+	double theta,phi;
+	
+	cartesian2Spheric(v, r, theta, phi);
+	//New direction Vector
+	PointXYZRGB nv;
+	nv.x = cos(alpharad-theta)*norm(v);
+	nv.y = sin(alpharad-theta)*norm(v);
+	nv.z = cos(beta-phi)*norm(v);
+	
+	//cout << "radius in project with angle: " << r << endl;
+	p = project2Sphere(u, nv, r, projected);
+	//cout << "p: " << p << endl;
+	if(!projected){
+		
+		//wcerr << "The Point u is not within the sphere. Please verify" << endl;
+		return p;
+	}
+	
+	else{
+		return p;
+	}
+}
 
 /** 
 * This function, given a point u(ux,uy,uz) located inside the sphere and direction vector v, gives the Points Pmin, Pmax, Tmin and Tmax
@@ -355,8 +388,8 @@ void getPlane(PointXYZRGB u, PointXYZRGB v, double r, PointXYZRGB &xmin, PointXY
 
 /*
 * This function given a point u and and vector v, returns a sampling of ps*ps points on the Plane perpendicular to v passing
-* by u
-* TO FINNISH IMPLEMENTING
+* by u.
+* 
 */
 
 void samplePlane(PointXYZRGB u, PointXYZRGB v, vector<PointXYZRGB> &points , double radius, int ps){
@@ -422,8 +455,26 @@ void samplePlane(PointXYZRGB u, PointXYZRGB v, vector<PointXYZRGB> &points , dou
 	//return points;
 }
 
+void viewingLimitsOrigin(PointXYZRGB v, double v_angle, double h_angle, double &theta_min, double &theta_max, double &phi_min, double &phi_max){
+	//Angles of the direction
+	double theta, phi;
+	//double theta_min,theta_max, phi_min, phi_max;
+	double r;
+	cartesian2Spheric(v,r,theta,phi);
+	//cout << "v spheric (theta,phi): " << theta << "," << phi << endl; 
+	//Convert to radian
+	double v_angle_rad = v_angle*PI/180;
+	double h_angle_rad = h_angle*PI/180;
+	
+	theta_min = theta - v_angle_rad;
+	theta_max = theta + v_angle_rad;
+	phi_min = phi - h_angle_rad;
+	phi_max = phi + h_angle_rad;
+
+}
+
 /** 
-* This function, given double values ip and jp interpolates the pixel values from floor(ip,jp) and ceil(ip,jp) 
+* This function, given double values ip and jp interpolates the pixel values from floor(ip,jp) and ceil(ip,jp). This is bilinear * projection
 */
 void pixelInterpolate(PointXYZRGB &u, int r, cv::Mat image){
 	double i,j;
@@ -484,6 +535,10 @@ void pixelInterpolate(PointXYZRGB &u, int r, cv::Mat image){
 	u.g = (jmax-j)*gtemp1 + (j-jmin)*gtemp2;
 	u.r = (jmax-j)*rtemp1 + (j-jmin)*rtemp2;
 }
+
+
+
+
 
 
 #endif

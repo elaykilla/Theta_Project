@@ -17,10 +17,10 @@
 //Constants for images
 const double alpha = 15;
 const double nb_images = 24;
-const double dist_c = 0.5;
+const double dist_c = 9;
 
 
-const double radius = 100;
+const double radius = 1;
 const double phi0 = 0.0;
 const double phi1 = 2*PI;
 const double theta0 = 0.0;
@@ -121,7 +121,7 @@ int main(int argc, char** argv)
   
   	//Setup 3D visualizer
 	visualization::PCLVisualizer viewer("3D viewer");
-	visualization::CloudViewer cViewer ("Simple Cloud Viewer");
+	//visualization::CloudViewer cViewer ("Simple Cloud Viewer");
 //	//viewer.setBackgroundColor (0, 0, 0);
 
 
@@ -136,8 +136,8 @@ int main(int argc, char** argv)
 	
 	// cv::Mat for original and spherical image
 	cv::Mat ori;
-	cvNamedWindow("Original",0);
-	cvNamedWindow("recalculated",0);
+	//cvNamedWindow("Original",0);
+	//cvNamedWindow("recalculated",0);
 	
 	
 	//Number of lines to draw
@@ -171,8 +171,9 @@ int main(int argc, char** argv)
 	cv::Size s = ori.size();
 	int rows = s.height;
 	int cols = s.width;
-	cvResizeWindow("Original",rows,cols);
-	imshow("Original",ori);
+	//cvResizeWindow("Original",rows,cols);
+	//cvNamedWindow("Keypoints 2D",0);
+	//imshow("Original",ori);
 	
 	//For testing
 	cv::Mat sph = cv::Mat::zeros(rows, cols, CV_8UC3);
@@ -181,7 +182,6 @@ int main(int argc, char** argv)
 	//loadImagei(name,3,ori2);
 	//loadImagei(name,4,ori3);
 	
-	//cvNamedWindow("Keypoints 2D",0);
 
 	/************************** End of Initiate ********************************/	
 	
@@ -256,19 +256,22 @@ int main(int argc, char** argv)
 //t1 = clock() - t;
 //cout << "Time to execute firs part before Kmean: " << (float)t1/CLOCKS_PER_SEC <<endl;;
 /******************************************* Test Zone **********************************************************************/
-	//Testing space variables 
+	//Testing space variables
+	cloud = allPtClouds[0];
+	ori = allImages[0];
+	 
 	int nbPoints = 10;
 	vector<PointXYZRGB> points;
 	//double r;
 	int m;
 	PointXYZRGB ikm;	
 	//Set u to origin
-	u.x = 0.7;
-	u.y = 0.2;
+	u.x = 0;
+	u.y = 0;
 	u.z = 0;
-	v.x = 1;
+	v.x = 0;
 	v.y = 1;
-	v.z = 1;
+	v.z = 0;
 	
 	//r = 1;
 	m = 0;
@@ -284,8 +287,7 @@ int main(int argc, char** argv)
 	
 	////////////////////////////////////// Project to Sphere test ///////////////////////////
 //	//hPointLine(u,v,linep);
-	cloud = allPtClouds[0];
-	ori = allImages[0];
+	
 ////	for(int ttt =0;ttt<allPtClouds[0]->size();ttt++){
 ////		PointXYZRGB tt = cloud->points[ttt];
 ////		cout << "cloud points numb: " << m << " coord: " << tt <<endl;
@@ -348,79 +350,135 @@ int main(int argc, char** argv)
 //	//cout << "Time to execute Kmean: " << (float)t/CLOCKS_PER_SEC <<endl;
 //	////////////////////////////////////// end of Project to Sphere test ///////////////////////////
 
-	/////////////////////////////////////Test of get plane function///////////////////////////////
-	//double xmin, xmax, ymin, ymax;
-	PointXYZRGB xmin,xmax,ymin,ymax;
-	PointXYZRGB p;
-	
-	p.x = u.x + v.x;
-	p.y = u.y + v.y;
-	p.z = u.z + v.z;
-	hPointLine(u,p,linep);
-	p.r=255;
-	for(int n=0;n<linep.size();n++){
-		linep[n].r = 255;
-		sight->points.push_back(linep[n]);
-		//cout << "p_" << n << ": " << linep[m]
-	}
-	
-	
-	samplePlane(u,v,points,radius,sqrt(1000000)); 
-	
-//	cout << "points.size in Main: " << points.size();
-	//cout << "max vector size: " << points.max_size() << endl;
-	for(int n=0;n<points.size();n++){
-			
-			ikm = project2Sphere(points[n],v,radius,was_projected);
-			ikm.r = 255;
-			if(was_projected){
-				//sight->points.push_back(ikm);
-				p = points[n];
-				//p.y += .5;
-				//sight->points.push_back(p);
-				pixelInterpolate(ikm,radius,ori);
-				p.r = ikm.r;
-				p.g = ikm.g;
-				p.b = ikm.b;
-				p.z -= 1;
-//				sightFlat->points.push_back(p);
-//				ikm.x += 0.5;
-				sight->points.push_back(p);
-				
-				//sight->points.push_back(ikm);
-			}
-			//cout << "p_" << n << ": " << points[m] <<endl;
-	}
-	
-	sphere2Equi(allImages[0], radius,cloud,sightFlat);
-//	for(int m=0;m<sightFlat->size();m++){
-//		p = sightFlat->points[m];
-//		int r = p.x;
-//		int c = p.y;
-//		if(r<rows & c<cols){
-//		sph.at<cv::Vec3b>(r, c)[0] = p.b;
-//		sph.at<cv::Vec3b>(r, c)[1] = p.g;
-//		sph.at<cv::Vec3b>(r, c)[2] = p.r;
-//		}
+	///////////////////////////Test of get plane function and project to Sphere with this plane////////////////////////
+//	//double xmin, xmax, ymin, ymax;
+//	PointXYZRGB xmin,xmax,ymin,ymax;
+//	PointXYZRGB p;
+//	
+//	p.x = u.x + v.x;
+//	p.y = u.y + v.y;
+//	p.z = u.z + v.z;
+//	hPointLine(u,p,linep);
+//	p.r=255;
+//	for(int n=0;n<linep.size();n++){
+//		linep[n].r = 255;
+//		sight->points.push_back(linep[n]);
+//		//cout << "p_" << n << ": " << linep[m]
 //	}
-	cvResizeWindow("recalculated",rows,cols);
-	cv::imshow("recalculated",sph);
-	
-	
-	//getPlane(u,v,radius,xmin,xmax,ymin,ymax);
-//	sight->points.push_back(u);
-//	sight->points.push_back(xmax);
-//	sight->points.push_back(xmin);
-//	sight->points.push_back(ymax);
-//	sight->points.push_back(ymin);
-//	u.r = xmin.r = xmax.r =255;
-//	cout << "u" << u << endl;
-//	cout << "xmin" << xmin << endl;
-//	cout << "xmax" << xmax << endl;
-//	cout << "ymin" << ymin << endl;
-//	cout << "ymax" << ymax << endl;
+//	
+//	
+//	samplePlane(u,v,points,radius,sqrt(1000000)); 
+//	
+////	cout << "points.size in Main: " << points.size();
+//	//cout << "max vector size: " << points.max_size() << endl;
+//	for(int n=0;n<points.size();n++){
+//			p = points[n];
+//			sight->points.push_back(p);
+//			ikm = project2Sphere(points[n],v,radius,was_projected);
+//			ikm.r = 255;
+//			if(was_projected){
+//				sight->points.push_back(ikm);
+//				p.r = p.b = 0;
+//				p.g = 255;
+//				sight->points.push_back(p);
+//				//p.y += .5;
+//				//sight->points.push_back(p);
+//				pixelInterpolate(ikm,radius,ori);
+//				p.r = ikm.r;
+//				p.g = ikm.g;
+//				p.b = ikm.b;
+//				//p.z -= 1;
+//				sightFlat->points.push_back(ikm);
+////				ikm.x += 0.5;
+//				p.x -= v.x/10;
+//				p.y -= v.y/10;
+//				p.z -= v.z/10;
+//				//sightFlat->points.push_back(p);
+//				
+//				//sight->points.push_back(ikm);
+//			}
+//			//cout << "p_" << n << ": " << points[m] <<endl;
+//	}
+//	
+//	//sphere2Equi(allImages[0], radius,cloud,sightFlat);
+////	for(int m=0;m<sightFlat->size();m++){
+////		p = sightFlat->points[m];
+////		int r = p.x;
+////		int c = p.y;
+////		if(r<rows & c<cols){
+////		sph.at<cv::Vec3b>(r, c)[0] = p.b;
+////		sph.at<cv::Vec3b>(r, c)[1] = p.g;
+////		sph.at<cv::Vec3b>(r, c)[2] = p.r;
+////		}
+////	}
+////	cvResizeWindow("recalculated",rows,cols);
+////	cv::imshow("recalculated",sph);
+//	
+//	
+////	getPlane(u,v,radius,xmin,xmax,ymin,ymax);
+////	sight->points.push_back(u);
+////	sight->points.push_back(xmax);
+////	sight->points.push_back(xmin);
+////	sight->points.push_back(ymax);
+////	sight->points.push_back(ymin);
+////	u.r = xmin.r = xmax.r =255;
+////	cout << "u" << u << endl;
+////	cout << "xmin" << xmin << endl;
+////	cout << "xmax" << xmax << endl;
+////	cout << "ymin" << ymin << endl;
+////	cout << "ymax" << ymax << endl;
 	///////////////////////////////////End of get Plane function test ////////////////////////////////
 	
+	/////////////////////////////Test of projection with Angle from 1 point////////////////////////
+//	double alpha1, beta1;
+//	int fac = 1;
+//	PointXYZRGB p;
+//	int alphamin, alphamax,betamin,betamax;
+//	
+//	alphamin = 0;
+//	betamin = 0;
+//	alphamax = 90;
+//	betamax = 120;
+//	p.b=255;
+//	
+//	samplePlane(u,v,points,radius,sqrt(100000));
+//	for(int n=0;n<points.size();n++){
+//		p = points[n];
+//		sight->points.push_back(p);
+//	}
+//	
+//	p.x = u.x + v.x;
+//	p.y = u.y + v.y;
+//	p.z = u.z + v.z;
+//	hPointLine(u,p,linep);
+//	p.g = 255;
+//	for(int n=0;n<linep.size();n++){
+//		linep[n].r = 255;
+//		sight->points.push_back(linep[n]);
+//		//cout << "p_" << n << ": " << linep[m]
+//	}
+//	
+//	
+//	points.resize(2*fac*alphamax*betamax);
+//	
+//	
+//	
+//	for(int n=alphamin*fac;n<alphamax*fac;n++){
+//		alpha1 = n/fac;
+//		for(int k=betamin*fac;k<betamax*fac;k++){
+//			beta1 = k/fac;
+//			p = project2SphereWithAngle(u,v, alpha1, beta1, radius, was_projected);
+//			p.r = 255;
+//			//cout << "p:" << p;
+//			points[n*(betamax)+k] = p;
+//		}	
+//	}
+//	for(int n=0;n<points.size();n++){
+//		p = points[n];
+//		sight->points.push_back(p);
+//	}
+	
+	///////////////////////////////////End of get Plane function test ////////////////////////////////
 	//////////////////////////////////Test of closest Direction ////////////////////////////////////
 	
 //	PointXYZRGB vp;
@@ -456,6 +514,93 @@ int main(int argc, char** argv)
 //	viewer.addPointCloud(sight, "Sight");
 	
 	//////////////////////////////////Test of closest Direction ////////////////////////////////////
+	
+	
+	//////////////////////////////////Test of viewing angle origin ////////////////////////////////////
+	//viewing angles
+	double v_angle = 27.;
+	double h_angle = 40.;
+	vector<PointXYZRGB> linel(50);
+	vector<PointXYZRGB> liner(50);
+	
+	double theta_min,theta_max,phi_min,phi_max;
+	PointXYZRGB lbot,rbot,ltop,rtop;
+	viewingLimitsOrigin(v, v_angle,h_angle,theta_min, theta_max, phi_min, phi_max);
+//	cout << "theta_min:" << theta_min << endl;
+//	cout << "theta_max:" << theta_max << endl;
+//	cout << "phi_min:" << phi_min << endl;
+//	cout << "phi_max:" << phi_max << endl;
+	
+	
+	spheric2Cartesian(radius, theta_min,phi_min,lbot);
+	//cout << "lbot:" << lbot << endl;
+	spheric2Cartesian(radius,theta_min,phi_max,ltop);
+	//cout << "ltop:" << ltop <<endl;
+	spheric2Cartesian(radius,theta_max,phi_min,rbot);
+	//cout << "rbot:" << rbot << endl;
+	spheric2Cartesian(radius,theta_max,phi_max,rtop);
+	//cout << "rtop:" << rtop <<endl;
+	
+	lbot.r = rbot.r = ltop.r = rtop.r = 255; 
+	sightFlat->points.push_back(lbot);
+	sightFlat->points.push_back(ltop);
+	sightFlat->points.push_back(rbot);
+	sightFlat->points.push_back(rtop);
+	
+	hPointLine(rbot,rtop,liner);
+	for(int n=0;n<liner.size();n++){
+		sightFlat->points.push_back(liner[n]);
+
+	}
+	
+	hPointLine(lbot,ltop,linel);
+	for(int n=0;n<linel.size();n++){
+		sightFlat->points.push_back(linel[n]);
+
+	}
+	
+//	for(int n=0;n<linel.size();n++){
+//		hPointLine(liner[n],linel[n],linep);
+//		for(int m=0;m<linep.size();m++){
+//			sightFlat->points.push_back(linep[m]);
+//		}
+//	
+//	}
+	
+//	
+	hPointLine(rbot,lbot,linep);
+	for(int n=0;n<linep.size();n++){
+		sightFlat->points.push_back(linep[n]);
+		//cout << "p_" << n << ": " << line[m]
+	}
+	
+	hPointLine(rtop,ltop,linep);
+	for(int n=0;n<linep.size();n++){
+		sightFlat->points.push_back(linep[n]);
+		//cout << "p_" << n << ": " << line[m]
+	}
+	double tempmin, tempmax;
+	tempmin = min(theta_min,theta_max);
+	tempmax = max(theta_min,theta_max);
+	theta_min = tempmin;
+	theta_max = tempmax; 
+	
+	tempmin = min(phi_min,phi_max);
+	tempmax = max(phi_min,phi_max);
+	phi_min = tempmin;
+	phi_max = tempmax; 
+	for(int n=0;n<cloud->size();n++){
+		iPoint = cloud->points[n];
+		cartesian2Spheric(iPoint,radius,theta,phi);
+		if(theta>theta_min & theta<theta_max & phi<phi_max & phi>phi_min){
+			sightFlat->points.push_back(iPoint);
+		}
+	
+	}
+//	
+	
+	
+	/////////////////////////////// end Test of viewing angle origin //////////////////////////////////
 /******************************************* End of Test Zone ***************************************************************/
 
 // Display point cloud 
@@ -465,21 +610,24 @@ int main(int argc, char** argv)
 	
 	
 	
-	cViewer.showCloud (sight);
+	//cViewer.showCloud (sightFlat);
 	//cViewer.showCloud(sightFlat);
-	//viewer.addPointCloud(sight, "Sight");
-	//viewer.addPointCloud(sightFlat, "Sphere");
-	viewer.addPointCloud(allPtClouds[0], "Sphere");
-	//viewer.addPointCloud(allPtClouds[2], "Sphere2");
-	//viewer.addPointCloud(allPtClouds[3], "Sphere3");
+	//viewer.addPointCloud(sight, "Sphere");
+	viewer.addPointCloud(sightFlat, "Sphere");
+	//viewer.addPointCloud(sight, "Sphere1");
+	
+//	viewer.addPointCloud(allPtClouds[0], "Sphere");
+//	viewer.addPointCloud(allPtClouds[12], "Sphere1");
+//	viewer.addPointCloud(allPtClouds[2], "Sphere2");
+//	viewer.addPointCloud(allPtClouds[3], "Sphere3");
 	//imshow("Original",allImages[23]);
   	
-	viewer.addCoordinateSystem (1.0);
+	viewer.addCoordinateSystem (radius);
 	viewer.setPointCloudRenderingProperties (visualization::PCL_VISUALIZER_POINT_SIZE, 1, "Sphere");
 	while (!viewer.wasStopped ()){
 	// This seems to cause trouble when having cloud viewer and viewr running
-		//viewer.spinOnce (100);
-		cv::waitKey(0);
+		viewer.spinOnce (100);
+		//cv::waitKey(0);
 		boost::this_thread::sleep (boost::posix_time::microseconds (100000));
 	  }
 	

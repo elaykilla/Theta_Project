@@ -93,11 +93,11 @@ PointCloud<PointXYZRGB>::Ptr EquiToSphere(cv::Mat ori, double radius, double xc,
 			
 			
 //			
-			iPoint.x = x;// + xc;
-			iPoint.y = y; //+ yc;
+//			iPoint.x = x + xc;
+//			iPoint.y = y + yc;
 			//Knowing the Center, apply rotation and translation from world Center
-//			iPoint.x = ((x*xc/normt)-(y*yc/normt)) + xc;
-//			iPoint.y = ((x*yc/normt) + (y*xc/normt)) + yc;
+			iPoint.x = ((x*xc/normt)-(y*yc/normt)); //+ xc;
+			iPoint.y = ((x*yc/normt) + (y*xc/normt)); //+ yc;
 			
 //			if(rand()%10000<1){
 //				cout << "xp: " << xp << endl;
