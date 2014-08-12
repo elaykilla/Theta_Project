@@ -17,10 +17,10 @@
 //Constants for images
 const double alpha = 15;
 const double nb_images = 24;
-const double dist_c = 9;
+const double dist_c = 0.9;
 
 
-const double radius = 100;
+const double radius = 1;
 const double phi0 = 0.0;
 const double phi1 = 2*PI;
 const double theta0 = 0.0;
@@ -189,7 +189,7 @@ int main(int argc, char** argv)
 	//Test simple 1 image
 	//ori  = ori1;
 	//For testing in order not to load all images every time
-	int tempCount =5;
+	int tempCount =24;
 	for(int k=im_num; k<tempCount; k++){
 		//cout << "k: " << k << endl;
 		loadImagei(name,k,ori);
@@ -272,10 +272,10 @@ int main(int argc, char** argv)
 	o.y = 0;
 	o.z = 0;
 	//Set u to anywhere in the sphere
-	u.x = 0;
+	u.x = 0.1;
 	u.y = 0;
-	u.z = 0;
-	v.x = 0;
+	u.z = 0.1;
+	v.x = 1;
 	v.y = 0;
 	v.z = 1;
 	
@@ -650,14 +650,20 @@ int main(int argc, char** argv)
 	sight->points.push_back(u);
 	//cout << "Ipoint on Ray: " << isOnRay(o,u,v) << endl;
 	//cout << "Ipoint on Ray: " << isCloseToRayCube(o,u,v,0) << endl;
-	for(int n=0;n<cloud->size();n++){
-		iPoint = cloud->points[n];
-		
-		if(isCloseToRayCube(u,o,iPoint,0.1)){
-			sightFlat->points.push_back(iPoint);
-			//cout << "ray passing through u: " << iPoint << endl;
-		}
 	
+	//for all the pt clouds converted
+	
+	for(int m=0;m<tempCount;m++){
+		cloud = allPtClouds[m];
+		for(int n=0;n<cloud->size();n++){
+			iPoint = cloud->points[n];
+		
+			if(isCloseToRayCube(u,o,iPoint,0.3)){
+				sightFlat->points.push_back(iPoint);
+				//cout << "ray passing through u: " << iPoint << endl;
+			}
+		}
+		cout << "Number of points: " << sightFlat->size() << endl;
 	}
 	
 	

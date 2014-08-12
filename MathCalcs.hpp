@@ -27,6 +27,10 @@ double norm(PointXYZRGB u){
 
 }
 
+double dotProduct(PointXYZRGB u, PointXYZRGB v){
+	return (u.x * v.x + u.y*v.y + u.z * v.z);
+}
+
 /**
 * returns weather or not u is in [a,b] 
 */
@@ -125,12 +129,17 @@ bool isOnRay(PointXYZRGB p, PointXYZRGB o, PointXYZRGB v){
 
 /**
 * This function returns true if a ray from o in the direction of v passes within a cube of lenght c of point p
+* This function returns:
+	0: if the ray does not pass near the point
+	1: if the ray passes near the point in the same direction as v
+	-1: if the ray passes near the point in the opposite direction of v
 */
 bool isCloseToRayCube(PointXYZRGB p, PointXYZRGB o, PointXYZRGB v, double c){
 	//cout << "p: " << p << endl;
 	double t;
 	double xinf,xsup,yinf,ysup,zinf,zsup;
 	bool truex, truey,truez;
+	double dotp = dotProduct(p,v);
 	if(v.x== 0 && v.y== 0 && v.z== 0){
 		wcerr << "There is no such ray with a direction of 0. Please verify v vector" << endl;
 		return false;
@@ -153,7 +162,7 @@ bool isCloseToRayCube(PointXYZRGB p, PointXYZRGB o, PointXYZRGB v, double c){
 		xsup = v.x*t + o.x + c;
 		ysup = v.y*t + o.y + c;
 		zsup = v.z*t + o.z + c;
-		//cout << "v: " << v << endl;
+		//cout << "v: " << v << " Dot Product: " << dotp << endl;
 		//cout << "xinf: " << xinf << " xsup: " << xsup << endl;
 		//cout << "yinf: " << yinf << " ysup: " << ysup << endl;
 		//cout << "zinf: " << zinf << " zsup: " << zsup << endl;
@@ -161,7 +170,7 @@ bool isCloseToRayCube(PointXYZRGB p, PointXYZRGB o, PointXYZRGB v, double c){
 		truey = inInterval(p.y,yinf,ysup);
 		truez = inInterval(p.z,zinf,zsup);
 		
-		return (truex & truey& truez);
+		return (truex & truey& truez & dotp>=0);
 	}
 }
 
