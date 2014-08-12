@@ -20,7 +20,7 @@ const double nb_images = 24;
 const double dist_c = 9;
 
 
-const double radius = 1;
+const double radius = 100;
 const double phi0 = 0.0;
 const double phi1 = 2*PI;
 const double theta0 = 0.0;
@@ -143,7 +143,7 @@ int main(int argc, char** argv)
 	//Number of lines to draw
 	int nbLines = 1000000;
 	int lnCount = 0;
-	/********************************* Define parameters ***************************************/
+	/*********************************************** end Define parameters *****************************************************/
 	
 	
 	//Loading images
@@ -183,13 +183,13 @@ int main(int argc, char** argv)
 	//loadImagei(name,4,ori3);
 	
 
-	/************************** End of Initiate ********************************/	
+	/**************************************************** End of Initiate ************************************************/	
 	
 
 	//Test simple 1 image
 	//ori  = ori1;
 	//For testing in order not to load all images every time
-	int tempCount =1;
+	int tempCount =5;
 	for(int k=im_num; k<tempCount; k++){
 		//cout << "k: " << k << endl;
 		loadImagei(name,k,ori);
@@ -254,7 +254,8 @@ int main(int argc, char** argv)
 //	
 
 //t1 = clock() - t;
-//cout << "Time to execute firs part before Kmean: " << (float)t1/CLOCKS_PER_SEC <<endl;;
+//cout << "Time to execute firs part before Kmean: " << (float)t1/CLOCKS_PER_SEC <<endl;
+
 /******************************************* Test Zone **********************************************************************/
 	//Testing space variables
 	cloud = allPtClouds[0];
@@ -265,13 +266,18 @@ int main(int argc, char** argv)
 	//double r;
 	int m;
 	PointXYZRGB ikm;	
-	//Set u to origin
+	PointXYZRGB o;
+	//set o to origin
+	o.x = 0;
+	o.y = 0;
+	o.z = 0;
+	//Set u to anywhere in the sphere
 	u.x = 0;
 	u.y = 0;
 	u.z = 0;
 	v.x = 0;
-	v.y = 1;
-	v.z = 0;
+	v.y = 0;
+	v.z = 1;
 	
 	//r = 1;
 	m = 0;
@@ -517,90 +523,145 @@ int main(int argc, char** argv)
 	
 	
 	//////////////////////////////////Test of viewing angle origin ////////////////////////////////////
-	//viewing angles
-	double v_angle = 27.;
-	double h_angle = 40.;
-	vector<PointXYZRGB> linel(50);
-	vector<PointXYZRGB> liner(50);
-	
-	double theta_min,theta_max,phi_min,phi_max;
-	PointXYZRGB lbot,rbot,ltop,rtop;
-	viewingLimitsOrigin(v, v_angle,h_angle,theta_min, theta_max, phi_min, phi_max);
-//	cout << "theta_min:" << theta_min << endl;
-//	cout << "theta_max:" << theta_max << endl;
-//	cout << "phi_min:" << phi_min << endl;
-//	cout << "phi_max:" << phi_max << endl;
-	
-	
-	spheric2Cartesian(radius, theta_min,phi_min,lbot);
-	//cout << "lbot:" << lbot << endl;
-	spheric2Cartesian(radius,theta_min,phi_max,ltop);
-	//cout << "ltop:" << ltop <<endl;
-	spheric2Cartesian(radius,theta_max,phi_min,rbot);
-	//cout << "rbot:" << rbot << endl;
-	spheric2Cartesian(radius,theta_max,phi_max,rtop);
-	//cout << "rtop:" << rtop <<endl;
-	
-	lbot.r = rbot.r = ltop.r = rtop.r = 255; 
-	sightFlat->points.push_back(lbot);
-	sightFlat->points.push_back(ltop);
-	sightFlat->points.push_back(rbot);
-	sightFlat->points.push_back(rtop);
-	
-	hPointLine(rbot,rtop,liner);
-	for(int n=0;n<liner.size();n++){
-		sightFlat->points.push_back(liner[n]);
+//	//viewing angles
+//	double v_angle = 27.;
+//	double h_angle = 40.;
+//	vector<PointXYZRGB> linel(50);
+//	vector<PointXYZRGB> liner(50);
+//	PointXYZRGB pro;
+//	
+//	double theta_min,theta_max,phi_min,phi_max;
+//	PointXYZRGB lbot,rbot,ltop,rtop;
+//	viewingLimitsOrigin(v, v_angle,h_angle,theta_min, theta_max, phi_min, phi_max);
+////	cout << "theta_min:" << theta_min << endl;
+////	cout << "theta_max:" << theta_max << endl;
+////	cout << "phi_min:" << phi_min << endl;
+////	cout << "phi_max:" << phi_max << endl;
+//	
+//	
+//	spheric2Cartesian(radius, theta_min,phi_min,lbot);
+//	//cout << "lbot:" << lbot << endl;
+//	spheric2Cartesian(radius,theta_min,phi_max,ltop);
+//	//cout << "ltop:" << ltop <<endl;
+//	spheric2Cartesian(radius,theta_max,phi_min,rbot);
+//	//cout << "rbot:" << rbot << endl;
+//	spheric2Cartesian(radius,theta_max,phi_max,rtop);
+//	//cout << "rtop:" << rtop <<endl;
+//	
+//	lbot.r = rbot.r = ltop.r = rtop.r = 255; 
+//	sightFlat->points.push_back(lbot);
+//	sightFlat->points.push_back(ltop);
+//	sightFlat->points.push_back(rbot);
+//	sightFlat->points.push_back(rtop);
+//	
+//	hPointLine(rbot,rtop,liner);
+//	for(int n=0;n<liner.size();n++){
+//		sightFlat->points.push_back(liner[n]);
 
-	}
-	
-	hPointLine(lbot,ltop,linel);
-	for(int n=0;n<linel.size();n++){
-		sightFlat->points.push_back(linel[n]);
-
-	}
-	
+//	}
+//	
+//	hPointLine(lbot,ltop,linel);
 //	for(int n=0;n<linel.size();n++){
-//		hPointLine(liner[n],linel[n],linep);
-//		for(int m=0;m<linep.size();m++){
-//			sightFlat->points.push_back(linep[m]);
+//		sightFlat->points.push_back(linel[n]);
+
+//	}
+//	
+////	for(int n=0;n<linel.size();n++){
+////		hPointLine(liner[n],linel[n],linep);
+////		for(int m=0;m<linep.size();m++){
+////			sightFlat->points.push_back(linep[m]);
+////		}
+////	
+////	}
+//	
+////	
+//	hPointLine(rbot,lbot,linep);
+//	for(int n=0;n<linep.size();n++){
+//		sightFlat->points.push_back(linep[n]);
+//		//cout << "p_" << n << ": " << line[m]
+//	}
+//	
+//	hPointLine(rtop,ltop,linep);
+//	for(int n=0;n<linep.size();n++){
+//		sightFlat->points.push_back(linep[n]);
+//		//cout << "p_" << n << ": " << line[m]
+//	}
+//	
+//	//Draw lines to origin
+//	
+//	hPointLine(u,ltop,linel);
+//	for(int n=0;n<linel.size();n++){
+//		sightFlat->points.push_back(linel[n]);
+
+//	}
+//	
+//	hPointLine(u,lbot,linel);
+//	for(int n=0;n<linel.size();n++){
+//		sightFlat->points.push_back(linel[n]);
+
+//	}
+//	
+//	hPointLine(u,rtop,linel);
+//	for(int n=0;n<linel.size();n++){
+//		sightFlat->points.push_back(linel[n]);
+
+//	}
+//	
+//	hPointLine(u,rbot,linel);
+//	for(int n=0;n<linel.size();n++){
+//		sightFlat->points.push_back(linel[n]);
+
+//	}
+//	
+//	
+//	double tempmin, tempmax;
+//	tempmin = min(theta_min,theta_max);
+//	tempmax = max(theta_min,theta_max);
+//	theta_min = tempmin;
+//	theta_max = tempmax; 
+//	
+////	tempmin = min(phi_min,phi_max);
+////	tempmax = max(phi_min,phi_max);
+////	phi_min = tempmin;
+////	phi_max = tempmax; 
+
+//	u.x = (ltop.x + rbot.x)/2;
+//	u.y = (ltop.y + rbot.y)/2;
+//	u.z = (ltop.z + rbot.z)/2;
+//	
+//	for(int n=0;n<cloud->size();n++){
+//		iPoint = cloud->points[n];
+//		cartesian2Spheric(iPoint,radius,theta,phi);
+//		if(theta>theta_min & theta<theta_max & phi<phi_max & phi>phi_min){
+//			pro = nonOrthogonalProjection2Plane(iPoint,u,v,v);
+//			sightFlat->points.push_back(pro);
 //		}
 //	
 //	}
+////	
+	/////////////////////////////// end Test of viewing angle origin //////////////////////////////////
 	
-//	
-	hPointLine(rbot,lbot,linep);
-	for(int n=0;n<linep.size();n++){
-		sightFlat->points.push_back(linep[n]);
-		//cout << "p_" << n << ": " << line[m]
-	}
+	///////////////////////////////////////  Test point on ray ////////////////////////////////////////
+	iPoint.x = 0;
+	iPoint.y = 0;
+	iPoint.z = 0;
 	
-	hPointLine(rtop,ltop,linep);
-	for(int n=0;n<linep.size();n++){
-		sightFlat->points.push_back(linep[n]);
-		//cout << "p_" << n << ": " << line[m]
-	}
-	double tempmin, tempmax;
-	tempmin = min(theta_min,theta_max);
-	tempmax = max(theta_min,theta_max);
-	theta_min = tempmin;
-	theta_max = tempmax; 
-	
-	tempmin = min(phi_min,phi_max);
-	tempmax = max(phi_min,phi_max);
-	phi_min = tempmin;
-	phi_max = tempmax; 
+	o.r = o.g = o.b = 255;
+	sight->points.push_back(u);
+	//cout << "Ipoint on Ray: " << isOnRay(o,u,v) << endl;
+	//cout << "Ipoint on Ray: " << isCloseToRayCube(o,u,v,0) << endl;
 	for(int n=0;n<cloud->size();n++){
 		iPoint = cloud->points[n];
-		cartesian2Spheric(iPoint,radius,theta,phi);
-		if(theta>theta_min & theta<theta_max & phi<phi_max & phi>phi_min){
+		
+		if(isCloseToRayCube(u,o,iPoint,0.1)){
 			sightFlat->points.push_back(iPoint);
+			//cout << "ray passing through u: " << iPoint << endl;
 		}
 	
 	}
-//	
 	
 	
-	/////////////////////////////// end Test of viewing angle origin //////////////////////////////////
+	//////////////////////////////////////  end Test point on ray ////////////////////////////////////
 /******************************************* End of Test Zone ***************************************************************/
 
 // Display point cloud 
@@ -617,7 +678,7 @@ int main(int argc, char** argv)
 	//viewer.addPointCloud(sight, "Sphere1");
 	
 //	viewer.addPointCloud(allPtClouds[0], "Sphere");
-//	viewer.addPointCloud(allPtClouds[12], "Sphere1");
+//	viewer.addPointCloud(allPtClouds[2], "Sphere1");
 //	viewer.addPointCloud(allPtClouds[2], "Sphere2");
 //	viewer.addPointCloud(allPtClouds[3], "Sphere3");
 	//imshow("Original",allImages[23]);

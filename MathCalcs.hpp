@@ -28,6 +28,19 @@ double norm(PointXYZRGB u){
 }
 
 /**
+* returns weather or not u is in [a,b] 
+*/
+bool inInterval(double u, double a, double b){
+	double mint,maxt;
+	
+	mint = min(a,b);
+	maxt = max(a,b);
+	
+	
+	return (mint<=u & u<= maxt); 
+
+}
+/**
 * This function given a point u (x,y,z) returns the (x,y) coordinates of the projection onto the XY plane of u
 */
 void projectXY(PointXYZRGB u, double &x, double &y){
@@ -58,45 +71,99 @@ void spheric2Cartesian(double r, double theta, double phi, PointXYZRGB &p){
 	p.z = r * cos(theta);
 }
 
+
 /**
-* This function, given a point u, a direction v, and a delta of angles (in degrees) alpha, returns which image position is
-* closest to that of v
+* Given a point p, this function verifies wether or not this point is on the ray with a direction of v and passing through o.
 */
-int closestImDirection(PointXYZRGB u, PointXYZRGB v, double alpha ){
-	double x,y,xv,yv,vnorm,snorm, alpharad, alpha_prime;
-	PointXYZRGB vn, uv, su;
-	int i;
+bool isOnRay(PointXYZRGB p, PointXYZRGB o, PointXYZRGB v){
+	double A,B,C;
 	
-	alpharad = alpha*PI/180;
-	cout<< "alpha: " << alpharad << endl;
-	//su = project2Sphere(u,v,r);
-	
-	snorm = norm(su);
-	vnorm = norm(v);
-	
-	uv.x = v.x + u.x;
-	uv.y = v.y + u.y;
-	uv.z = v.z + u.z;
-
-
-	//Project u and v onto XY place
-	projectXY(u,x,y);
-	projectXY(v,xv,yv);
-	
-//	cout << "v.x: " << v.x << endl;
-//	cout << "v.y: " << v.y << endl;
-//	cout << "xv: " << xv << endl;
-	//Alpha prime is the angle between the vector u->v and the X axis
-	alpha_prime = acos(xv/norm(v)); 
-	cout<< "alphaPrime: " << alpha_prime <<endl;
-	
-	
-	i = round(alpha_prime/alpharad);
+	if(v.x== 0 && v.y== 0 && v.z== 0){
+		wcerr << "There is no such ray with a direction of 0. Please verify v vector" << endl;
+		return false;
+	}
+	else{
+		if(v.x!= 0 && v.y!= 0 && v.z!= 0){
+			A = (p.x - o.x)/v.x;
+			B = (p.y - o.y)/v.y;
+			C = (p.z - o.z)/v.z;
+			return (A==B && B==C);
+		}
+		else {
+			if(v.x==0){
+				if(v.y ==0){
+					return (p.x == o.x & p.y == o.y);
+				}
+				else if (v.z==0){
+					return (p.x == o.x & p.z == o.z);
+				}
+				else{
+					B = (p.y - o.y)/v.y;
+					C = (p.z - o.z)/v.z;
+					return (p.x == o.x & B==C );
+				}
+			}
+			else if (v.y ==0){
+				if(v.z == 0){
+					return (p.y == o.y & p.z == o.z);
+				}
+				else{
+					A = (p.x - o.x)/v.x;
+					C = (p.z - o.z)/v.z;
+					return (p.y== o.y & A==C); 
+				}
+			}
+			//Case z ==0 
+			else{
+				A = (p.x - o.x)/v.x;
+				B = (p.y - o.y)/v.y;
+				return (p.z == o.z && A==B);
+			}
+		}
+	}
 }
 
-
-
-
+/**
+* This function returns true if a ray from o in the direction of v passes within a cube of lenght c of point p
+*/
+bool isCloseToRayCube(PointXYZRGB p, PointXYZRGB o, PointXYZRGB v, double c){
+	//cout << "p: " << p << endl;
+	double t;
+	double xinf,xsup,yinf,ysup,zinf,zsup;
+	bool truex, truey,truez;
+	if(v.x== 0 && v.y== 0 && v.z== 0){
+		wcerr << "There is no such ray with a direction of 0. Please verify v vector" << endl;
+		return false;
+	}
+	else{
+		//cout << "c: " << c << endl;
+		if(v.x!=0){
+			t = (p.x - o.x)/v.x;
+		}
+		else if (v.y!=0){
+			t = (p.y - o.y)/v.y;
+		}
+		else{
+			t = (p.z - o.z)/v.z;
+		}
+		
+		xinf = v.x*t + o.x - c;
+		yinf = v.y*t + o.y - c;
+		zinf = v.z*t + o.z - c;
+		xsup = v.x*t + o.x + c;
+		ysup = v.y*t + o.y + c;
+		zsup = v.z*t + o.z + c;
+		//cout << "v: " << v << endl;
+		//cout << "xinf: " << xinf << " xsup: " << xsup << endl;
+		//cout << "yinf: " << yinf << " ysup: " << ysup << endl;
+		//cout << "zinf: " << zinf << " zsup: " << zsup << endl;
+		truex = inInterval(p.x,xinf,xsup);
+		truey = inInterval(p.y,yinf,ysup);
+		truez = inInterval(p.z,zinf,zsup);
+		
+		return (truex & truey& truez);
+	}
+}
 
 
 
@@ -244,6 +311,65 @@ void translateCenter(double xc, double yc, double &x, double &y){
 	x = x - xc;
 	y = y - yc;
 
+}
+
+
+/**
+* Find the orthogonal projection of a point p onto a plane defined by a point and it's normal vector
+*/
+PointXYZRGB orthogonalProjection2Plane(PointXYZRGB p, PointXYZRGB u, PointXYZRGB v){
+	//Define the equation of the plane ax + by + cz = d;
+	PointXYZRGB pro;
+	double a,b,c,d;
+	a = v.x;
+	b = v.y;
+	c = v.z;
+	d = a*u.x + b*u.y + c*u.z;
+	
+	
+	//Define the line passing by p and parallele to v
+	double r = norm(v)*norm(v);
+	double A = d - (a*p.x + b*p.y + c*p.z);
+	double k = A/r;
+	
+	pro.x = k*a + p.x;
+	pro.y = k*b + p.y;
+	pro.z = k*c + p.z;
+	pro.r = p.r;
+	pro.g = p.g;
+	pro.b = p.b;
+	
+	return pro;
+}
+
+/**
+* Find the orthogonal projection of a point p onto a plane defined by a point and it's normal vector. Project in the direction of
+* a different vector. 
+*/
+PointXYZRGB nonOrthogonalProjection2Plane(PointXYZRGB p, PointXYZRGB u, PointXYZRGB v, PointXYZRGB v2){
+	//Define the equation of the plane ax + by + cz = d;
+	PointXYZRGB pro;
+	double a,b,c,d;
+	a = v.x;
+	b = v.y;
+	c = v.z;
+	d = a*u.x + b*u.y + c*u.z;
+	
+	
+	//Define the line passing by p and parallele to v
+	
+	double r = norm(v)*norm(v);
+	double A = d - (v2.x*p.x + v2.y*p.y + v2.z*p.z);
+	double k = A/r;
+	
+	pro.x = k*v2.x + p.x;
+	pro.y = k*v2.y + p.y;
+	pro.z = k*v2.z + p.z;
+	pro.r = p.r;
+	pro.g = p.g;
+	pro.b = p.b;
+	
+	return pro;
 }
 
 /**
@@ -453,6 +579,47 @@ void samplePlane(PointXYZRGB u, PointXYZRGB v, vector<PointXYZRGB> &points , dou
 	}
 	BOOST_LOG_TRIVIAL(trace) << "samplePlane Function Has ended" <<endl;
 	//return points;
+}
+
+
+
+
+
+
+/**
+* This function, given a point u, a direction v, and a delta of angles (in degrees) alpha, returns which image position is
+* closest to that of v
+*/
+int closestImDirection(PointXYZRGB u, PointXYZRGB v, double alpha ){
+	double x,y,xv,yv,vnorm,snorm, alpharad, alpha_prime;
+	PointXYZRGB vn, uv, su;
+	int i;
+	
+	alpharad = alpha*PI/180;
+	cout<< "alpha: " << alpharad << endl;
+	//su = project2Sphere(u,v,r);
+	
+	snorm = norm(su);
+	vnorm = norm(v);
+	
+	uv.x = v.x + u.x;
+	uv.y = v.y + u.y;
+	uv.z = v.z + u.z;
+
+
+	//Project u and v onto XY place
+	projectXY(u,x,y);
+	projectXY(v,xv,yv);
+	
+//	cout << "v.x: " << v.x << endl;
+//	cout << "v.y: " << v.y << endl;
+//	cout << "xv: " << xv << endl;
+	//Alpha prime is the angle between the vector u->v and the X axis
+	alpha_prime = acos(xv/norm(v)); 
+	cout<< "alphaPrime: " << alpha_prime <<endl;
+	
+	
+	i = round(alpha_prime/alpharad);
 }
 
 void viewingLimitsOrigin(PointXYZRGB v, double v_angle, double h_angle, double &theta_min, double &theta_max, double &phi_min, double &phi_max){
