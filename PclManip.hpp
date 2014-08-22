@@ -16,45 +16,45 @@
 *******************FLANN compatibility problem between OpenCv and PCL ***************************
 */
 
-//PointCloud<PointWithScale>::Ptr get3DKepoints(PointCloud<PointXYZRGB>::Ptr points, float min_scale, int nr_octaves, int nr_scales_per_octave, float min_contrast) {
+PointCloud<PointWithScale>::Ptr get3DKepoints(PointCloud<PointXYZRGB>::Ptr points, float min_scale, int nr_octaves, int nr_scales_per_octave, float min_contrast) {
 
-//	//the extracted keypoints
-//	PointCloud<PointWithScale>::Ptr keypoints_out;
+	//the extracted keypoints
+	PointCloud<PointWithScale>::Ptr keypoints_out;
 
-//	SIFTKeypoint<PointXYZRGB, PointWithScale> sift_detect;
+	SIFTKeypoint<PointXYZRGB, PointWithScale> sift_detect;
 
-//	// Use a FLANN-based KdTree to perform neighborhood searches
-//	search::KdTree<PointXYZRGB>::Ptr tree(new search::KdTree<PointXYZRGB> ());
-//	sift_detect.setSearchMethod(tree);
-//	
-//	// Set the detection parameters
-//	sift_detect.setScales(min_scale, nr_octaves, nr_scales_per_octave);
-//	sift_detect.setMinimumContrast(min_contrast);
-//	
-//	// Set the input
-//	sift_detect.setInputCloud(points);
-//	
-//	// Detect the keypoints and store them in "keypoints_out"
-//	sift_detect.compute(*keypoints_out);
-//	
-//	return keypoints_out;
-//}
+	// Use a FLANN-based KdTree to perform neighborhood searches
+	search::KdTree<PointXYZRGB>::Ptr tree(new search::KdTree<PointXYZRGB> ());
+	sift_detect.setSearchMethod(tree);
+	
+	// Set the detection parameters
+	sift_detect.setScales(min_scale, nr_octaves, nr_scales_per_octave);
+	sift_detect.setMinimumContrast(min_contrast);
+	
+	// Set the input
+	sift_detect.setInputCloud(points);
+	
+	// Detect the keypoints and store them in "keypoints_out"
+	sift_detect.compute(*keypoints_out);
+	
+	return keypoints_out;
+}
 
 /**
 *This function takes an input image in Equirectangular pixel coordinates (i,j) cv::Mat and returns 
 * a Point cloud. The point cloud is the Spherical projection of this image onto a sphere of
-* radius r and centered in (xc,yc);
+* radius r and centered in (xc,zc);
 * @Inputs
 * Cv::cv::Mat ori: the input image
 * double r : the radius of the sphere
-* double xc and yc: the (x,y) coordinates of the center of the Sphere
+* double xc and zc: the (x,z) coordinates of the center of the Sphere
 *
 *
 * @Output
 * Ptr cloud : a point cloud of the sphere
 * Ptr VctCloud: A vector cloud of vectors (Sc,Pt) with Sc being the center of the sphere.
 */
-PointCloud<PointXYZRGB>::Ptr EquiToSphere(cv::Mat ori, double radius, double xc, double yc){
+PointCloud<PointXYZRGB>::Ptr EquiToSphere(cv::Mat ori, double radius, double xc, double zc){
 	//We define our point cloud and a Point
 	PointCloud<PointXYZRGB>::Ptr cloud (new PointCloud<PointXYZRGB>);
 	PointCloud<PointXYZRGB>::Ptr vectorCloud (new PointCloud<PointXYZRGB>);
@@ -64,7 +64,7 @@ PointCloud<PointXYZRGB>::Ptr EquiToSphere(cv::Mat ori, double radius, double xc,
 	PointXYZRGB iVect;
 	PointXYZRGB t;
 	t.x = xc;
-	t.y = yc;
+	t.z = zc;
 	double normt = norm(t);
 	
 	//Math variables
@@ -89,15 +89,17 @@ PointCloud<PointXYZRGB>::Ptr EquiToSphere(cv::Mat ori, double radius, double xc,
 			//Get the Spherical Coordinates on a sphere or radius centered in (0,0)
 			sphereCoordinates(i,j,radius,rows,cols,x,y,z);
 			
-			//Put the coordinates in a PointXYZ and shift center to (xc,yc,0)
+			//Put the coordinates in a PointXYZ and shift center to (xc,zc,0)
 			
 			
 //			
 //			iPoint.x = x + xc;
-//			iPoint.y = y + yc;
+//			iPoint.y = y + zc;
 			//Knowing the Center, apply rotation and translation from world Center
-			iPoint.x = ((x*xc/normt)-(y*yc/normt)) + xc;
-			iPoint.y = ((x*yc/normt) + (y*xc/normt)) + yc;
+			// The real life and PCL y and z are switched
+			
+			iPoint.x = ((x*xc/normt)-(y*zc/normt));// - xc;
+			iPoint.z = ((x*zc/normt) + (y*xc/normt));// - zc;
 			
 			//test pour 4
 //			iPoint.x = ((x*cos(alpha_rad))-(y*sin(alpha_rad)));
@@ -106,10 +108,10 @@ PointCloud<PointXYZRGB>::Ptr EquiToSphere(cv::Mat ori, double radius, double xc,
 //			if(rand()%10000<1){
 //				cout << "xp: " << xp << endl;
 //			}
-			iPoint.z = z;
+			iPoint.y = z;
 				
 				
-			//Put the coordinates of the vector directed from iPoint to Sc(xc,yc,0)
+			//Put the coordinates of the vector directed from iPoint to Sc(xc,zc,0)
 //			iVect.x = x;
 //			iVect.y = y;
 //			iVect.z = z;

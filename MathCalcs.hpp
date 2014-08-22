@@ -170,7 +170,7 @@ bool isCloseToRayCube(PointXYZRGB p, PointXYZRGB o, PointXYZRGB v, double c){
 		truey = inInterval(p.y,yinf,ysup);
 		truez = inInterval(p.z,zinf,zsup);
 		
-		return (truex & truey& truez & dotp>=0);
+		return (truex & truey& truez);// & dotp>=0);
 	}
 }
 
@@ -306,10 +306,10 @@ and radius r
 *	xc: x coordinate of the center
 *	yc: y coordinate of the center
 */
-void sphereCenter(double alpha, int i, double r, double &xc, double &yc){
-	double alphaRad = -(alpha/180)*PI;
+void sphereCenter(double alpha, int i, double r, double &xc, double &zc){
+	double alphaRad = (alpha/180)*PI;
 	xc = r * cos(i*alphaRad);
-	yc = r * sin(i*alphaRad);
+	zc = r * sin(i*alphaRad);
 }
 
 
@@ -352,7 +352,7 @@ PointXYZRGB orthogonalProjection2Plane(PointXYZRGB p, PointXYZRGB u, PointXYZRGB
 }
 
 /**
-* Find the orthogonal projection of a point p onto a plane defined by a point and it's normal vector. Project in the direction of
+* Find the projection of a point p onto a plane defined by a point and it's normal vector. Project in the direction of
 * a different vector. 
 */
 PointXYZRGB nonOrthogonalProjection2Plane(PointXYZRGB p, PointXYZRGB u, PointXYZRGB v, PointXYZRGB v2){
@@ -646,6 +646,25 @@ void viewingLimitsOrigin(PointXYZRGB v, double v_angle, double h_angle, double &
 	theta_max = theta + v_angle_rad;
 	phi_min = phi - h_angle_rad;
 	phi_max = phi + h_angle_rad;
+
+}
+
+void viewingLimits(PointXYZRGB u, PointXYZRGB v, double v_angle, double h_angle, double &theta_min, double &theta_max, double &phi_min, double &phi_max){
+	//Angles of the direction
+	double theta, phi,thetau,phiu;
+	//double theta_min,theta_max, phi_min, phi_max;
+	double r;
+	cartesian2Spheric(u,r,thetau,phiu);
+	cartesian2Spheric(v,r,theta,phi);
+	//cout << "v spheric (theta,phi): " << theta << "," << phi << endl; 
+	//Convert to radian
+	double v_angle_rad = v_angle*PI/180;
+	double h_angle_rad = h_angle*PI/180;
+	
+	theta_min = theta + thetau - v_angle_rad;
+	theta_max = theta + thetau + v_angle_rad;
+	phi_min = phi + phiu - h_angle_rad;
+	phi_max = phi + phiu + h_angle_rad;
 
 }
 
