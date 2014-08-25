@@ -44,6 +44,17 @@ bool inInterval(double u, double a, double b){
 	return (mint<=u & u<= maxt); 
 
 }
+
+/**
+* Returns the euclidian distanc between 2 points
+*/
+double distanceP(PointXYZRGB p1,PointXYZRGB p2){
+double dx,dy,dz;
+	dx = p1.x-p2.x;
+	dy = p1.y-p2.y;
+	dz = p1.z-p2.z;
+	return sqrt(dx*dx + dy*dy + dz*dz);
+}
 /**
 * This function given a point u (x,y,z) returns the (x,y) coordinates of the projection onto the XY plane of u
 */

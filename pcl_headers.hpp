@@ -8,7 +8,7 @@
 #include <pcl/visualization/pcl_visualizer.h>
 #include <pcl/visualization/cloud_viewer.h>
 #include <pcl/impl/point_types.hpp>
-
+#include <pcl/ModelCoefficients.h>
 
 #include <pcl/kdtree/kdtree_flann.h>
 #include <pcl/keypoints/sift_keypoint.h>

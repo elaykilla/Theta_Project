@@ -99,6 +99,8 @@ pcl/visualization/cloud_viewer.h
 -
 pcl/impl/point_types.hpp
 -
+pcl/ModelCoefficients.h
+-
 pcl/kdtree/kdtree_flann.h
 -
 pcl/keypoints/sift_keypoint.h
