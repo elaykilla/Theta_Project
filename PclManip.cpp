@@ -8,6 +8,7 @@
 #define PclMnip
 
 #include"MathCalcs.hpp"
+#include"PclManip.hpp"
 //#include "boost_headers.hpp"
 
 /***************************************************Image Manipulation PCL***********************************************/

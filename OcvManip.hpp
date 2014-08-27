@@ -25,6 +25,12 @@ void loadImagei(string name, int i, cv::Mat &image){
 	file << name <<i << ".jpg" ; 
 	image = cv::imread(file.str(),1);
 }
+void loadImageTop(string name, cv::Mat &image, string topOrbottom){
+	ostringstream file;
+	file << name <<topOrbottom << ".jpg" ; 
+	image = cv::imread(file.str(),1);
+}
+
 
 /**
 * This function returns a cv::vector containing the Keypoints from the input image using SURF

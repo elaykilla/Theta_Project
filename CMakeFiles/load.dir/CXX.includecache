@@ -99,6 +99,8 @@ pcl/visualization/cloud_viewer.h
 -
 pcl/impl/point_types.hpp
 -
+pcl/ModelCoefficients.h
+-
 pcl/kdtree/kdtree_flann.h
 -
 pcl/keypoints/sift_keypoint.h
@@ -1670,8 +1672,6 @@ sstream
 
 /usr/include/pcl-1.7/pcl/kdtree/flann.h
 flann/flann.hpp
--
-flann/flann.h
 -
 
 /usr/include/pcl-1.7/pcl/kdtree/impl/kdtree_flann.hpp
