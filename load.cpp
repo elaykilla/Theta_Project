@@ -140,7 +140,9 @@ int main(int argc, char** argv)
 	cv::Mat ori,top,bottom;
 	//cvNamedWindow("Original",0);
 	//cvNamedWindow("recalculated",0);
+
 	//cvNamedWindow("Keypoints 2D",0);
+
 	
 	//Number of lines to draw
 	int nbLines = 1000000;
@@ -168,6 +170,7 @@ int main(int argc, char** argv)
 	sphereCenter(alpha, im_num, dist_c, xc, zc);
 	//cout << "xc: "<< xc << endl;
 	cloud = EquiToSphere(ori, radius,xc,yc,zc);
+
 	
 	allPtClouds[im_num] = cloud;
 	im_num++;
@@ -192,6 +195,7 @@ int main(int argc, char** argv)
 	//For testing in order not to load all images every time
 	int tempCount =atoi(argv[2]);
 	cout << "Images to be loaded: " << tempCount<< endl;
+
 	for(int k=im_num; k<tempCount; k++){
 		//cout << "k: " << k << endl;
 		loadImagei(name,k,ori);
@@ -211,6 +215,7 @@ int main(int argc, char** argv)
 		yc=0;
 		cloud = EquiToSphere(ori, radius,xc,yc,zc);
 		allPtClouds[k] = cloud;			
+
 	}//End of K loop of image
 	
 	//If Top and Bottom given
@@ -248,6 +253,7 @@ int main(int argc, char** argv)
 	o.x = 0;
 	o.y = 0;
 	o.z = 0;
+
 	
 	//Set u to anywhere in the sphere and v any direction
 	u.x = 0;
@@ -256,6 +262,7 @@ int main(int argc, char** argv)
 	v.x = -0.4;
 	v.y = 0;
 	v.z = -0.3;
+
 	
 	
 	double step = 2*radius/nbPoints;
@@ -271,6 +278,8 @@ int main(int argc, char** argv)
 //	projectToSphereTest(nbPoints,step,sight);
 	
 
+
+
 	//Test of get plane function and project to Sphere with this plane
 //	getPlaneAndProjectToSphere(PointXYZRGB u, PointXYZRGB v, PointCloud<PointXYZRGB>::Ptr sight)
 
@@ -282,11 +291,8 @@ int main(int argc, char** argv)
 	//Test of closest Direction
 //	closestImDirectionTest(alpha,20);
 
-	
-	
-	//////////////////////////////////Test of viewing angle origin ////////////////////////////////////
-//	
-//	/////////////////////////////// end Test of viewing angle origin //////////////////////////////////
+
+		/////////////////////////////// end Test of viewing angle origin //////////////////////////////////
 //	viewingAngleOriginTest( u,  v, radius,  rows, cols,cloud, sightFlat);
 	//Viewing angles
 	///////////////////////////////////////  Test point on ray ////////////////////////////////////////
@@ -310,7 +316,8 @@ int main(int argc, char** argv)
 		for(int n=0;n<cloud->size();n++){
 			iPoint = cloud->points[n];
 		
-			if(isCloseToRayCube(u,o,iPoint,.1)){
+
+			if(isCloseToRayCube(u,o,iPoint,.9)){
 				sightFlat->points.push_back(iPoint);
 				//cout << "ray passing through u: " << iPoint << endl;
 			}
@@ -330,12 +337,15 @@ int main(int argc, char** argv)
 	//cloud->height=50;
 	
 	
+
 	//cvResizeWindow("Keypoints 2D",rows,cols);
+
 	
 	
 	//cViewer.showCloud (sightFlat);
 	//cViewer.showCloud(sightFlat);
 	//viewer.addPointCloud(sightFlat, "Sphere");
+
 //	viewer.addPointCloud(sight, "Sphere");
 	//viewer.addPointCloud(sight, "Sphere1");
 	
