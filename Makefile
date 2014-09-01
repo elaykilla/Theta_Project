@@ -111,6 +111,78 @@ load/fast:
 	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/build
 .PHONY : load/fast
 
+MathCalcs.o: MathCalcs.cpp.o
+.PHONY : MathCalcs.o
+
+# target to build an object file
+MathCalcs.cpp.o:
+	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/MathCalcs.cpp.o
+.PHONY : MathCalcs.cpp.o
+
+MathCalcs.i: MathCalcs.cpp.i
+.PHONY : MathCalcs.i
+
+# target to preprocess a source file
+MathCalcs.cpp.i:
+	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/MathCalcs.cpp.i
+.PHONY : MathCalcs.cpp.i
+
+MathCalcs.s: MathCalcs.cpp.s
+.PHONY : MathCalcs.s
+
+# target to generate assembly for a file
+MathCalcs.cpp.s:
+	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/MathCalcs.cpp.s
+.PHONY : MathCalcs.cpp.s
+
+OcvManip.o: OcvManip.cpp.o
+.PHONY : OcvManip.o
+
+# target to build an object file
+OcvManip.cpp.o:
+	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/OcvManip.cpp.o
+.PHONY : OcvManip.cpp.o
+
+OcvManip.i: OcvManip.cpp.i
+.PHONY : OcvManip.i
+
+# target to preprocess a source file
+OcvManip.cpp.i:
+	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/OcvManip.cpp.i
+.PHONY : OcvManip.cpp.i
+
+OcvManip.s: OcvManip.cpp.s
+.PHONY : OcvManip.s
+
+# target to generate assembly for a file
+OcvManip.cpp.s:
+	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/OcvManip.cpp.s
+.PHONY : OcvManip.cpp.s
+
+PclManip.o: PclManip.cpp.o
+.PHONY : PclManip.o
+
+# target to build an object file
+PclManip.cpp.o:
+	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/PclManip.cpp.o
+.PHONY : PclManip.cpp.o
+
+PclManip.i: PclManip.cpp.i
+.PHONY : PclManip.i
+
+# target to preprocess a source file
+PclManip.cpp.i:
+	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/PclManip.cpp.i
+.PHONY : PclManip.cpp.i
+
+PclManip.s: PclManip.cpp.s
+.PHONY : PclManip.s
+
+# target to generate assembly for a file
+PclManip.cpp.s:
+	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/PclManip.cpp.s
+.PHONY : PclManip.cpp.s
+
 load.o: load.cpp.o
 .PHONY : load.o
 
@@ -144,6 +216,15 @@ help:
 	@echo "... edit_cache"
 	@echo "... load"
 	@echo "... rebuild_cache"
+	@echo "... MathCalcs.o"
+	@echo "... MathCalcs.i"
+	@echo "... MathCalcs.s"
+	@echo "... OcvManip.o"
+	@echo "... OcvManip.i"
+	@echo "... OcvManip.s"
+	@echo "... PclManip.o"
+	@echo "... PclManip.i"
+	@echo "... PclManip.s"
 	@echo "... load.o"
 	@echo "... load.i"
 	@echo "... load.s"

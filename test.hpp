@@ -411,31 +411,56 @@ void viewingAngleOriginTest(PointXYZRGB u, PointXYZRGB v, double radius, int row
 	///////////////////////////////////////  Test point on ray ////////////////////////////////////////
 
 void pointOnRayTest(){
-//	iPoint.x = 0;
-//	iPoint.y = 0;
-//	iPoint.z = 0;
-//	
-//	o.r = o.g = o.b = 255;
-//	sight->points.push_back(u);
-//	//cout << "Ipoint on Ray: " << isOnRay(o,u,v) << endl;
-//	//cout << "Ipoint on Ray: " << isCloseToRayCube(o,u,v,0) << endl;
-//	
-//	//for all the pt clouds converted
-//	
-//	for(int m=0;m<tempCount;m++){
-//		cloud = allPtClouds[m];
-//		for(int n=0;n<cloud->size();n++){
-//			iPoint = cloud->points[n];
-//		
-//			if(isCloseToRayCube(u,o,iPoint,0.5)){
-//				sightFlat->points.push_back(iPoint);
-//				//cout << "ray passing through u: " << iPoint << endl;
-//			}
-//		}
-//		//cout << "Number of points: " << sightFlat->size() << endl;
-//	}
+	iPoint.x = 0;
+	iPoint.y = 0;
+	iPoint.z = 0;
+	
+	o.r = o.g = o.b = 255;
+	sight->points.push_back(u);
+	//cout << "Ipoint on Ray: " << isOnRay(o,u,v) << endl;
+	//cout << "Ipoint on Ray: " << isCloseToRayCube(o,u,v,0) << endl;
+	
+	//for all the pt clouds converted
+	
+	
+	for(int m=0;m<tempCount;m++){
+		cloud = allPtClouds[m];
+		
+		for(int n=0;n<cloud->size();n++){
+			iPoint = cloud->points[n];
+		
+			if(isCloseToRayCube(u,o,iPoint,0.5)){
+				sightFlat->points.push_back(iPoint);
+				//cout << "ray passing through u: " << iPoint << endl;
+			}
+		}
+		//cout << "Number of points: " << sightFlat->size() << endl;
+	}
 }
 	//////////////////////////////////////  end Test point on ray ////////////////////////////////////	
 
+void EpipolarLinesTest(cv::Mat top, cv::Mat bottom){
+	
+//	int row = top.rows;
+//	int cols = top.cols;
+	cv::namedWindow("Matches",0);
+	cvNamedWindow("First Image",0);
+	cvNamedWindow("Second Image",0);
+	cv::Mat imageMatches;
+	//top = allImages[0];
+	//bottom = allImages[1];
+	//	cv::imshow("First Image", top);
+	//	cv::imshow("Second Image", bottom);
+	drawEpipolarLines(top, bottom, imageMatches);
 
+	//Show Images
+
+	cv::imshow("Matches",imageMatches);
+
+	//cvResizeWindow("First Image",top.rows,top.cols);
+	//cvResizeWindow("Second Image",bottom.rows,bottom.cols);
+	cv::imshow("First Image", top);
+	cv::imshow("Second Image", bottom);
+	cv::waitKey(0);               
+}
 	

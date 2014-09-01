@@ -1,3 +1,6 @@
+#ifndef CV_HEADERS_H
+#define CV_HEADERS_H
+
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/core_c.h>
 #include <opencv2/core/core.hpp>
@@ -16,6 +19,6 @@
 
 
 //using namespace cv;
-
+#endif
   
   

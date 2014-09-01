@@ -3,6 +3,8 @@
 * 
 */
 
+#ifndef STANDARD_HEADERS_H
+#define STANDARD_HEADERS_H
 
 #include <math.h>
 #include <string>
@@ -16,4 +18,4 @@
 #define PId 180
 
 using namespace std;
-
+#endif

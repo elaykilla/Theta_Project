@@ -1,13 +1,13 @@
 /*
-* @author: ELay Maiga
-* This class contains all the methods related to calculating coordinates and making projections
-* from 2D to 3D or vice-versa.
-*/
+ * @author: ELay Maiga
+ * This class contains all the methods related to calculating coordinates and making projections
+ * from 2D to 3D or vice-versa.
+ */
 
-#include "standard_headers.hpp"
-#include "cv_headers.hpp"
-#include "pcl_headers.hpp"
-#include "boost_headers.hpp"
+//#include "standard_headers.hpp"
+//#include "cv_headers.hpp"
+//#include "pcl_headers.hpp"
+//#include "boost_headers.hpp"
 
 #include"MathCalcs.hpp"
 #include"OcvManip.hpp"
@@ -29,8 +29,41 @@ const double theta1 = PI;
 
 bool update;
 /************************************************* Setup **************************************************/
-void setupImageAndClouds(string name, vector<cv::Mat> &images, vector<PointCloud<PointXYZRGB>::Ptr> &cloud){
+//void initOptions(agrv,argv){
+//	while((c=getopt(argc,argv))!=-1){
+//		switch (c){
+//			case 'init'
+//			
+//		}
+//	}
+//}
 
+void setupClouds(string name, vector<cv::Mat> &images, vector<PointCloud<PointXYZRGB>::Ptr> &allPtClouds){
+	//cout << "k: " << k << endl;
+	cv::Mat ori;
+	double xc,yc,zc;
+	PointCloud<PointXYZRGB>::Ptr cloud (new PointCloud<PointXYZRGB>);
+
+	for(int k=0;k<nb_images;k++){
+		ori = images[k];
+		//loadImagei(name,k+1,ori);
+		//allImages[k] = ori;
+		//cout << "width: " << allImages[k].cols << endl;
+		//cout << "Height: " << allImages[k].rows << endl;
+		//Verify image has content
+		if(!ori.data){
+			cout << "Input image was not loaded, please verify: " << name << k <<".jpg" << endl;
+			return ;
+		}
+
+		//Get the center of the Kth sphere in World Coordinates
+		sphereCenter(alpha, k, dist_c, xc, zc);
+
+		//Create Sphere from Equirectangular image and store in Point Cloud
+		yc=0;
+		cloud = EquiToSphere(ori, radius,xc,yc,zc);
+		allPtClouds[k] = cloud;	
+	}
 
 }
 
@@ -40,37 +73,22 @@ void setupImageAndClouds(string name, vector<cv::Mat> &images, vector<PointCloud
 
 /************************************************* End Setup ***********************************************/
 
-/************************************************ Visualizer **********************************************/
 
-
-/***********************************************End Visualizer ********************************************/
-//void visualize(visualization::PCLVisualizer viewer, PointCloud<PointXYZRGB>::Ptr &cloud, string cloudTag)  
-//    {  
-//        // prepare visualizer named "viewer"
-
-//        while (!viewer.wasStopped ())
-//        {
-//            viewer.spinOnce (100);
-//            // Get lock on the boolean update and check if cloud was updated
-//            //boost::mutex::scoped_lock updateLock(updateModelMutex);
-//            if(update)
-//            {
-//                if(!viewer.updatePointCloud(cloud, cloudTag))
-//                  viewer.addPointCloud(cloud);
-//                update = false;
-//            }
-//            //updateLock.unlock();
-
-//        }   
-//   }  
-
-
+void keyboardEventOccurred (const pcl::visualization::KeyboardEvent &event, void* viewer_void){
+	boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer = *static_cast<boost::shared_ptr<pcl::visualization::PCLVisualizer> *> (viewer_void);
+	if (event.getKeySym () == "n" && event.keyDown ())
+	{
+		std::cout << "n was pressed => changing viewing point" << std::endl;
+		viewer->removeAllPointClouds();
+		//viewer->addPointCloud(cloud,"keyboardId");
+	}
+}
 /***************************************************  Main  ***********************************************/
 int main(int argc, char** argv)
 {
 	//InitLog("load");
-	BOOST_LOG_TRIVIAL(trace) << "Main Function Has begun" <<endl;
-	
+	//BOOST_LOG_TRIVIAL(trace) << "Main Function Has begun" <<endl;
+
 	//clock_t t1;
 	//clock_t t;
 	//t = clock();
@@ -84,7 +102,7 @@ int main(int argc, char** argv)
 		cout << "Usage: load path_to_images/imagename" << endl;
 		return -1;
 	}
-	
+
 	//setupImageAndClouds(name,)
 	/********************************* Define parameters ***************************************/
 	//Define the constants that we will be using. 
@@ -93,18 +111,18 @@ int main(int argc, char** argv)
 	// - theta0 and theta1 represent min and max values of angle theta [0,PI]
 	// alpha the rotation angel between successive images
 
-	
+
 	//Math variables, point coordinates and angles
 	double theta,phi,x,y,z;
-	
+
 	//b,g,r color values of input image
 	float b,g,r;
-	
+
 	//empty color vector
 	cv::Vec3f color(0.0,0.0,0.0);
 	cv::Vec3b colorOri;
-	
-	
+
+
 	//Pcl point cloud for sphere
 	PointCloud<PointXYZRGB>::Ptr cloud (new PointCloud<PointXYZRGB>);
 	PointCloud<PointXYZRGB>::Ptr sight (new PointCloud<PointXYZRGB>);
@@ -113,29 +131,29 @@ int main(int argc, char** argv)
 	PointXYZRGB vPoint;
 	PointXYZRGB u;
 	PointXYZRGB v;
-	
+
 	//Sphere Centers are all defined in the XY plane because we do not rotate outside that plane
 	double xc,zc;
 	double yc = 0;
-	
-  	
-  
-  	//Setup 3D visualizer
+
+
+
+	//Setup 3D visualizer
 	visualization::PCLVisualizer viewer("3D viewer");
-	//visualization::CloudViewer cViewer ("Simple Cloud Viewer");
-//	//viewer.setBackgroundColor (0, 0, 0);
+	//	visualization::CloudViewer cViewer ("Simple Cloud Viewer");
+	//	//viewer.setBackgroundColor (0, 0, 0);
 
 
-	
+
 	//String names for line
 	ostringstream line;
-	
+
 	// Vectors for mats and pointClouds
 	vector<cv::Mat> allImages(nb_images);
 	vector<PointCloud<PointXYZRGB>::Ptr> allPtClouds(nb_images);
 	vector<PointCloud<PointXYZRGB>::Ptr> CTBPtClouds(3);
 	vector<PointCloud<PointXYZRGB>::Ptr> allVtClouds(nb_images);
-	
+
 	// cv::Mat for original and spherical image
 	cv::Mat ori,top,bottom;
 	//cvNamedWindow("Original",0);
@@ -143,35 +161,35 @@ int main(int argc, char** argv)
 
 	//cvNamedWindow("Keypoints 2D",0);
 
-	
+
 	//Number of lines to draw
 	int nbLines = 1000000;
 	int lnCount = 0;
 	/*********************************************** end Define parameters *************************************************/
-	
-	
+
+
 	//Loading images
 	//cv::Mat ori1, ori2, ori3;
-	
-	
-	
+
+
+
 	//Load first image to get size and data
 	int im_num = 0;
 	loadImagei(name,im_num+1,ori);
-	
+
 	//Verify image has content
 	if(!ori.data){
 		cout << "Input image was not loaded, please verify: " << argv[1] << im_num + 1 <<".jpg" << endl;
 		return -1;
 	}
 
-	
+
 	allImages[im_num] = ori;
 	sphereCenter(alpha, im_num, dist_c, xc, zc);
 	//cout << "xc: "<< xc << endl;
 	cloud = EquiToSphere(ori, radius,xc,yc,zc);
 
-	
+
 	allPtClouds[im_num] = cloud;
 	im_num++;
 	//recover cv::Mat props
@@ -181,24 +199,24 @@ int main(int argc, char** argv)
 	//cvResizeWindow("Original",rows,cols);
 	//cvNamedWindow("Keypoints 2D",0);
 	//imshow("Original",ori);
-	
+
 	//For testing
 	cv::Mat sph = cv::Mat::zeros(rows, cols, CV_8UC3);
 	//end for testing
-	
+
 	//loadImagei(name,3,ori2);
 	//loadImagei(name,4,ori3);
-	
+
 
 	/**************************************************** End of Initiate ************************************************/	
-	
+
 	//For testing in order not to load all images every time
 	int tempCount =atoi(argv[2]);
 	cout << "Images to be loaded: " << tempCount<< endl;
 
 	for(int k=im_num; k<tempCount; k++){
 		//cout << "k: " << k << endl;
-		loadImagei(name,k,ori);
+		loadImagei(name,k+1,ori);
 		allImages[k] = ori;
 		//cout << "width: " << allImages[k].cols << endl;
 		//cout << "Height: " << allImages[k].rows << endl;
@@ -210,40 +228,51 @@ int main(int argc, char** argv)
 
 		//Get the center of the Kth sphere in World Coordinates
 		sphereCenter(alpha, k, dist_c, xc, zc);
-		
+
 		//Create Sphere from Equirectangular image and store in Point Cloud
 		yc=0;
 		cloud = EquiToSphere(ori, radius,xc,yc,zc);
-		allPtClouds[k] = cloud;			
+		allPtClouds[k] = cloud;	
+
+		//Save the PCD files
+		ostringstream file;
+		file << "./theta_pcds/" ;
+		cloud->width = cols;
+		cloud->height = rows;
+		cloud->points.resize(cols*rows);
+		cloud->is_dense = true;
+		file << name <<k << ".pcd"; 
+		String s = file.str();
+		io::savePCDFileASCII(s,*cloud);	
 
 	}//End of K loop of image
-	
-	//If Top and Bottom given
-//	string tb = argv[3];
-//	if(tb==""){
-//		//Load top and bottom Images
-//		loadImageTop(name,top,"top");
-//		xc = 0;		
-//		yc = dist_c;
-//		zc = 0;
-//		cloud = EquiToSphere(top, radius,xc,yc,zc);
-//		
-//		loadImageTop(name,bottom,"bottom");
-//		xc = 0;		
-//		yc = -dist_c;
-//		zc = 0;
-//		cloud = EquiToSphere(top, radius,xc,yc,zc);
-//		
-//	}
-	
-//t1 = clock() - t;
-//cout << "Time to execute firs part before Kmean: " << (float)t1/CLOCKS_PER_SEC <<endl;
 
-/******************************************* Test Zone **********************************************************************/
+	//If Top and Bottom given
+	//	string tb = argv[3];
+	//	if(tb==""){
+	//		//Load top and bottom Images
+	//		loadImageTop(name,top,"top");
+	//		xc = 0;		
+	//		yc = dist_c;
+	//		zc = 0;
+	//		cloud = EquiToSphere(top, radius,xc,yc,zc);
+	//		
+	//		loadImageTop(name,bottom,"bottom");
+	//		xc = 0;		
+	//		yc = -dist_c;
+	//		zc = 0;
+	//		cloud = EquiToSphere(top, radius,xc,yc,zc);
+	//		
+	//	}
+
+	//t1 = clock() - t;
+	//cout << "Time to execute firs part before Kmean: " << (float)t1/CLOCKS_PER_SEC <<endl;
+
+	/******************************************* Test Zone **********************************************************************/
 	//=====================Testing space variables==================================//
 	cloud = allPtClouds[0];
 	ori = allImages[0];
-	 
+
 	int nbPoints = 10;
 	vector<PointXYZRGB> points;
 	int m = 0;
@@ -254,7 +283,7 @@ int main(int argc, char** argv)
 	o.y = 0;
 	o.z = 0;
 
-	
+
 	//Set u to anywhere in the sphere and v any direction
 	u.x = 0;
 	u.y = 0;
@@ -263,8 +292,8 @@ int main(int argc, char** argv)
 	v.y = 0;
 	v.z = -0.3;
 
-	
-	
+
+
 	double step = 2*radius/nbPoints;
 	iPoint.x = 0;
 	iPoint.z = 0;
@@ -272,117 +301,119 @@ int main(int argc, char** argv)
 	v.r = 255;
 	ikm.g = 255;
 	vector<PointXYZRGB> linep(50);
-	
-	
+
+
 	// Project to Sphere test 
-//	projectToSphereTest(nbPoints,step,sight);
-	
+	//	projectToSphereTest(nbPoints,step,sight);
+
 
 
 
 	//Test of get plane function and project to Sphere with this plane
-//	getPlaneAndProjectToSphere(PointXYZRGB u, PointXYZRGB v, PointCloud<PointXYZRGB>::Ptr sight)
+	//	getPlaneAndProjectToSphere(PointXYZRGB u, PointXYZRGB v, PointCloud<PointXYZRGB>::Ptr sight)
 
 
-	
+
 	//Test of projection with Angle from 1 point
-//	projectionWithAngleFromOnePointTest(1,radius);
+	//	projectionWithAngleFromOnePointTest(1,radius);
 
 	//Test of closest Direction
-//	closestImDirectionTest(alpha,20);
+	//	closestImDirectionTest(alpha,20);
 
 
-		/////////////////////////////// end Test of viewing angle origin //////////////////////////////////
-//	viewingAngleOriginTest( u,  v, radius,  rows, cols,cloud, sightFlat);
+	/////////////////////////////// end Test of viewing angle origin //////////////////////////////////
+	//	viewingAngleOriginTest( u,  v, radius,  rows, cols,cloud, sightFlat);
 	//Viewing angles
 	///////////////////////////////////////  Test point on ray ////////////////////////////////////////
-	iPoint.x = 0;
-	iPoint.y = 0;
-	iPoint.z = 0;
-	
-	o.r = o.g = o.b = 255;
-	sight->points.push_back(u);
-	//cout << "Ipoint on Ray: " << isOnRay(o,u,v) << endl;
-	//cout << "Ipoint on Ray: " << isCloseToRayCube(o,u,v,0) << endl;
-	
-	//for all the pt clouds converted
-	
-	for(int m=0;m<tempCount;m++){
-		//Get the sphere center of projection
-		sphereCenter(alpha, m, dist_c, xc, zc);
-		o.x = xc;
-		o.z = zc;
-		cloud = allPtClouds[m];
-		for(int n=0;n<cloud->size();n++){
-			iPoint = cloud->points[n];
-		
+	//	iPoint.x = 0;
+	//	iPoint.y = 0;
+	//	iPoint.z = 0;
+	//	
+	//	o.r = o.g = o.b = 255;
+	//	sight->points.push_back(u);
+	//	//cout << "Ipoint on Ray: " << isOnRay(o,u,v) << endl;
+	//	//cout << "Ipoint on Ray: " << isCloseToRayCube(o,u,v,0) << endl;
+	//	
+	//	//for all the pt clouds converted
+	//	
+	//	for(int m=0;m<tempCount;m++){
+	//		//Get the sphere center of projection
+	//		sphereCenter(alpha, m, dist_c, xc, zc);
+	//		o.x = xc;
+	//		o.z = zc;
+	//		cloud = allPtClouds[m];
+	//		for(int n=0;n<cloud->size();n++){
+	//			iPoint = cloud->points[n];
+	//		
 
-			if(isCloseToRayCube(u,o,iPoint,.9)){
-				sightFlat->points.push_back(iPoint);
-				//cout << "ray passing through u: " << iPoint << endl;
-			}
-		}
-		//cout << "Number of points: " << sightFlat->size() << endl;
-	}
-	
-	//for Top and Bottom
-	
-	
-	
+	//			if(isCloseToRayCube(u,o,iPoint,.9)){
+	//				sightFlat->points.push_back(iPoint);
+	//				//cout << "ray passing through u: " << iPoint << endl;
+	//			}
+	//		}
+	//		//cout << "Number of points: " << sightFlat->size() << endl;
+	//	}
+	//	
+	//	//for Top and Bottom
 	//////////////////////////////////////  end Test point on ray ////////////////////////////////////
-/******************************************* End of Test Zone ***************************************************************/
 
-// Display point cloud 
-	//cloud->width=50;
-	//cloud->height=50;
-	
-	
+	//Test of Epipolar Lines
+	//EpipolarLinesTest(allImages[0],allImages[1]); 
+
+
+	/******************************************* End of Test Zone ***************************************************************/
+
 
 	//cvResizeWindow("Keypoints 2D",rows,cols);
 
-	
-	
-	//cViewer.showCloud (sightFlat);
+
+
+	//	cViewer.showCloud (allPtClouds[0]);
+	//	cViewer.showCloud (sightFlat);
 	//cViewer.showCloud(sightFlat);
 	//viewer.addPointCloud(sightFlat, "Sphere");
 
-//	viewer.addPointCloud(sight, "Sphere");
+	//	viewer.addPointCloud(sight, "Sphere");
 	//viewer.addPointCloud(sight, "Sphere1");
-	
+
 	viewer.addPointCloud(allPtClouds[0], "Sphere");
-	viewer.addPointCloud(allPtClouds[1], "Sphere1");
-//	viewer.addPointCloud(allPtClouds[2], "Sphere2");
-//	viewer.addPointCloud(allPtClouds[3], "Sphere3");
+	//	viewer.addPointCloud(allPtClouds[1], "Sphere1");
+	//	viewer.addPointCloud(allPtClouds[2], "Sphere2");
+	//	viewer.addPointCloud(allPtClouds[3], "Sphere3");
 	//imshow("Original",allImages[23]);
-  	
+
 	viewer.addCoordinateSystem (radius);
 	viewer.setPointCloudRenderingProperties (visualization::PCL_VISUALIZER_POINT_SIZE, 1, "Sphere");
+	viewer.registerKeyboardCallback (keyboardEventOccurred, (void*)&viewer);
 	while (!viewer.wasStopped ()){
-	// This seems to cause trouble when having cloud viewer and viewr running
+		// This seems to cause trouble when having cloud viewer and viewr running
 		//cv::imshow("Keypoints 2D" , sightMat);
 		viewer.spinOnce (100);
-		
+
 		//cv::waitKey(0);
 		boost::this_thread::sleep (boost::posix_time::microseconds (10000));
-	  }
-	
-	
+	}
+
 	//close viewer
 
-	
+
 	//get keypoints on 2D image 
-	
+
 	//vector<cv::KeyPoint> keypoints;
 	//keypoints = cv::get2DKeypoints(ori);
-	
+
 	//cv::drawKeypoints( ori, keypoints, ori, Scalar::all(-1), DrawMatchesFlags::DEFAULT );
 	//cv::imshow("Keypoints 2D" , ori);
 	//cv::imshow("Keypoints 2D" , sightMat);
-	
+
 	//cv::waitKey(0);
 
 
-	 
+
 	return 0;
 }
+
+
+
+
 

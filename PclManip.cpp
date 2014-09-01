@@ -4,10 +4,8 @@
 * from 2D to 3D or vice-versa.
 */
 
-#ifndef PclManip
-#define PclMnip
 
-#include"MathCalcs.hpp"
+
 #include"PclManip.hpp"
 //#include "boost_headers.hpp"
 
@@ -328,8 +326,23 @@ void multiKMeanValue(vector<PointXYZRGB> points, int id, int nbThreads, PointClo
 	return;
 }
 
+//void keyboardEventOccurred (const pcl::visualization::KeyboardEvent &event, void* viewer_void){
+//  boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer = *static_cast<boost::shared_ptr<pcl::visualization::PCLVisualizer> *> (viewer_void);
+//  if (event.getKeySym () == "n" && event.keyDown ())
+//  {
+//    std::cout << "n was pressed => removing all text" << std::endl;
+
+////    char str[512];
+////    for (unsigned int i = 0; i < text_id; ++i)
+////    {
+////      sprintf (str, "text#%03d", i);
+////      viewer->removeShape(str);
+////    }
+////    text_id = 0;
+//  }
+//}
+
 //void testfunction(){
 //	cout << "test function called" << endl;
 //	return;
 //}
-#endif

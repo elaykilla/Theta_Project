@@ -18,7 +18,7 @@ link_directories(${Boost_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS} )
 
 
-add_executable( load load.cpp )
+add_executable( load load.cpp MathCalcs.cpp OcvManip.cpp PclManip.cpp )
 #add_executable( test test.cpp )
-target_link_libraries( load ${PCL_LIBRARIES} ${OpenCV_LIBS} ${Boost_LIBRARIES})
+target_link_libraries( load -lpthread ${PCL_LIBRARIES} ${OpenCV_LIBS} ${Boost_LIBRARIES})
 #target_link_libraries( test ${PCL_LIBRARIES} ${OpenCV_LIBS} )
