@@ -35,6 +35,10 @@ PointCloud<PointWithScale>::Ptr get3DKepoints(PointCloud<PointXYZRGB>::Ptr point
 */
 PointCloud<PointXYZRGB>::Ptr EquiToSphere(cv::Mat ori, double radius, double xc, double yc, double zc);
 
+/**
+
+*/
+void sphereToEqui(PointCloud<PointXYZRGB>::Ptr sphere, double r, int rows, int cols, cv::Mat &image);
 
 /**
 *This function takes an input a PointCloud of points on a Sphere (not necessarily the full sphere) and returns a PointCloud of 
@@ -64,6 +68,12 @@ void kMeanValue(PointXYZRGB &u, PointCloud<PointXYZRGB>::Ptr &cloud, PointCloud<
 * 
 */
 void multiKMeanValue(vector<PointXYZRGB> points, int id, int nbThreads, PointCloud<PointXYZRGB>::Ptr cloud,PointCloud<PointXYZRGB>::Ptr &outCloud, int k );
+
+
+void matchingSphere(PointCloud<PointXYZRGB>::Ptr firstCloud, PointCloud<PointXYZRGB>::Ptr secondCloud);
+//Given 2 point clouds representing spheric images taken from a distance d, this function interpolates and returns the cloud for a position betwee 0 and d
+PointCloud<PointXYZRGB>::Ptr sphereInterpolate(PointCloud<PointXYZRGB>::Ptr firstCloud, PointCloud<PointXYZRGB>::Ptr secondCloud, double dist, double pos);
+
 
 //void testfunction(){
 //	cout << "test function called" << endl;

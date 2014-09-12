@@ -35,14 +35,36 @@ double dotProduct(PointXYZRGB u, PointXYZRGB v);
 */
 bool inInterval(double u, double a, double b);
 
+
 /**
-* Returns the euclidian distanc between 2 points
+* returns weather or not an angle is between 2 angles 
+*/
+bool inBetweenAngles(double angle, double angle_min, double angle_max);
+
+/**
+* Returns the euclidian distance between 2 points
 */
 double distanceP(PointXYZRGB p1,PointXYZRGB p2);
+
+/**
+ * Given a list of points this function returns the mean point in 2D
+ */
+cv::Point meanPoint(vector<cv::Point> points);
+
+/**
+ * Given a list of points this function returns the mean point in 3D
+ */
+PointXYZRGB meanPoint(vector<PointXYZRGB> points);
+
 /**
 * This function given a point u (x,y,z) returns the (x,y) coordinates of the projection onto the XY plane of u
 */
 void projectXY(PointXYZRGB u, double &x, double &y);
+
+/**
+* This function given a point u (x,y,z) returns the (x,z) coordinates of the projection onto the XZ plane of u
+*/
+void projectXZ(PointXYZRGB u, double &x, double &z);
 
 /** Given a point defined by it's (x,y,z) cartesian coordinates, this functions returns it's spherical (r,theta,phi) coordinates 
 *
@@ -53,20 +75,6 @@ void cartesian2Spheric(PointXYZRGB p, double r, double &theta, double &phi);
 * Inverse of previous function
 */
 void spheric2Cartesian(double r, double theta, double phi, PointXYZRGB &p);
-
-/**
-* Given a point p, this function verifies wether or not this point is on the ray with a direction of v and passing through o.
-*/
-bool isOnRay(PointXYZRGB p, PointXYZRGB o, PointXYZRGB v);
-
-/**
-* This function returns true if a ray from o in the direction of v passes within a cube of lenght c of point p
-* This function returns:
-	0: if the ray does not pass near the point
-	1: if the ray passes near the point in the same direction as v
-	-1: if the ray passes near the point in the opposite direction of v
-*/
-bool isCloseToRayCube(PointXYZRGB p, PointXYZRGB o, PointXYZRGB v, double c);
 
 
 
@@ -163,14 +171,17 @@ void getPlane(PointXYZRGB u, PointXYZRGB v, double r, PointXYZRGB &xmin, PointXY
 void samplePlane(PointXYZRGB u, PointXYZRGB v, vector<PointXYZRGB> &points , double radius, int ps);
 
 
-
-
+/**
+* This function, given an angle and the delta of angles between images (alpha) returns the closest image
+* in that direction
+*/
+int closestImDirectionOrigin(double angle, double alpha);
 
 /**
 * This function, given a point u, a direction v, and a delta of angles (in degrees) alpha, returns which image position is
 * closest to that of v
 */
-int closestImDirection(PointXYZRGB u, PointXYZRGB v, double alpha );
+int closestImDirection(PointXYZRGB u, double angle, double alpha, double r, double &newAngle );
 
 /**
 * Given a direction, a horizontal angel and a vertical angle, this function returns the maxium and minimum horizontal and vertical viewing angles from the origin
@@ -186,6 +197,20 @@ void viewingLimits(PointXYZRGB u, PointXYZRGB v, double v_angle, double h_angle,
 * This function, given double values ip and jp interpolates the pixel values from floor(ip,jp) and ceil(ip,jp). This is bilinear * projection
 */
 void pixelInterpolate(PointXYZRGB &u, int r, cv::Mat image);
+
+/**
+* Given a point p, this function verifies wether or not this point is on the ray with a direction of v and passing through o.
+*/
+bool isOnRay(PointXYZRGB p, PointXYZRGB o, PointXYZRGB v);
+
+/**
+* This function returns true if a ray from o in the direction of v passes within a cube of lenght c of point p
+* This function returns:
+	0: if the ray does not pass near the point
+	1: if the ray passes near the point in the same direction as v
+	-1: if the ray passes near the point in the opposite direction of v
+*/
+bool isCloseToRayCube(PointXYZRGB p, PointXYZRGB o, PointXYZRGB v, double c);
 
 
 

@@ -81,12 +81,13 @@ PointCloud<PointXYZRGB>::Ptr EquiToSphere(cv::Mat ori, double radius, double xc,
 	
 	//For each pixel value we calculate it's new cooridnates and assign the pixel value to those
 	//coordinates
-	for (int i = 0; i < rows; i++)
+	for (int i = 0; i < s.height; i++)
 	{
 		//j corresponds to the x and hence runs through the columns = width
-		for (int j = 0; j < cols; j++)
+		for (int j = 0; j < s.width; j++)
 		{
 			//Get the Spherical Coordinates on a sphere or radius centered in (0,0)
+			
 			sphereCoordinates(i,j,radius,rows,cols,x,y,z);
 			
 			//Put the coordinates in a PointXYZ and shift center to (xc,zc,0)
@@ -98,8 +99,8 @@ PointCloud<PointXYZRGB>::Ptr EquiToSphere(cv::Mat ori, double radius, double xc,
 			//Knowing the Center, apply rotation and translation from world Center
 			// The real life and PCL y and z are switched
 			
-			iPoint.x = ((x*xc/normt)-(y*zc/normt));// - xc;
-			iPoint.z = ((x*zc/normt) + (y*xc/normt));// - zc;
+			iPoint.x = ((x*xc/normt)-(z*zc/normt));// - xc;
+			iPoint.z = -((x*zc/normt) + (z*xc/normt));// - zc;
 			
 			//test pour 4
 //			iPoint.x = ((x*cos(alpha_rad))-(y*sin(alpha_rad)));
@@ -108,7 +109,7 @@ PointCloud<PointXYZRGB>::Ptr EquiToSphere(cv::Mat ori, double radius, double xc,
 //			if(rand()%10000<1){
 //				cout << "xp: " << xp << endl;
 //			}
-			iPoint.y = z;
+			iPoint.y = y;
 				
 				
 			//Put the coordinates of the vector directed from iPoint to Sc(xc,zc,0)
@@ -121,13 +122,55 @@ PointCloud<PointXYZRGB>::Ptr EquiToSphere(cv::Mat ori, double radius, double xc,
 		       	iPoint.b = iVect.b = colorOri[0];
 			iPoint.g = iVect.g = colorOri[1];
 			iPoint.r = iVect.r = colorOri[2];			
-			cloud->points.push_back(iPoint);	
+			cloud->points.push_back(iPoint);
+			//cloud->points+=iPoint;	
 //			vectorCloud->points.push_back(iVect);		       						
 		}
 		
 	}
 	
+	cloud->width = cols;
+	cloud->height = rows;
 	return cloud;
+}
+
+
+/**
+* This function is the inverse of the previous function
+*/
+void sphereToEqui(PointCloud<PointXYZRGB>::Ptr sphere, double r, int rows, int cols, cv::Mat &image){
+	//image.resize(rows,cols);
+	PointXYZRGB p;
+//	PointXYZRGB n;
+	
+	
+	int i,j;
+//	for(int m=0;m<sphere->size();m++){
+//		p = sphere->points[m];
+//		pixelCoordinates(p.x,p.z,p.y,r,rows,cols,i,j);
+//		//cout << "(i,j):" << i << "," << j << endl;
+//		if(i<rows && j<cols){
+////			n = p;
+////			n.x = i;
+////			n.z = j;
+////			n.y = 0;
+//			//cout << "new point: " << n << endl;
+//			//result->points.push_back(n);
+//			cv::Vec3b color = image.at<cv::Vec3b>(cv::Point(i,j));
+//			image.at<cv::Vec3b>(i,j)[0] = p.b;
+//			image.at<cv::Vec3b>(i,j)[1] = p.g;
+//			image.at<cv::Vec3b>(i,j)[2] = p.r;
+//		}
+//	}
+
+	for (i=0;i<rows;i++){
+		for(j=0;j<cols;j++){
+			//cv::Vec3b color = image.at<cv::Vec3b>(cv::Point(i,j));
+			image.at<cv::Vec3b>(i,j)[0] = p.b;
+			image.at<cv::Vec3b>(i,j)[1] = p.g;
+			image.at<cv::Vec3b>(i,j)[2] = p.r;
+		}
+	}
 }
 
 /**
@@ -135,7 +178,7 @@ PointCloud<PointXYZRGB>::Ptr EquiToSphere(cv::Mat ori, double radius, double xc,
 *those points with x= i and y = j being the pixel coordinates. It also takes the radius and original input image
 * 
 */
- void sphere2Equi(cv::Mat ori, double r,PointCloud<PointXYZRGB>::Ptr spherePts, PointCloud<PointXYZRGB>::Ptr &result){
+ void sphere2EquiCloud(cv::Mat ori, double r,PointCloud<PointXYZRGB>::Ptr spherePts, PointCloud<PointXYZRGB>::Ptr &result){
 	double rows = ori.rows;
 	double cols = ori.cols;
 	
@@ -326,6 +369,13 @@ void multiKMeanValue(vector<PointXYZRGB> points, int id, int nbThreads, PointClo
 	return;
 }
 
+
+//PointCloud<PointXYZRGB>::Ptr  sphereInterpolate(PointCloud<PointXYZRGB>::Ptr firstCloud, PointCloud<PointXYZRGB>::Ptr secondCloud, double dist, double pos){
+//	
+//	PointCloud<PointXYZRGB>::Ptr;
+
+
+//}
 //void keyboardEventOccurred (const pcl::visualization::KeyboardEvent &event, void* viewer_void){
 //  boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer = *static_cast<boost::shared_ptr<pcl::visualization::PCLVisualizer> *> (viewer_void);
 //  if (event.getKeySym () == "n" && event.keyDown ())

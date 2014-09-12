@@ -33,8 +33,15 @@ void loadImageTop(string name, cv::Mat &image, string topOrbottom);
 */
 vector<cv::KeyPoint> get2DKeypoints(cv::Mat image);
 
+
+vector<vector<cv::DMatch> > getMatches(cv::Mat image1, cv::Mat image2);
 /**
 * This function takes 2 input images, finds the keypoints, matches them then draws Epipolar lines on both images
 */
 void drawEpipolarLines(Mat &image1, Mat &image2, Mat &imageMatches);
+
+/** 
+* Function to interpolate between 2 images where the center has been translated 
+*/
+cv::Mat linearInterpolate(cv::Mat image1, cv::Mat image2, double dist, double pos);
 #endif

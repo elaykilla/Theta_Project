@@ -12,7 +12,7 @@
 #include"MathCalcs.hpp"
 #include"OcvManip.hpp"
 #include"PclManip.hpp"
-//#include"test.hpp"
+#include"test.hpp"
 
 
 //Constants for images
@@ -21,7 +21,7 @@ const double nb_images = 24;
 const double dist_c = 100;
 
 
-const double radius = .006;
+const double radius = 1;
 const double phi0 = 0.0;
 const double phi1 = 2*PI;
 const double theta0 = 0.0;
@@ -156,11 +156,6 @@ int main(int argc, char** argv)
 
 	// cv::Mat for original and spherical image
 	cv::Mat ori,top,bottom;
-	//cvNamedWindow("Original",0);
-	//cvNamedWindow("recalculated",0);
-
-	//cvNamedWindow("Keypoints 2D",0);
-
 
 	//Number of lines to draw
 	int nbLines = 1000000;
@@ -199,6 +194,7 @@ int main(int argc, char** argv)
 	//cvResizeWindow("Original",rows,cols);
 	//cvNamedWindow("Keypoints 2D",0);
 	//imshow("Original",ori);
+	cvNamedWindow("SightMat",0);
 
 	//For testing
 	cv::Mat sph = cv::Mat::zeros(rows, cols, CV_8UC3);
@@ -243,7 +239,7 @@ int main(int argc, char** argv)
 		cloud->is_dense = true;
 		file << name <<k << ".pcd"; 
 		String s = file.str();
-		io::savePCDFileASCII(s,*cloud);	
+		//io::savePCDFileASCII(s,*cloud);	
 
 	}//End of K loop of image
 
@@ -288,9 +284,9 @@ int main(int argc, char** argv)
 	u.x = 0;
 	u.y = 0;
 	u.z = 0;;
-	v.x = -0.4;
-	v.y = 0;
-	v.z = -0.3;
+	v.x = 1;
+	v.y = 1;
+	v.z = 0;
 
 
 
@@ -317,12 +313,10 @@ int main(int argc, char** argv)
 	//Test of projection with Angle from 1 point
 	//	projectionWithAngleFromOnePointTest(1,radius);
 
-	//Test of closest Direction
-	//	closestImDirectionTest(alpha,20);
 
 
 	/////////////////////////////// end Test of viewing angle origin //////////////////////////////////
-	//	viewingAngleOriginTest( u,  v, radius,  rows, cols,cloud, sightFlat);
+	//viewingAngleOriginTest( u,  v, radius,  rows, cols,cloud, sightFlat);
 	//Viewing angles
 	///////////////////////////////////////  Test point on ray ////////////////////////////////////////
 	//	iPoint.x = 0;
@@ -351,16 +345,94 @@ int main(int argc, char** argv)
 	//				//cout << "ray passing through u: " << iPoint << endl;
 	//			}
 	//		}
-	//		//cout << "Number of points: " << sightFlat->size() << endl;
+	//	
+		//cout << "Number of points: " << sightFlat->size() << endl;
 	//	}
 	//	
 	//	//for Top and Bottom
 	//////////////////////////////////////  end Test point on ray ////////////////////////////////////
 
 	//Test of Epipolar Lines
-	//EpipolarLinesTest(allImages[0],allImages[1]); 
+	//cv::Mat temp = cv::imread("template3.jpg",1);
+//	//sightFlat = EquiToSphere(temp, radius,xc,yc,zc);
+	
+	
+//	if(temp.data){
+//		EpipolarLinesTest(allImages[0],temp); 	
+//	}
+//	//Test of Angles
+//	o.x = 0;
+//	o.y = 0;
+//	o.z = 0;
+
+//	u.x = 0.8*radius;
+//	u.y = 0;
+//	u.z = 0.5*radius;
+
+//	double angle = 10;
+//	double newAngle;
+	//	cout << "Closest direction with angle from origin: " << angle << " is : " 
+	//	<< closestImDirectionOrigin (angle*PI/180, alpha) << endl;
+	//	
+	//	cout << "Closest direction with angle from u:" << u << "with angle :" << angle << " is: " 
+	//	<< closestImDirection (u,angle,alpha,radius,newAngle) << endl;
 
 
+	////////////Test of circular slits///////////////////////////
+//	double t,p;
+//	cout << "Beginning slit recovery " << endl;
+//	for(int angle=0;angle<360;angle++){
+//		int num = closestImDirection (u,angle,alpha,radius,newAngle);
+//		//cout << "New Angle: " << newAngle << endl;
+//		if(num>=tempCount){
+//			//cout << num << "too big to find" << endl;
+//			//break;
+//		}
+//		else{
+//			cloud = allPtClouds[num];
+
+//			for (int m=0;m<cloud->size();m++){
+//				iPoint = cloud->points[m];
+//				cartesian2Spheric(iPoint,radius,t,p);
+//				// t in degrees
+//				p *= 180/PI;
+////				cout << "New Angle: " << newAngle ;
+////				cout << "   theta for iPoint: " << t << endl;
+//				if(newAngle <= p && p<= newAngle+1){
+//				
+//					//testing different colors for the points
+////					if(num%3==0){
+////						iPoint.r = 255;
+////					}
+////					if(num%3==1){
+////						iPoint.b = 255;
+////					}
+////					if(num%3==2){
+////						iPoint.g = 255;
+////					}
+//					
+//					sightFlat->points.push_back(iPoint);
+//				}
+//			}
+//			//cout << "Finished point cloud number: " << num <<endl;
+//		}
+//	}
+//	cout << "ended slit recovery" << endl;
+//	
+////	ori.setTo(cv::Scalar(0,0,0));
+//	cv::Mat sightMat(ori.rows,ori.cols,ori.type());
+//	sightMat.setTo(cv::Scalar(0,0,0));
+////	cout << "Original: " <<ori.rows << ori.cols << ori.type() << endl;
+////	cout << "sightMat: " <<sightMat.rows << sightMat.cols << sightMat.type() << endl;
+//	sphereToEqui(sightFlat,radius,rows,cols,sightMat);
+//	cv::imshow("SightMat",sightMat);
+//	cv::waitKey();
+
+	////////////////////////////////////////////////////////////
+	
+	//3D Keypoints Test
+	PointCloud<PointWithScale>::Ptr sightFlat1;
+	threeDKeypointsTest(cloud,sightFlat1);
 	/******************************************* End of Test Zone ***************************************************************/
 
 
@@ -371,14 +443,14 @@ int main(int argc, char** argv)
 	//	cViewer.showCloud (allPtClouds[0]);
 	//	cViewer.showCloud (sightFlat);
 	//cViewer.showCloud(sightFlat);
-	//viewer.addPointCloud(sightFlat, "Sphere");
+	viewer.addPointCloud(sightFlat1, "Sphere");
 
 	//	viewer.addPointCloud(sight, "Sphere");
 	//viewer.addPointCloud(sight, "Sphere1");
 
-	viewer.addPointCloud(allPtClouds[0], "Sphere");
+	//viewer.addPointCloud(allPtClouds[0], "Sphere");
 	//	viewer.addPointCloud(allPtClouds[1], "Sphere1");
-	//	viewer.addPointCloud(allPtClouds[2], "Sphere2");
+		//viewer.addPointCloud(allPtClouds[2], "Sphere2");
 	//	viewer.addPointCloud(allPtClouds[3], "Sphere3");
 	//imshow("Original",allImages[23]);
 
@@ -405,13 +477,14 @@ int main(int argc, char** argv)
 	//cv::drawKeypoints( ori, keypoints, ori, Scalar::all(-1), DrawMatchesFlags::DEFAULT );
 	//cv::imshow("Keypoints 2D" , ori);
 	//cv::imshow("Keypoints 2D" , sightMat);
-
+	
 	//cv::waitKey(0);
 
 
 
 	return 0;
 }
+
 
 
 
