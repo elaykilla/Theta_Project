@@ -15,28 +15,27 @@
 *******************FLANN compatibility problem between OpenCv and PCL ***************************
 */
 
-PointCloud<PointWithScale>::Ptr get3DKepoints(PointCloud<PointXYZRGB>::Ptr points, float min_scale, int nr_octaves, int nr_scales_per_octave, float min_contrast) {
-
-	//the extracted keypoints
-	PointCloud<PointWithScale>::Ptr keypoints_out;
+void get3DKepoints(PointCloud<PointXYZRGB>::Ptr &points, float min_scale, int nr_octaves, int nr_scales_per_octave, float min_contrast, PointCloud<PointWithScale>::Ptr &keypoints_out) {
+	cout << "get3DKeypoints called with cloud: " << points->size() << endl;
 
 	SIFTKeypoint<PointXYZRGB, PointWithScale> sift_detect;
 
 	// Use a FLANN-based KdTree to perform neighborhood searches
 	search::KdTree<PointXYZRGB>::Ptr tree(new search::KdTree<PointXYZRGB> ());
 	sift_detect.setSearchMethod(tree);
-	
-	// Set the detection parameters
+//	
+//	// Set the detection parameters
 	sift_detect.setScales(min_scale, nr_octaves, nr_scales_per_octave);
 	sift_detect.setMinimumContrast(min_contrast);
-	
-	// Set the input
+//	
+//	// Set the input
 	sift_detect.setInputCloud(points);
+//	
+//	// Detect the keypoints and store them in "keypoints_out"
+	//sift_detect.compute(*keypoints_out);
 	
-	// Detect the keypoints and store them in "keypoints_out"
-	sift_detect.compute(*keypoints_out);
-	
-	return keypoints_out;
+	cout << "Number of keypoints found: " <<endl;
+	//return keypoints_out;
 }
 
 /**
@@ -98,10 +97,14 @@ PointCloud<PointXYZRGB>::Ptr EquiToSphere(cv::Mat ori, double radius, double xc,
 //			iPoint.y = y + zc;
 			//Knowing the Center, apply rotation and translation from world Center
 			// The real life and PCL y and z are switched
-			
-			iPoint.x = ((x*xc/normt)-(z*zc/normt));// - xc;
-			iPoint.z = -((x*zc/normt) + (z*xc/normt));// - zc;
-			
+			if(normt!=0){
+				iPoint.x = ((x*xc/normt)-(z*zc/normt));// - xc;
+				iPoint.z = -((x*zc/normt) + (z*xc/normt));// - zc;
+			}
+			else{
+				iPoint.x = x;// - xc;
+				iPoint.z = z;
+			}
 			//test pour 4
 //			iPoint.x = ((x*cos(alpha_rad))-(y*sin(alpha_rad)));
 //			iPoint.y = ((x*sin(alpha_rad)) + (y*cos(alpha_rad))) ;
@@ -370,12 +373,102 @@ void multiKMeanValue(vector<PointXYZRGB> points, int id, int nbThreads, PointClo
 }
 
 
-//PointCloud<PointXYZRGB>::Ptr  sphereInterpolate(PointCloud<PointXYZRGB>::Ptr firstCloud, PointCloud<PointXYZRGB>::Ptr secondCloud, double dist, double pos){
+PointCloud<PointXYZRGB>::Ptr  sphereInterpolate(cv::Mat image1, cv::Mat image2, double d, double pos){
 //	
-//	PointCloud<PointXYZRGB>::Ptr;
+	//Output point cloud
+	PointCloud<PointXYZRGB>::Ptr match_cloud(new PointCloud<PointXYZRGB>); 
+	//match_cloud->width = image1.cols;
+	//match_cloud->height = image1.rows;
+	
+	vector<cv::KeyPoint> keypoints1;
+	vector<cv::KeyPoint> keypoints2;
+	vector<cv::DMatch> matches;
+	
+	
+	//Compute Keypoints and matches 
+	getKeypointsAndMatches(image1,image2,keypoints1,keypoints2,matches);
+	
+	
+	//Convert images to pointClouds
+	PointCloud<PointXYZRGB>::Ptr cloud1 (new PointCloud<PointXYZRGB>);
+	PointCloud<PointXYZRGB>::Ptr cloud2 (new PointCloud<PointXYZRGB>);
+	cloud1 = EquiToSphere(image1, 1,0,0,0);
+	cloud2 = EquiToSphere(image2,1,0,0,0);
+	
+	PointXYZRGB p,p1,p2;
+	//Iterate through Keypoints and interpolate position in new image for each keypoint
+	for (std::vector<cv::DMatch>::const_iterator it= matches.begin();
+			it!= matches.end(); ++it) {
+
+//		// Get the position of left keypoints
+		float x1= keypoints1[it->queryIdx].pt.x;
+		float y1= keypoints1[it->queryIdx].pt.y;
+		
+		if(x1<cloud1->width & y1 < cloud1->height){
+			p1 = cloud1->at(round(x1),round(y1));
+			cout << "(x1,y1) in image1: " << p1 << endl;
+		}
+//		points1.push_back(cv::Point2f(x,y));
+//		// Get the position of right keypoints
+		float x2= keypoints2[it->trainIdx].pt.x;
+		float y2= keypoints2[it->trainIdx].pt.y;
+		if(x1<cloud1->width & y1 < cloud1->height){
+			p2 = cloud2->at(round(x2),round(y2));
+			cout << "(x2,y2) in image2: " << p2 << endl;
+		}	
+//		points2.push_back(cv::Point2f(x,y));
+//		
+		p.x = (1/d) * (p1.x* (d-pos) + p2.x*pos);
+		p.y = (1/d) * (p1.y* (d-pos) + p2.y*pos);
+		p.z = (1/d) * (p1.z* (d-pos) + p2.z*pos);
+		p.r = (1/d) * (p1.r* (d-pos) + p2.r*pos);
+		p.b = (1/d) * (p1.b* (d-pos) + p2.b*pos);
+		p.g = (1/d) * (p1.g* (d-pos) + p2.g*pos);
+		
+		match_cloud->points.push_back(p);
+		
+	}
+
+	return match_cloud;
 
 
-//}
+}
+
+
+cv::Mat imageFromPcPlane(PointCloud<PointXYZRGB>::Ptr cloud,cv::Mat ori, int rows, int cols)
+{
+	cv::Mat output(rows, cols, ori.type());
+	PointXYZRGB p;
+	int istart, ifinish, jstart, jfinish;
+	
+	istart = -rows/2;
+	ifinish = rows/2;
+	jstart = -cols/2;
+	jfinish = cols/2;
+
+	for (int m=0; m<cloud->size();m++){
+		p= cloud->points[m];
+		int j = m/cols;
+		int i = m%cols;
+		
+		if(j<cols){
+			output.at<Vec3b>(i,j)[0] = p.b;
+			output.at<Vec3b>(i,j)[1] = p.g;
+			output.at<Vec3b>(i,j)[2] = p.r;
+		}
+	}	
+//	for(int i=istart; i<ifinish; i++){
+//		int ci = i + rows/2;
+//		for(int j=jstart; j<jfinish;j++){
+//			int cj = j + cols/2;
+//			output.at<cv::Vec3b>(i,j)[]
+//		}
+//	}
+	return output;
+	
+	
+
+}
 //void keyboardEventOccurred (const pcl::visualization::KeyboardEvent &event, void* viewer_void){
 //  boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer = *static_cast<boost::shared_ptr<pcl::visualization::PCLVisualizer> *> (viewer_void);
 //  if (event.getKeySym () == "n" && event.keyDown ())

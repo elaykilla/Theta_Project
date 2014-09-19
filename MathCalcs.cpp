@@ -58,6 +58,43 @@ bool inBetweenAngles(double angle, double min_angle, double max_angle){
 	}
 }
 
+
+void rotateX(PointXYZRGB &p, double alpha)
+{
+
+	double x,y,z;
+	x = p.x;
+	y = p.y;
+	z = p.z;
+	
+	p.y = cos(alpha)*y - sin(alpha)*z;
+	p.z = sin(alpha)*y + cos(alpha)*z;
+}
+
+
+void rotateY(PointXYZRGB &p, double phi)
+{
+
+	double x,y,z;
+	x = p.x;
+	y = p.y;
+	z = p.z;
+	
+	p.x = cos(phi)*x + sin(phi)*z;
+	p.z = -sin(phi)*x + cos(phi)*z;
+}
+
+void rotateZ(PointXYZRGB &p, double theta)
+{
+
+	double x,y,z;
+	x = p.x;
+	y = p.y;
+	z = p.z;
+	
+	p.x = cos(theta)*x - sin(theta)*y;
+	p.y = sin(theta)*x + cos(theta)*y;
+}
 /**
  * Returns the euclidian distanc between 2 points
  */

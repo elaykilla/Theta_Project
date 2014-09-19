@@ -194,7 +194,8 @@ int main(int argc, char** argv)
 	//cvResizeWindow("Original",rows,cols);
 	//cvNamedWindow("Keypoints 2D",0);
 	//imshow("Original",ori);
-	cvNamedWindow("SightMat",0);
+	//cvNamedWindow("Original",0);
+	//cvNamedWindow("SightMat",0);
 
 	//For testing
 	cv::Mat sph = cv::Mat::zeros(rows, cols, CV_8UC3);
@@ -284,7 +285,7 @@ int main(int argc, char** argv)
 	u.x = 0;
 	u.y = 0;
 	u.z = 0;;
-	v.x = 1;
+	v.x = 0;
 	v.y = 1;
 	v.z = 0;
 
@@ -317,6 +318,11 @@ int main(int argc, char** argv)
 
 	/////////////////////////////// end Test of viewing angle origin //////////////////////////////////
 	//viewingAngleOriginTest( u,  v, radius,  rows, cols,cloud, sightFlat);
+//	int trows = round(2048*70/360);
+//	int tcols = round(1024*57/180);
+//	sph = imageFromPcPlane(sightFlat,allImages[0],trows, tcols);
+//	cv::imshow("SightMat" , sph);
+//	cv::waitKey(0);
 	//Viewing angles
 	///////////////////////////////////////  Test point on ray ////////////////////////////////////////
 	//	iPoint.x = 0;
@@ -351,6 +357,29 @@ int main(int argc, char** argv)
 	//	
 	//	//for Top and Bottom
 	//////////////////////////////////////  end Test point on ray ////////////////////////////////////
+
+
+	//Test of 2D keypoints and Matches
+	//KeyPointAndMatchesTest(allImages[0], allImages[1]);
+	
+	//Test of image interpolation
+//	ori = cv::imread("OmniImage1.jpg",1);
+//	cv::Mat templ = cv::imread("template.png",1);
+//	interpolate2DTest(allImages[0], allImages[1], 8, 4);
+	
+	//Test of sphereInterpolate
+	//sightFlat = sphereInterpolate(allImages[0], allImages[1], 8, 4);
+	
+//	//Test of optical flow 
+	//optFlowMapTest(allImages[0], allImages[1]);
+	
+	
+//	//Test of Delaunay Triangles
+	delaunayTriangleTest(allImages[0], "T1");
+	delaunayTriangleTest(allImages[1], "T2");
+	
+	delaunayMatchedTrianglesTest(allImages[0], allImages[1]);
+	cv::waitKey(0);
 
 	//Test of Epipolar Lines
 	//cv::Mat temp = cv::imread("template3.jpg",1);
@@ -428,11 +457,21 @@ int main(int argc, char** argv)
 //	cv::imshow("SightMat",sightMat);
 //	cv::waitKey();
 
-	////////////////////////////////////////////////////////////
+	////////////Test of circular slits///////////////////////////
 	
 	//3D Keypoints Test
-	PointCloud<PointWithScale>::Ptr sightFlat1;
-	threeDKeypointsTest(cloud,sightFlat1);
+//	PointCloud<PointWithScale>::Ptr sightFlat1;
+//	threeDKeypointsTest(cloud,sightFlat1);
+//	PointWithScale pws;
+//	PointXYZRGB pxy;
+	//cout << "OutCloud size: " << sightFlat1->size() << endl;
+//	for(int m=0;m<sightFlat1->size();m++){
+//		pws = sightFlat1->points[m];
+//		pxy.x = pws.x;
+//		pxy.y =  pws.y;
+//		pxy.z = pws.z;
+//		sightFlat->points.push_back(pxy);
+//	}
 	/******************************************* End of Test Zone ***************************************************************/
 
 
@@ -443,7 +482,7 @@ int main(int argc, char** argv)
 	//	cViewer.showCloud (allPtClouds[0]);
 	//	cViewer.showCloud (sightFlat);
 	//cViewer.showCloud(sightFlat);
-	viewer.addPointCloud(sightFlat1, "Sphere");
+	viewer.addPointCloud(sightFlat, "Sphere");
 
 	//	viewer.addPointCloud(sight, "Sphere");
 	//viewer.addPointCloud(sight, "Sphere1");
@@ -452,7 +491,7 @@ int main(int argc, char** argv)
 	//	viewer.addPointCloud(allPtClouds[1], "Sphere1");
 		//viewer.addPointCloud(allPtClouds[2], "Sphere2");
 	//	viewer.addPointCloud(allPtClouds[3], "Sphere3");
-	//imshow("Original",allImages[23]);
+	imshow("Original",allImages[0]);
 
 	viewer.addCoordinateSystem (radius);
 	viewer.setPointCloudRenderingProperties (visualization::PCL_VISUALIZER_POINT_SIZE, 1, "Sphere");

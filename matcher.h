@@ -270,6 +270,9 @@ class RobustMatcher {
 			cv::Mat fundemental= ransacTest(symMatches, keypoints1, keypoints2, matches);
 
 			// return the found fundemental matrix
+			
+			//Put only matches left
+			matches = symMatches;
 			return fundemental;
 		}
 };

@@ -7,6 +7,7 @@
 #define STANDARD_HEADERS_H
 
 #include <math.h>
+#include <algorithm>
 #include <string>
 #include <sstream>
 

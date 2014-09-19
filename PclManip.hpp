@@ -8,6 +8,7 @@
 #define PclMnip
 
 #include"MathCalcs.hpp"
+#include"OcvManip.hpp"
 //#include "boost_headers.hpp"
 
 /***************************************************Image Manipulation PCL***********************************************/
@@ -16,7 +17,7 @@
 *******************FLANN compatibility problem between OpenCv and PCL ***************************
 */
 
-PointCloud<PointWithScale>::Ptr get3DKepoints(PointCloud<PointXYZRGB>::Ptr points, float min_scale, int nr_octaves, int nr_scales_per_octave, float min_contrast);
+void get3DKepoints(PointCloud<PointXYZRGB>::Ptr &points, float min_scale, int nr_octaves, int nr_scales_per_octave, float min_contrast, PointCloud<PointWithScale>::Ptr &keypoints_out);
 
 
 /**
@@ -45,7 +46,7 @@ void sphereToEqui(PointCloud<PointXYZRGB>::Ptr sphere, double r, int rows, int c
 *those points with x= i and y = j being the pixel coordinates. It also takes the radius and original input image
 * 
 */
- void sphere2Equi(cv::Mat ori, double r,PointCloud<PointXYZRGB>::Ptr spherePts, PointCloud<PointXYZRGB>::Ptr &result);
+void sphere2Equi(cv::Mat ori, double r,PointCloud<PointXYZRGB>::Ptr spherePts, PointCloud<PointXYZRGB>::Ptr &result);
 
 
 /**
@@ -71,10 +72,15 @@ void multiKMeanValue(vector<PointXYZRGB> points, int id, int nbThreads, PointClo
 
 
 void matchingSphere(PointCloud<PointXYZRGB>::Ptr firstCloud, PointCloud<PointXYZRGB>::Ptr secondCloud);
+
 //Given 2 point clouds representing spheric images taken from a distance d, this function interpolates and returns the cloud for a position betwee 0 and d
-PointCloud<PointXYZRGB>::Ptr sphereInterpolate(PointCloud<PointXYZRGB>::Ptr firstCloud, PointCloud<PointXYZRGB>::Ptr secondCloud, double dist, double pos);
+PointCloud<PointXYZRGB>::Ptr sphereInterpolate(cv::Mat image1, cv::Mat image2, double dist, double pos);
 
 
+/** 
+* Given a point cloud on a plane, representing an image, this function creates the CV mat corresponding to the given height and width
+*/
+cv::Mat imageFromPcPlane(PointCloud<PointXYZRGB>::Ptr cloud, cv::Mat ori, int height, int width);
 //void testfunction(){
 //	cout << "test function called" << endl;
 //	return;

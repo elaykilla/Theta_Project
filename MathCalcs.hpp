@@ -41,6 +41,23 @@ bool inInterval(double u, double a, double b);
 */
 bool inBetweenAngles(double angle, double angle_min, double angle_max);
 
+
+/** 
+Rotate a point by an angle theta around the X axis
+*/
+void rotateX(PointXYZRGB &p, double alpha);
+
+
+/** 
+Rotate a point by an angle theta around the X axis
+*/
+void rotateY(PointXYZRGB &p, double phi);
+
+/** 
+Rotate a point by an angle theta around the X axis
+*/
+void rotateZ(PointXYZRGB &p, double theta);
+
 /**
 * Returns the euclidian distance between 2 points
 */

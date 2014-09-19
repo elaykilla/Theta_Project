@@ -258,7 +258,7 @@ void closestDirectionTest(double alpha, double angle){
 
 //////////////////////////////////Test of viewing angle origin ////////////////////////////////////
 void viewingAngleOriginTest(PointXYZRGB u, PointXYZRGB v, double radius, int rows, int cols,PointCloud<PointXYZRGB>::Ptr &cloud, PointCloud<PointXYZRGB>::Ptr &sightFlat){
-	//Viewing angles
+	//Viewing angles theta is on the vertical angle and phi on the horizontal angle with phi in [0,2PI]
 	double theta,phi;
 	double h_angle = 57.;
 	double v_angle = 70.;
@@ -272,6 +272,8 @@ void viewingAngleOriginTest(PointXYZRGB u, PointXYZRGB v, double radius, int row
 	vector<PointXYZRGB> liner(50);
 	vector<PointXYZRGB> linep(50);
 	PointXYZRGB iPoint,pro;
+	cv::Mat sph = cv::Mat::zeros(rows, cols, CV_8UC3);
+	cvNamedWindow("sph",0);
 
 	double theta_min,theta_max,phi_min,phi_max;
 	PointXYZRGB lbot,rbot,ltop,rtop;
@@ -376,38 +378,75 @@ void viewingAngleOriginTest(PointXYZRGB u, PointXYZRGB v, double radius, int row
 	//	u.z = (ltop.z + rbot.z)/2;
 
 	bool projected;
+	double theta_prime, phi_prime;
 	
 	u = project2Sphere(u,v,radius,projected);
+	cartesian2Spheric(u,radius,theta_prime,phi_prime);
 	PointXYZRGB lbotpro = nonOrthogonalProjection2Plane(lbot,lbot,u,v);
+	rotateZ(lbotpro, theta_prime);
+	rotateX(lbotpro, phi_prime);
+	
+	double h = v_angle * rows/180;
+	double w = h_angle * rows/180;
+	
+	double xmin, ymin, xmax, ymax;
+	xmin = rows; 
+	ymin = cols;
+	xmax = -rows;
+	ymax = -cols;
 	if(v.z==0){
 		//for(int n=0;n<cloud->size();n++){
 		for(int j=0;j<cloud->width;j++){
 			for(int i=0;i<cloud->height;i++){
-			iPoint = cloud->at(j,i);
+				iPoint = cloud->at(j,i);
 
-			cartesian2Spheric(iPoint,radius,theta,phi);
-			//		if(n%4000==0){
-			//			cout << "theta: " << theta*180/PI << endl;
-			//		}
-			if(inInterval(theta,theta_min,theta_max) & inInterval(phi,phi_max,phi_min)){
-				//sightFlat->points.push_back(iPoint);
-				pro = nonOrthogonalProjection2Plane(iPoint,iPoint,u,v);
-				pro.x -= lbotpro.x;
-				pro.y -= lbotpro.y;
-				pro.z -= lbotpro.z;
-				//pixelCoordinates(iPoint.x, iPoint.y, iPoint.z, radius, rows, cols, i, j );
-				//			if(i<imin) imin = i;
-				//			if(i>imax) imax =i;
-				//			if(j<jmin) jmin =j;
-				//			if(j>jmax) jmax =j;
-				//			iPoint.x = i;
-				//			iPoint.z = j;
-				//			iPoint.y=0;
-				//			sight->points.push_back(iPoint);
-				sightFlat->points.push_back(pro);
+				cartesian2Spheric(iPoint,radius,theta,phi);
+				//		if(n%4000==0){
+				//			cout << "theta: " << theta*180/PI << endl;
+				//		}
+				if(inInterval(theta,theta_min,theta_max) & inInterval(phi,phi_max,phi_min)){
+					//sightFlat->points.push_back(iPoint);
+					pro = nonOrthogonalProjection2Plane(iPoint,iPoint,u,v);
+	//				double x = pro.x*cos(theta_prime)*cos(phi_prime) 
+	//					   -pro.y*sin(phi_prime)*cos(theta_prime) 
+	//					   + pro.z*sin(phi_prime);
+	//				double y = pro.x*sin(phi_prime)*cos(theta_prime) 
+	//					  + pro.y*cos(phi_prime)*cos(theta_prime) 
+	//					  - sin(theta)*pro.z;
+	//				double z = - pro.x*sin(theta_prime)*cos(phi_prime) 
+	//					   + pro.y*sin(theta_prime)*sin(phi_prime) 
+	//					   + pro.z*cos(theta_prime);
+				
+	//				pro.x = x;
+	//				pro.y = y;
+	//				pro.z = z;
+					rotateZ(pro, theta_prime);
+					rotateY(pro,phi_prime);
+				
+					//pro.x = pro.x * v_angle * w;
+					//pro.y = pro.y * h_angle * h;
+					pro.z = 0;
+					
+					sph.at<Vec3b>(i,j)[0] = pro.b;
+					sph.at<Vec3b>(i,j)[1] = pro.g;
+					sph.at<Vec3b>(i,j)[2] = pro.r;
+					//pixelCoordinates(iPoint.x, iPoint.y, iPoint.z, radius, rows, cols, i, j );
+					if(pro.x<xmin) xmin = pro.x;
+					if(pro.x>xmax) xmax = pro.x;
+					if(pro.y<ymin) ymin = pro.y;
+					if(pro.y>ymax) ymax = pro.y;
+					//			iPoint.x = i;
+					//			iPoint.z = j;
+					//			iPoint.y=0;
+								//sightFlat->points.push_back(iPoint);
+					sightFlat->points.push_back(pro);
+				}
 			}
 		}
-		}
+		
+		sightFlat->height = h;
+		sightFlat -> width = w;
+		cv::imshow("sph", sph);
 	}
 	//	cv::Mat sightMat(jmax-jmin,imax-imin,CV_8U);
 	//	cv::Vec3b colorSight; 
@@ -453,6 +492,25 @@ void viewingAngleOriginTest(PointXYZRGB u, PointXYZRGB v, double radius, int row
 //	}
 //}
 //////////////////////////////////////  end Test point on ray ////////////////////////////////////	
+void KeyPointAndMatchesTest(cv::Mat image1, cv::Mat image2){
+	
+	cv::Mat imageMatches;
+	vector<KeyPoint> keypoints1, keypoints2 ; 
+	vector<DMatch> matches;
+	getKeypointsAndMatches(image1, image2, keypoints1, keypoints2,matches);
+
+	cv::namedWindow("Matches",0);
+	
+	cv::drawMatches(image1,keypoints1,  // 1st image and its keypoints
+			image2,keypoints2,  // 2nd image and its keypoints
+			matches,                        // the matches
+			imageMatches,           // the image produced
+			cv::Scalar(0,255,0),DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS); 
+			
+	cv::imshow("Matches",imageMatches);
+	cv::waitKey();
+}
+
 
 void EpipolarLinesTest(cv::Mat top, cv::Mat bottom){
 
@@ -479,19 +537,164 @@ void EpipolarLinesTest(cv::Mat top, cv::Mat bottom){
 	cv::waitKey(0);               
 }
 
+void interpolate2DTest(cv::Mat image1, cv::Mat image2, double dist, double pos){
+	cv::Mat interpolate = linearInterpolate(image1, image2, dist, pos);
+	
+	cv::namedWindow("image1",0);
+	cv::namedWindow("image2",0);
+	cv::namedWindow("interpolated",0);
+	
+	cv::imshow("image1",image1);
+	cv::imshow("image2",image2);
+	cv::imshow("interpolated",interpolate);
+	cv::waitKey(0);  
+	
 
-void threeDKeypointsTest(PointCloud<PointXYZRGB>::Ptr points, PointCloud<PointWithScale>::Ptr outCloud){
+}
+
+void sphereInterpolateTest(cv::Mat image1, cv::Mat image2, double dist, double pos,PointCloud<PointXYZRGB>::Ptr &output ){
+	output = sphereInterpolate(image1, image2, dist, pos);
+
+}
+void threeDKeypointsTest(PointCloud<PointXYZRGB>::Ptr &points, PointCloud<PointWithScale>::Ptr &outCloud){
+	cout << "test threeDKeypoints called with cloud: " << points->size() << endl; 
 	float min_scale = 0.025; //0.0005 
 	int nr_octaves = 4; //4 
         int nr_scales_per_octave = 5; //5 
         float min_contrast = 1; //1 
         int k_sift = 10; 
         
-        outCloud = get3DKepoints(points, min_scale, nr_octaves, nr_scales_per_octave, min_contrast);
+         get3DKepoints(points, min_scale, nr_octaves, nr_scales_per_octave, min_contrast,outCloud);
 
 }
-void drawKeyPointsTest(PointCloud<PointXYZRGB>::Ptr cloud, PointCloud<PointWithScale>::Ptr &keypoins){
 
+void optFlowMapTest(cv::Mat image1, cv::Mat image2){
+	cv::Mat flow, cflow;
+	
+	//Get optical flow
+	optFlowMap(image1,  image2, flow);
+	
+	//Convert to color and draw arrows and circles
+	//cv::cvtColor(image,cflow,COLOR_GRAY2BGR);
+	cflow = image1.clone();
+	
+	int step = 16;
+	cv::Scalar color(0,255,0);
+	
+	for(int y = 0; y < cflow.rows; y += step){
+		for(int x = 0; x < cflow.cols; x += step)
+		{
+		    const Point2f& fxy = flow.at<Point2f>(y, x);
+		    cv::line(cflow, Point(x,y), Point(cvRound(x+fxy.x), cvRound(y+fxy.y)),color);
+		    cv::circle(cflow, Point(x,y), 2, color, -1);
+		}
+	}
+	cv::namedWindow("First Image", 0);
+	cv::namedWindow("Second Image", 0);
+	cv::namedWindow("flow", 0);
+	
+	cv::imshow("First Image",image1);
+	cv::imshow("Second Image",image2);
+	cv::imshow("flow",cflow);
+	cv::waitKey(0);
 
 }
+
+void delaunayTriangleTest(cv::Mat img, string name){
+
+	cv::Mat image = img.clone();
+	vector<KeyPoint> keypoints  = get2DKeypoints(image);
+	cout << "Number of Keypoints Original " << name << " : " << keypoints.size()<< endl;
+	cv::Subdiv2D subdiv = getDelaunayTriangles(keypoints, image.rows, image.cols);
+	
+	vector<Vec6f> triangleList;
+	subdiv.getTriangleList(triangleList);
+	vector<cv::Point> pt(3);
+	cv::Scalar delaunay_color(255,255,255);
+	
+	for( size_t i = 0; i < triangleList.size(); i++ ){
+		Vec6f t = triangleList[i];
+		pt[0] = Point(cvRound(t[0]), cvRound(t[1]));
+		pt[1] = Point(cvRound(t[2]), cvRound(t[3]));
+		pt[2] = Point(cvRound(t[4]), cvRound(t[5]));
+		cv::line(image, pt[0], pt[1], delaunay_color, 1, CV_AA, 0);
+		cv::line(image, pt[1], pt[2], delaunay_color, 1, CV_AA, 0);
+		cv::line(image, pt[2], pt[0], delaunay_color, 1, CV_AA, 0);
+	}
+	
+	cout << "Number of Triangles Original " << name << " : " << triangleList.size()<< endl;
+	cv::drawKeypoints( image, keypoints, image, cv::Scalar::all(-1), cv::DrawMatchesFlags::DEFAULT );
+	cv::namedWindow(name, 0);
+	cv::imshow(name,image);
+	
+}
+
+void delaunayMatchedTrianglesTest(cv::Mat img1, cv::Mat img2){
+	cv::Mat image1, image2;
+	
+	image1 = img1.clone();
+	image2 = img2.clone();
+	vector<KeyPoint> keypoints1, keypoints2 ; 
+	//vector<Point2f> points1, points2 ; 
+	vector<cv::DMatch> matches;
+	vector<vector<cv::DMatch> > matchedKeypoints;
+	getKeypointsAndMatches(image1, image2, keypoints1, keypoints2,matches);
+
+	vector<vector<cv::KeyPoint> > matched = getMatchedKeypoints(keypoints1, keypoints2, matches);
+	cout << "DelaunayMatched Keypoints 1 Size : " << keypoints1.size() << endl;
+	cout << "DelaunayMatched Keypoints 2 Size : " << keypoints2.size() << endl;
+	
+	
+	cout << "DelaunayMatched test, number of matches : " << matches.size() << endl;
+	keypoints1 = matched[0];
+	keypoints2 = matched[1];
+	
+	
+	cv::Subdiv2D subdiv1, subdiv2;
+	
+	subdiv1 = getDelaunayTriangles(matched[0], image1.rows, image1.cols);
+	subdiv2 = getDelaunayTriangles(matched[1], image2.rows, image2.cols);
+	cout << "DelaunayMatched Machted Keypoints 1 Size : " << matched[0].size() << endl;
+	cout << "DelaunayMatched Matched Keypoints 2 Size : " << matched[1].size() << endl;
+	
+	
+	vector<Vec6f> triangles1, triangles2;
+	subdiv1.getTriangleList(triangles1);
+	subdiv2.getTriangleList(triangles2);
+	
+	vector<cv::Point> pt(3);
+	
+	//cv::Scalar delaunay_color(255,255,255);
+	
+	cv::drawKeypoints( image1, matched[0], image1, cv::Scalar::all(-1), cv::DrawMatchesFlags::DEFAULT );
+	cv::drawKeypoints( image2, matched[1], image2, cv::Scalar::all(-1), cv::DrawMatchesFlags::DEFAULT );
+	for( size_t i = 0; i < triangles1.size(); i++ ){
+		cv::Scalar delaunay_color(rand() % 255 + 1, rand() % 255 + 1, rand() % 255 + 1);
+		Vec6f t = triangles1[i];
+		pt[0] = Point(cvRound(t[0]), cvRound(t[1]));
+		pt[1] = Point(cvRound(t[2]), cvRound(t[3]));
+		pt[2] = Point(cvRound(t[4]), cvRound(t[5]));
+		cv::line(image1, pt[0], pt[1], delaunay_color, 1, CV_AA, 0);
+		cv::line(image1, pt[1], pt[2], delaunay_color, 1, CV_AA, 0);
+		cv::line(image1, pt[2], pt[0], delaunay_color, 1, CV_AA, 0);
+		
+		
+		t = triangles2[i];
+		pt[0] = Point(cvRound(t[0]), cvRound(t[1]));
+		pt[1] = Point(cvRound(t[2]), cvRound(t[3]));
+		pt[2] = Point(cvRound(t[4]), cvRound(t[5]));
+		cv::line(image2, pt[0], pt[1], delaunay_color, 1, CV_AA, 0);
+		cv::line(image2, pt[1], pt[2], delaunay_color, 1, CV_AA, 0);
+		cv::line(image2, pt[2], pt[0], delaunay_color, 1, CV_AA, 0);
+	}
+	
+	cout << "Number of Triangles Matched First Image: " << triangles1.size() << endl;
+	cout << "Number of Triangles Matched Second Image: " << triangles2.size() << endl;
+	cv::namedWindow("first image", 0);
+	cv::imshow("first image",image1);
+	
+	cv::namedWindow("Second Image", 0);
+	cv::imshow("Second Image",image2);
+}
+
 
