@@ -58,6 +58,76 @@ bool inBetweenAngles(double angle, double min_angle, double max_angle){
 	}
 }
 
+bool sameTriangle(cv::Vec6f t1, cv::Vec6f t){
+//	cv::Point2f a1,b1,c1,a2,b2,c2;
+//	
+//	a1.x = t1[0];
+//	a1.y = t1[1];	
+//	b1.x = t1[2];
+//	b1.y = t1[3];
+//	c1.x = t1[4];
+//	c1.y = t1[5];
+//	
+//	a2.x = t[0];
+//	a2.y = t[1];	
+//	b2.x = t[2];
+//	b2.y = t[3];
+//	c2.x = t[4];
+//	c2.y = t[5];
+	
+	vector<float> t2;
+	t2.push_back(t[0]);
+	t2.push_back(t[1]);	
+	t2.push_back(t[2]);
+	t2.push_back(t[3]);
+	t2.push_back(t[4]);
+	t2.push_back(t[5]);
+	
+	
+	bool inside = find(t2.begin(), t2.end(), t1[0]) != t2.end()
+			& find(t2.begin(), t2.end(), t1[1]) != t2.end()
+			& find(t2.begin(), t2.end(), t1[2]) != t2.end()
+			& find(t2.begin(), t2.end(), t1[3]) != t2.end()
+			& find(t2.begin(), t2.end(), t1[4]) != t2.end()
+			& find(t2.begin(), t2.end(), t1[5]) != t2.end();
+			
+	return inside;
+
+}
+
+bool inTriangle(cv::Point2f p, cv::Vec6f triangle){
+
+	//Epsilon is used for points on the edges 
+	double epsilon = 0.001;
+	
+	
+	cv::Point2f a,b,c; 
+	a.x = triangle[0];
+	a.y = triangle[1];
+	b.x = triangle[2];
+	b.y = triangle[3];
+	c.x = triangle[4];
+	c.y = triangle[5];
+	
+	double xmax = max(a.x, max(b.x,c.x)) + epsilon;
+	double ymax = max(a.y, max(b.y,c.y)) + epsilon;
+	double xmin = min(a.x, min(b.x,c.x)) - epsilon;
+	double ymin = min(a.y, min(b.y,c.y)) - epsilon;
+	
+	if(p.x < xmin || p.y < ymin || p.x > xmax || p.y > ymax){
+		return false;
+	}
+	
+	else{
+		double denum = a.x*(b.y - c.y) + a.y*(c.x-b.x) + b.x*c.y - b.y*c.x;
+		double t1 = (p.x*(c.y - a.y) + p.y*(a.x - c.x) - a.x*c.y + a.y*c.x) / denum;
+		double t2 = (p.x*(b.y - a.y) + p.y*(a.x - b.x) - a.x*b.y + a.y*b.x) / denum;
+  		double s = t1 + t2;
+  		
+  		return 0<= t1 && t1 <= 1 && 0<= t2 && t2<= 1 && s <=1;
+	}
+	
+}
 
 void rotateX(PointXYZRGB &p, double alpha)
 {

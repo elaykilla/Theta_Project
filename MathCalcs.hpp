@@ -42,6 +42,16 @@ bool inInterval(double u, double a, double b);
 bool inBetweenAngles(double angle, double angle_min, double angle_max);
 
 
+
+/** 
+* Returns true if the 2 triangles, defined by 6 floats are the same
+*/
+bool sameTriangle(cv::Vec6f t1, cv::Vec6f t2);
+
+/** 
+* Given a point and a triangle, this function verifies where the point is located inside the triangle
+*/
+bool inTriangle(cv::Point2f p, cv::Vec6f triangle);
 /** 
 Rotate a point by an angle theta around the X axis
 */

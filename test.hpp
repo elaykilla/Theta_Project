@@ -622,6 +622,35 @@ void delaunayTriangleTest(cv::Mat img, string name){
 		cv::line(image, pt[2], pt[0], delaunay_color, 1, CV_AA, 0);
 	}
 	
+	for(int i=0;i<img.rows;i++){
+		for(int k=0;k<img.cols;k++){
+			//if((i+k)%1000 == 0){
+				cv::Point2f p;
+				p.x = k;
+				p.y = i;
+			
+			
+				int j = locateTriangleIndex(subdiv,triangleList,p);
+			
+				if(j!=-1){
+					Vec6f t = triangleList[j];
+					pt[0] = Point(cvRound(t[0]), cvRound(t[1]));
+					pt[1] = Point(cvRound(t[2]), cvRound(t[3]));
+					pt[2] = Point(cvRound(t[4]), cvRound(t[5]));
+				
+				}
+			
+			
+//				cout << "------------------------------------" << endl;
+//				cout << "Considered point p: " << p << endl;		
+
+//			
+//				cout << "Located in triangle: " << j << endl;
+//				cout << "Triangle points: " << pt[0] << "|||" << pt[1] << "|||" << pt[2] << endl;
+			//}
+	
+		}	
+	}
 	cout << "Number of Triangles Original " << name << " : " << triangleList.size()<< endl;
 	cv::drawKeypoints( image, keypoints, image, cv::Scalar::all(-1), cv::DrawMatchesFlags::DEFAULT );
 	cv::namedWindow(name, 0);
@@ -629,20 +658,48 @@ void delaunayTriangleTest(cv::Mat img, string name){
 	
 }
 
-void delaunayMatchedTrianglesTest(cv::Mat img1, cv::Mat img2){
+void delaunayMatchedTrianglesTest(cv::Mat img1, cv::Mat img2, PointCloud<PointXYZRGB>::Ptr &sightFlat ){
+	
+	//For writing to files
+	ofstream logFile;
+	
 	cv::Mat image1, image2;
 	
 	image1 = img1.clone();
 	image2 = img2.clone();
 	vector<KeyPoint> keypoints1, keypoints2 ; 
-	//vector<Point2f> points1, points2 ; 
+	vector<Point2f> points1, points2 ; 
 	vector<cv::DMatch> matches;
 	vector<vector<cv::DMatch> > matchedKeypoints;
+	
+	
+	//Retrive keypoints from each image, and match them
 	getKeypointsAndMatches(image1, image2, keypoints1, keypoints2,matches);
 
+	//For every point in Keypoints1 -- it's matched keypoint is in Keypoints2 at the same position
+	//Organise matched keypoints in order
 	vector<vector<cv::KeyPoint> > matched = getMatchedKeypoints(keypoints1, keypoints2, matches);
 	cout << "DelaunayMatched Keypoints 1 Size : " << keypoints1.size() << endl;
 	cout << "DelaunayMatched Keypoints 2 Size : " << keypoints2.size() << endl;
+	
+	//Recover only points from keypoints1
+	vector<vector<cv::Point2f> > matchedPts = getMatchedPoints(keypoints1, keypoints2, matches);
+	
+	cout << "DelaunayMatched test, number of matches : " << matches.size() << endl;
+	keypoints1 = matched[0];
+	keypoints2 = matched[1];
+	
+	points1 = matchedPts[0];
+	points2 = matchedPts[1];
+	cout << "DelaunayMatched Points 1 Size : " << points1.size() << endl;
+	cout << "DelaunayMatched Points 2 Size : " << points2.size() << endl;
+	
+	logFile.open("Points1.txt");
+	for(int i=0;i<points1.size();i++){
+		logFile << points1[i] << endl;
+	}
+	
+	logFile.close();
 	
 	
 	cout << "DelaunayMatched test, number of matches : " << matches.size() << endl;
@@ -660,14 +717,49 @@ void delaunayMatchedTrianglesTest(cv::Mat img1, cv::Mat img2){
 	
 	vector<Vec6f> triangles1, triangles2;
 	subdiv1.getTriangleList(triangles1);
-	subdiv2.getTriangleList(triangles2);
+	
+	//////////////////////////////////////////////////////
+	//Get triangles using subdiv
+	//subdiv2.getTriangleList(triangles2);
+	//Keep only corresponding triangles
+	//getCorrespondingDelaunayTriangles(keypoints1,keypoints2,triangles1,triangles2);
+	//\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+	
+	/********************************************************/
+	//Get triangles from 2 as the same triangles from 1
+	cout << "Making Triangle Correspondances..." << endl;
+	makeCorrespondingDelaunayTriangles(points1,points2,triangles1,triangles2);
+	cout << "Triangles in first image: " << triangles1.size() << endl;
+	cout << "Triangles in second image: " << triangles2.size() << endl;
+	/**********************************************************/
+	
 	
 	vector<cv::Point> pt(3);
 	
+	//Get TRanforms
+	vector<cv::Mat> transforms;
+	
+	transforms = getAffineTriangleTransforms(triangles1, triangles2);
 	//cv::Scalar delaunay_color(255,255,255);
+	
+	vector<cv::Scalar> colors;
 	
 	cv::drawKeypoints( image1, matched[0], image1, cv::Scalar::all(-1), cv::DrawMatchesFlags::DEFAULT );
 	cv::drawKeypoints( image2, matched[1], image2, cv::Scalar::all(-1), cv::DrawMatchesFlags::DEFAULT );
+	cout << "Keypoint Drawn on both images" << endl;
+	
+	//Writing to file to test1
+
+	logFile.open("Triangles1.txt");
+	
+	for(int i=0;i<keypoints1.size();i++){
+		logFile << keypoints1[i].pt << " -------> " <<keypoints2[i].pt << endl;
+	
+	}
+	logFile << "=======================================================================" << endl << endl << endl ;
+	//End of log testing
+	
+	cout << "Beginning triangles drawing..." << endl;
 	for( size_t i = 0; i < triangles1.size(); i++ ){
 		cv::Scalar delaunay_color(rand() % 255 + 1, rand() % 255 + 1, rand() % 255 + 1);
 		Vec6f t = triangles1[i];
@@ -677,6 +769,7 @@ void delaunayMatchedTrianglesTest(cv::Mat img1, cv::Mat img2){
 		cv::line(image1, pt[0], pt[1], delaunay_color, 1, CV_AA, 0);
 		cv::line(image1, pt[1], pt[2], delaunay_color, 1, CV_AA, 0);
 		cv::line(image1, pt[2], pt[0], delaunay_color, 1, CV_AA, 0);
+		logFile << "Points Forming Triangles1 " << i << " : " << pt[0] << "," << pt[1] << "," << pt[2] << endl;
 		
 		
 		t = triangles2[i];
@@ -686,8 +779,99 @@ void delaunayMatchedTrianglesTest(cv::Mat img1, cv::Mat img2){
 		cv::line(image2, pt[0], pt[1], delaunay_color, 1, CV_AA, 0);
 		cv::line(image2, pt[1], pt[2], delaunay_color, 1, CV_AA, 0);
 		cv::line(image2, pt[2], pt[0], delaunay_color, 1, CV_AA, 0);
+		//logFile << "Matching Points Forming Triangles2 " << i << " : "<< pt[0] << "," << pt[1] << "," << pt[2] << endl;
+		logFile << "-----------------------------------------------------------------------------------------"<< endl;
+		
+		colors.push_back(delaunay_color);
 	}
 	
+	cout << "Triangles finished drawing on both images" << endl;
+	logFile.close();
+	
+	cv::Mat tWarp(2,3,CV_32FC1) ;
+	cv::Mat result = cv::Mat::zeros(img1.rows,img1.cols,img1.type());
+	cv::Mat resultT = cv::Mat::zeros(img1.rows,img1.cols,img1.type());
+	cv::Point2f p;
+	PointXYZRGB p1;
+	
+	
+	cout << "Beginning Image point calculations" << endl;
+	logFile.open("Warp_log.txt");
+	for(int i=0;i<img2.rows;i++){
+		for(int j=0;j<img2.cols;j++){
+			//if((i+k)%1000 == 0){
+				
+				p.x = j;
+				p.y = i;
+//				//cout << "Initial point: " << p << endl;
+//			
+				int k = locateTriangleIndex(subdiv1,triangles1, p);
+				logFile << "Triangles number: " << k << endl;
+				//cout << "Triangles number: " << k << endl;
+//				//int k = 1;
+				if(k!=-1){
+//					//cv::Scalar delaunay_color(rand() % 255 + 1, rand() % 255 + 1, rand() % 255 + 1);
+//					//cout << "triange: " << j << endl;
+//					
+					tWarp = transforms[k];
+					double* uprow = tWarp.ptr<double>(0);
+					double* downrow = tWarp.ptr<double>(1);
+//					
+					logFile << "Warp Matrix: " << tWarp << endl;
+//					//cout << "Warp Matrix: " << tWarp << endl;
+					float x = uprow[0] * p.x + uprow[1]* p.y + uprow[2];
+					float y = downrow[0] * p.x + downrow[1]* p.y + downrow[2];
+					p1.x = x;
+					p1.y = y;
+					p1.b = img2.at<Vec3b>(i,j)[0];
+					p1.g = img2.at<Vec3b>(i,j)[1];
+					p1.r = img2.at<Vec3b>(i,j)[2];
+					sightFlat->points.push_back(p1);
+					
+					if(x>=0 & y>=0 & x<result.cols & y<result.rows){
+						x = cvRound(x);
+						y = cvRound(y);
+						logFile << "original: " << p << " ------>> " << "calculated: (" << x << "," << y << ")" << endl;
+						//cout<< "calculated coordinates: " << x << "," << y << endl;
+						result.at<Vec3b>(y,x)[0] = img2.at<Vec3b>(i,j)[0];
+						result.at<Vec3b>(y,x)[1] =  img2.at<Vec3b>(i,j)[1];
+						result.at<Vec3b>(y,x)[2] =  img2.at<Vec3b>(i,j)[2];
+						
+						
+						
+
+						resultT.at<Vec3b>(y,x)[0] = colors[k].val[0];
+						resultT.at<Vec3b>(y,x)[1] =  colors[k].val[1];
+						resultT.at<Vec3b>(y,x)[2] =  colors[k].val[2];
+
+
+//						//result.at<Vec3b>(k,i)[2] = img2.at<Vec3b>(k,i)[2];
+//	//					Vec6f t = triangles1[j];
+//	//					pt[0] = Point(cvRound(t[0]), cvRound(t[1]));
+//	//					pt[1] = Point(cvRound(t[2]), cvRound(t[3]));
+//	//					pt[2] = Point(cvRound(t[4]), cvRound(t[5]));
+					}
+				}
+//			
+				
+//				cout << "------------------------------------" << endl;
+//				cout << "Considered point p: " << p << endl;		
+
+//			
+//				cout << "Located in triangle: " << j << endl;
+//				cout << "Triangle points: " << pt[0] << "|||" << pt[1] << "|||" << pt[2] << endl;
+			//}
+	
+		}
+//		cout << "Considered point p: " << p << endl;	
+//		
+	}
+	logFile.close();
+	
+	cout << "Warp Matrix: " << tWarp << endl;
+	
+	cout << "used matrix: " << tWarp.at<float>(0,0) << "," << tWarp.at<float>(0,1) << "," << tWarp.at<float>(0,2) << endl;
+	cout << tWarp.at<float>(1,0) << "," << tWarp.at<float>(1,1) << "," << tWarp.at<float>(1,2) << endl;
 	cout << "Number of Triangles Matched First Image: " << triangles1.size() << endl;
 	cout << "Number of Triangles Matched Second Image: " << triangles2.size() << endl;
 	cv::namedWindow("first image", 0);
@@ -695,6 +879,201 @@ void delaunayMatchedTrianglesTest(cv::Mat img1, cv::Mat img2){
 	
 	cv::namedWindow("Second Image", 0);
 	cv::imshow("Second Image",image2);
+	
+	cv::namedWindow("Result", 0);
+	cv::imshow("Result", result);
+}
+
+
+void delaunayMatchedTrianglesBoundTest(cv::Mat img1, cv::Mat img2, PointCloud<PointXYZRGB>::Ptr &sightFlat ){
+	cv::Mat image1, image2;
+	cv::Mat result = cv::Mat::zeros(img1.rows,img1.cols,img1.type());
+	cv::Subdiv2D subdiv1;
+	
+	image1 = img1.clone();
+	image2 = img2.clone();
+	vector<cv::KeyPoint> keypoints1, keypoints2 ; 
+	vector<cv::Point2f> points1, points2;
+
+	vector<cv::DMatch> matches;
+	
+	//Retrive keypoints from each image, and match them
+	getKeypointsAndMatches(image1, image2, keypoints1, keypoints2,matches);
+
+	//For every point in Keypoints1 -- it's matched keypoint is in Keypoints2 at the same position
+	vector<vector<cv::KeyPoint> > matched = getMatchedKeypoints(keypoints1, keypoints2, matches);
+	vector<vector<cv::Point2f> > matchedPts = getMatchedPoints(keypoints1, keypoints2, matches);
+	
+	
+	cout << "DelaunayMatched test, number of matches : " << matches.size() << endl;
+	keypoints1 = matched[0];
+	keypoints2 = matched[1];
+	
+	points1 = matchedPts[0];
+	points2 = matchedPts[1];
+	
+	subdiv1 = getDelaunayTriangles(matched[0], image1.rows, image1.cols);
+
+	
+	
+	vector<Vec6f> triangles1, triangles2;
+	subdiv1.getTriangleList(triangles1);
+	cout << "Number of triangles before correspance: " << triangles1.size() << endl;
+	
+	
+	//Make matched triangles in image 2
+	makeCorrespondingDelaunayTriangles(points1, points2, triangles1,triangles2);
+	cout << "Number of triangles after correspondance: " << triangles1.size() << endl;
+	
+	//subdiv2.getTriangleList(triangles2);
+
+	ofstream logFile;
+	vector<cv::Point2f> pt(3);
+
+	
+	vector<cv::Mat> transforms;
+	
+	//Get the affine transform between each of the triangles
+	transforms = getAffineTriangleTransforms(triangles1, triangles2);
+	//cv::Scalar delaunay_color(255,255,255);
+	
+	vector<cv::Scalar> colors;
+	
+	cv::drawKeypoints( image1, matched[0], image1, cv::Scalar::all(-1), cv::DrawMatchesFlags::DEFAULT );
+	cv::drawKeypoints( image2, matched[1], image2, cv::Scalar::all(-1), cv::DrawMatchesFlags::DEFAULT );
+	
+	
+	
+	//Writing to file to test1
+	logFile.open("T_log2.txt");
+	for(int i=0;i<keypoints1.size();i++){
+		logFile << keypoints1[i].pt << " -------> " <<keypoints2[i].pt << endl;
+	
+	}
+	logFile << "=======================================================================" << endl << endl << endl ;
+	//End of log testing
+	
+	for( size_t i = 0; i < triangles1.size(); i++ ){
+		cv::Scalar delaunay_color(rand() % 255 + 1, rand() % 255 + 1, rand() % 255 + 1);
+		Vec6f t = triangles1[i];
+		pt[0] = Point(cvRound(t[0]), cvRound(t[1]));
+		pt[1] = Point(cvRound(t[2]), cvRound(t[3]));
+		pt[2] = Point(cvRound(t[4]), cvRound(t[5]));
+		cv::line(image1, pt[0], pt[1], delaunay_color, 1, CV_AA, 0);
+		cv::line(image1, pt[1], pt[2], delaunay_color, 1, CV_AA, 0);
+		cv::line(image1, pt[2], pt[0], delaunay_color, 1, CV_AA, 0);
+		logFile << "Points Forming Triangles1 " << i << " : " << pt[0] << "," << pt[1] << "," << pt[2] << endl;
+		
+		//Draw the line on resulting image
+		cv::line(result, pt[0], pt[1], delaunay_color, 1, CV_AA, 0);
+		cv::line(result, pt[1], pt[2], delaunay_color, 1, CV_AA, 0);
+		cv::line(result, pt[2], pt[0], delaunay_color, 1, CV_AA, 0);
+		
+		t = triangles2[i];
+		pt[0] = Point(cvRound(t[0]), cvRound(t[1]));
+		pt[1] = Point(cvRound(t[2]), cvRound(t[3]));
+		pt[2] = Point(cvRound(t[4]), cvRound(t[5]));
+		cv::line(image2, pt[0], pt[1], delaunay_color, 1, CV_AA, 0);
+		cv::line(image2, pt[1], pt[2], delaunay_color, 1, CV_AA, 0);
+		cv::line(image2, pt[2], pt[0], delaunay_color, 1, CV_AA, 0);
+		
+		
+		logFile << "Matching Points Forming Triangles2 " << i << " : "<< pt[0] << "," << pt[1] << "," << pt[2] << endl;
+		logFile << "-----------------------------------------------------------------------------------------"<< endl;
+		
+		colors.push_back(delaunay_color);
+	}
+	logFile.close();
+	
+	cv::Mat tWarp(2,3,CV_32FC1) ;
+	
+	cv::Point2f p;
+	PointXYZRGB p1;
+	
+	
+	cout << "Beginning Image point calculations" << endl;
+	int nbTriangles = 0;
+	bool once = true;
+	for(int k=0;k<triangles2.size();k++){
+		tWarp = transforms[k];
+		double* uprow = tWarp.ptr<double>(0);
+		double* downrow = tWarp.ptr<double>(1);
+//					
+		Vec6f triangle = triangles2[k];
+		
+		cv::Point2f a,b,c; 
+		a.x = triangle[0];
+		a.y = triangle[1];
+		b.x = triangle[2];
+		b.y = triangle[3];
+		c.x = triangle[4];
+		c.y = triangle[5];
+	
+		//Get the bouding box around the triangle
+		int xmax = cvRound(max(a.x, max(b.x,c.x)));
+		int ymax = cvRound(max(a.y, max(b.y,c.y)));
+		int xmin = cvRound(min(a.x, min(b.x,c.x)));
+		int ymin = cvRound(min(a.y, min(b.y,c.y)));
+	
+		
+		cv::Point2f p;
+		PointXYZRGB p1;
+		for(int i=ymin;i<ymax;i++){
+			for(int j=xmin;j<xmax;j++){
+				p.x = j;
+				p.y = i;
+				
+				
+				if(i>0 && j>0 && j<img2.cols && i<img2.rows){
+					float x = uprow[0] * p.x + uprow[1]* p.y + uprow[2];
+					float y = downrow[0] * p.x + downrow[1]* p.y + downrow[2];
+					p1.x = x;
+					p1.y = -y; 
+					p1.b = img2.at<Vec3b>(i,j)[0];
+					p1.g = img2.at<Vec3b>(i,j)[1];
+					p1.r = img2.at<Vec3b>(i,j)[2];
+					sightFlat->points.push_back(p1);
+				
+					if(inTriangle(p,triangle)){
+						if(once) {					
+							nbTriangles++ ;
+							once = false;
+						}
+						float x = uprow[0] * p.x + uprow[1]* p.y + uprow[2];
+						float y = downrow[0] * p.x + downrow[1]* p.y + downrow[2];
+//						p1.x = x;
+//						p1.y = y;
+//						p1.b = img2.at<Vec3b>(i,j)[0];
+//						p1.g = img2.at<Vec3b>(i,j)[1];
+//						p1.r = img2.at<Vec3b>(i,j)[2];
+//						sightFlat->points.push_back(p1);
+					
+						
+						//For copying into image
+						x = cvRound(x);
+						y = cvRound(y);
+						
+						if(y>0 && x>0 && x<img2.cols && y<img2.rows){
+							result.at<Vec3b>(y,x)[0] = img2.at<Vec3b>(i,j)[0];
+							result.at<Vec3b>(y,x)[1] =  img2.at<Vec3b>(i,j)[1];
+							result.at<Vec3b>(y,x)[2] =  img2.at<Vec3b>(i,j)[2];
+						}	
+					}
+				}
+			}
+		}
+		once = true;
+	}
+	
+
+	cv::namedWindow("first image", 0);
+	cv::imshow("first image",image1);
+	
+	cv::namedWindow("Second Image", 0);
+	cv::imshow("Second Image",image2);
+	
+	cv::namedWindow("Result", 0);
+	cv::imshow("Result", result);
 }
 
 

@@ -363,8 +363,11 @@ int main(int argc, char** argv)
 	//KeyPointAndMatchesTest(allImages[0], allImages[1]);
 	
 	//Test of image interpolation
-//	ori = cv::imread("OmniImage1.jpg",1);
-//	cv::Mat templ = cv::imread("template.png",1);
+	ori = cv::imread("test1.jpg",1);
+	//ori = allImages[0];
+	
+	cv::Mat templ = cv::imread("test2.jpg",1);
+	//cv::Mat templ = allImages[1];
 //	interpolate2DTest(allImages[0], allImages[1], 8, 4);
 	
 	//Test of sphereInterpolate
@@ -375,10 +378,26 @@ int main(int argc, char** argv)
 	
 	
 //	//Test of Delaunay Triangles
-	delaunayTriangleTest(allImages[0], "T1");
-	delaunayTriangleTest(allImages[1], "T2");
+	//delaunayTriangleTest(ori, "T1");
+	//delaunayTriangleTest(allImages[1], "T2");
 	
-	delaunayMatchedTrianglesTest(allImages[0], allImages[1]);
+	//delaunayMatchedTrianglesTest(allImages[0], allImages[1]);
+	//
+	
+	cv::Mat inter = cv::Mat::ones(ori.rows/2, ori.cols/2, ori.type());
+	cv::resize(ori,inter,inter.size(),0,0,INTER_CUBIC);
+	//cv::pyrDown(ori,inter,Size(ori.cols/2,ori.rows/2));
+	ori = inter;
+	
+	//cv::pyrDown(templ,inter,Size(ori.cols/2,ori.rows/2));
+	cv::Mat inter2 = cv::Mat::ones(ori.rows/2, ori.cols/2, ori.type());
+	cv::resize(templ,inter2,inter.size(),0,0,INTER_CUBIC);
+	templ = inter2;
+	
+	delaunayMatchedTrianglesTest(ori, templ,sightFlat);
+	//delaunayMatchedTrianglesBoundTest(ori, templ,sightFlat);
+	
+	
 	cv::waitKey(0);
 
 	//Test of Epipolar Lines

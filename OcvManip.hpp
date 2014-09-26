@@ -46,7 +46,12 @@ int ratioTest(std::vector<std::vector<cv::DMatch> >& matches, float ratio);
 void symmetryTest(const std::vector<std::vector<cv::DMatch> >& matches1,
 		const std::vector<std::vector<cv::DMatch> >& matches2,
 		std::vector<cv::DMatch>& symMatches);
-//Computes the matches between 2 images and returns matches
+
+
+//Computes the matches between 2 images and returns matches using Flann
+vector<cv::DMatch> getFlannMatches(cv::Mat image1, cv::Mat image2,vector<cv::KeyPoint> keypoints1 ,vector<cv::KeyPoint> keypoints2);
+
+//Computes the matches between 2 images and returns matches using BruteForce
 vector<cv::DMatch> getMatches(cv::Mat image1, cv::Mat image2);
 
 
@@ -85,6 +90,13 @@ cv::Subdiv2D getDelaunayTriangles(vector<cv::KeyPoint> keypoints, int rows, int 
 
 
 /**
+* Given 2 lists of keypoints, this function returns the list of corresponding triangles
+*/
+void getCorrespondingDelaunayTriangles(vector<cv::KeyPoint> keypoints1, vector<cv::KeyPoint> keypoints2, vector<cv::Vec6f> &trianglesList1, vector<cv::Vec6f> &trianglesList2);
+
+//Given a list of triangles using keypoints 1, this function calculates the relating triangles obtained using keypoint matches
+void makeCorrespondingDelaunayTriangles(vector<cv::Point2f> points1, vector<cv::Point2f> points2, vector<cv::Vec6f> &trianglesList1, vector<cv::Vec6f> &trianglesList2);
+/**
 * This function find the position of a given triangle in a list of triangles. It returns -1 if no triangle is found. A triangle is represented as a list of 6 floating points
 */
 int findTriangleInVector(Vec6f triangle,vector<Vec6f> trianglesList );
@@ -98,7 +110,7 @@ int findFacetInVector(vector<Point2f> facet,vector<vector<Point2f> > facetsList 
 /**
 * This function given a point p and a Delaunay subdivision, returns the index of the triangle containing the point 
 */
-int locateTriangleIndex(cv::Subdiv2D subdiv ,cv::Point2f p ); 
+int locateTriangleIndex(cv::Subdiv2D subdiv , vector<cv::Vec6f> triangles, cv::Point2f p ); 
 
 /**
 * This function, given 2 lists of matching triangles, computes the affine transformation between each of the triangles
