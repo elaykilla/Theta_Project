@@ -197,7 +197,9 @@ void getKeypointsAndMatches(Mat image1, Mat image2, vector<KeyPoint> &keypoints1
 	keypoints1 = get2DKeypoints(image1);
 	keypoints2 = get2DKeypoints(image2);
 
-	matches = getMatches(image1, image2, keypoints1, keypoints2);
+	//matches = getMatches(image1, image2, keypoints1, keypoints2);
+	
+	matches = getFlannMatches(image1, image2, keypoints1, keypoints2);
 	//	RobustMatcher rmatcher;
 	//	rmatcher.setConfidenceLevel(0.98);
 	//	rmatcher.setMinDistanceToEpipolar(1.0);
@@ -618,7 +620,7 @@ void makeCorrespondingDelaunayTriangles(vector<cv::Point2f> points1, vector<cv::
 		for(int j=0;j<points1.size();j++){
 			//cout << "Points in point1: " << points1[j] << endl;
 			if((points1[j].x == p1.x && points1[j].y == p1.y) ||(points1[j].x == p1.y && points1[j].y == p1.x)){
-				cout << "Points in point1: " << points1[j] << endl;
+				//cout << "Points in point1: " << points1[j] << endl;
 				ptPos1 = j;
 				break;
 			}

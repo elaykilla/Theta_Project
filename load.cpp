@@ -363,11 +363,11 @@ int main(int argc, char** argv)
 	//KeyPointAndMatchesTest(allImages[0], allImages[1]);
 	
 	//Test of image interpolation
-	ori = cv::imread("test1.jpg",1);
-	//ori = allImages[0];
+	//ori = cv::imread("test1.jpg",1);
+	ori = allImages[0];
 	
-	cv::Mat templ = cv::imread("test2.jpg",1);
-	//cv::Mat templ = allImages[1];
+	//cv::Mat templ = cv::imread("test2.jpg",1);
+	cv::Mat templ = allImages[1];
 //	interpolate2DTest(allImages[0], allImages[1], 8, 4);
 	
 	//Test of sphereInterpolate

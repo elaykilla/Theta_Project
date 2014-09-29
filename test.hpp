@@ -797,8 +797,8 @@ void delaunayMatchedTrianglesTest(cv::Mat img1, cv::Mat img2, PointCloud<PointXY
 	
 	cout << "Beginning Image point calculations" << endl;
 	logFile.open("Warp_log.txt");
-	for(int i=0;i<img2.rows;i++){
-		for(int j=0;j<img2.cols;j++){
+	for(int i=0;i<img1.rows;i++){
+		for(int j=0;j<img1.cols;j++){
 			//if((i+k)%1000 == 0){
 				
 				p.x = j;
@@ -882,6 +882,9 @@ void delaunayMatchedTrianglesTest(cv::Mat img1, cv::Mat img2, PointCloud<PointXY
 	
 	cv::namedWindow("Result", 0);
 	cv::imshow("Result", result);
+	
+	cv::namedWindow("Triangles Result", 0);
+	cv::imshow("Triangles Result", resultT);
 }
 
 
