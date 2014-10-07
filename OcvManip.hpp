@@ -16,8 +16,9 @@
 
 
 using namespace cv;
-/***************************************************Image Manipulation Cv***********************************************/
+/***************************************Image Manipulation Cv***********************************************/
 
+////////////////////////// KeyPoints and Matching
 /**
 * This function takes the image prefix name, adds the position i and saves in a cv::Mat
 */
@@ -69,6 +70,14 @@ void getKeypointsAndMatches(Mat image1, Mat image2, vector<KeyPoint> &keypoints1
 */
 void drawEpipolarLines(Mat &image1, Mat &image2, Mat &imageMatches);
 
+
+///////////////Line Detection
+vector<cv::Vec4i> getLinesProb(cv::Mat image);
+
+
+
+
+///////////////////////////Image Interpolation and Triangulation
 /** 
 * Function to interpolate between 2 images where the center has been translated 
 */

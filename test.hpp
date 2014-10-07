@@ -600,6 +600,21 @@ void optFlowMapTest(cv::Mat image1, cv::Mat image2){
 
 }
 
+void getLinesTest(cv::Mat image){
+	vector<cv::Vec4i> lines;
+	Mat imagebw;
+	lines = getLinesProb(image);
+	
+	cv::cvtColor(image, imagebw, CV_GRAY2BGR);
+	
+	for( size_t i = 0; i < lines.size(); i++ ){
+	  Vec4i l = lines[i];
+	  line( imagebw, Point(l[0], l[1]), Point(l[2], l[3]), cv::Scalar(0,0,255), 3, CV_AA);
+	}
+
+
+}
+
 void delaunayTriangleTest(cv::Mat img, string name){
 
 	cv::Mat image = img.clone();
@@ -701,18 +716,12 @@ void delaunayMatchedTrianglesTest(cv::Mat img1, cv::Mat img2, PointCloud<PointXY
 	
 	logFile.close();
 	
-	
-	cout << "DelaunayMatched test, number of matches : " << matches.size() << endl;
-	keypoints1 = matched[0];
-	keypoints2 = matched[1];
-	
-	
 	cv::Subdiv2D subdiv1, subdiv2;
 	
-	subdiv1 = getDelaunayTriangles(matched[0], image1.rows, image1.cols);
-	subdiv2 = getDelaunayTriangles(matched[1], image2.rows, image2.cols);
-	cout << "DelaunayMatched Machted Keypoints 1 Size : " << matched[0].size() << endl;
-	cout << "DelaunayMatched Matched Keypoints 2 Size : " << matched[1].size() << endl;
+	subdiv1 = getDelaunayTriangles(keypoints1, image1.rows, image1.cols);
+	subdiv2 = getDelaunayTriangles(keypoints2, image2.rows, image2.cols);
+	cout << "DelaunayMatched Machted Keypoints 1 Size : " << keypoints1.size() << endl;
+	cout << "DelaunayMatched Matched Keypoints 2 Size : " << keypoints1.size() << endl;
 	
 	
 	vector<Vec6f> triangles1, triangles2;
@@ -720,17 +729,17 @@ void delaunayMatchedTrianglesTest(cv::Mat img1, cv::Mat img2, PointCloud<PointXY
 	
 	//////////////////////////////////////////////////////
 	//Get triangles using subdiv
-	//subdiv2.getTriangleList(triangles2);
-	//Keep only corresponding triangles
-	//getCorrespondingDelaunayTriangles(keypoints1,keypoints2,triangles1,triangles2);
+	subdiv2.getTriangleList(triangles2);
+//	//Keep only corresponding triangles
+	getCorrespondingDelaunayTriangles(keypoints1,keypoints2,triangles1,triangles2);
 	//\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 	
 	/********************************************************/
 	//Get triangles from 2 as the same triangles from 1
-	cout << "Making Triangle Correspondances..." << endl;
-	makeCorrespondingDelaunayTriangles(points1,points2,triangles1,triangles2);
-	cout << "Triangles in first image: " << triangles1.size() << endl;
-	cout << "Triangles in second image: " << triangles2.size() << endl;
+//	cout << "Making Triangle Correspondances..." << endl;
+//	makeCorrespondingDelaunayTriangles(points1,points2,triangles1,triangles2);
+//	cout << "Triangles in first image: " << triangles1.size() << endl;
+//	cout << "Triangles in second image: " << triangles2.size() << endl;
 	/**********************************************************/
 	
 	
@@ -789,69 +798,69 @@ void delaunayMatchedTrianglesTest(cv::Mat img1, cv::Mat img2, PointCloud<PointXY
 	logFile.close();
 	
 	cv::Mat tWarp(2,3,CV_32FC1) ;
-	cv::Mat result = cv::Mat::zeros(img1.rows,img1.cols,img1.type());
-	cv::Mat resultT = cv::Mat::zeros(img1.rows,img1.cols,img1.type());
+	cv::Mat result = cv::Mat::zeros(img1.rows*2,img1.cols*2,img1.type());
+	cv::Mat resultT = cv::Mat::zeros(img1.rows*2,img1.cols*2,img1.type());
 	cv::Point2f p;
 	PointXYZRGB p1;
 	
 	
 	cout << "Beginning Image point calculations" << endl;
 	logFile.open("Warp_log.txt");
-	for(int i=0;i<img1.rows;i++){
-		for(int j=0;j<img1.cols;j++){
+	for(int i=0;i<img2.rows;i++){
+		for(int j=0;j<img2.cols;j++){
 			//if((i+k)%1000 == 0){
 				
 				p.x = j;
 				p.y = i;
 //				//cout << "Initial point: " << p << endl;
 //			
-				int k = locateTriangleIndex(subdiv1,triangles1, p);
-				logFile << "Triangles number: " << k << endl;
+				//int k = locateTriangleIndex(subdiv2,triangles2, p);
+				//logFile << "Triangles number: " << k << endl;
 				//cout << "Triangles number: " << k << endl;
 //				//int k = 1;
-				if(k!=-1){
-//					//cv::Scalar delaunay_color(rand() % 255 + 1, rand() % 255 + 1, rand() % 255 + 1);
-//					//cout << "triange: " << j << endl;
+//				if(k!=-1){
+////					//cv::Scalar delaunay_color(rand() % 255 + 1, rand() % 255 + 1, rand() % 255 + 1);
+////					//cout << "triange: " << j << endl;
+////					
+//					tWarp = transforms[k];
+//					double* uprow = tWarp.ptr<double>(0);
+//					double* downrow = tWarp.ptr<double>(1);
+////					
+//					logFile << "Warp Matrix: " << tWarp << endl;
+////					//cout << "Warp Matrix: " << tWarp << endl;
+//					float x = uprow[0] * p.x + uprow[1]* p.y + uprow[2];
+//					float y = downrow[0] * p.x + downrow[1]* p.y + downrow[2];
+//					p1.x = x;
+//					p1.y = y;
+//					p1.b = img2.at<Vec3b>(i,j)[0];
+//					p1.g = img2.at<Vec3b>(i,j)[1];
+//					p1.r = img2.at<Vec3b>(i,j)[2];
+//					sightFlat->points.push_back(p1);
 //					
-					tWarp = transforms[k];
-					double* uprow = tWarp.ptr<double>(0);
-					double* downrow = tWarp.ptr<double>(1);
-//					
-					logFile << "Warp Matrix: " << tWarp << endl;
-//					//cout << "Warp Matrix: " << tWarp << endl;
-					float x = uprow[0] * p.x + uprow[1]* p.y + uprow[2];
-					float y = downrow[0] * p.x + downrow[1]* p.y + downrow[2];
-					p1.x = x;
-					p1.y = y;
-					p1.b = img2.at<Vec3b>(i,j)[0];
-					p1.g = img2.at<Vec3b>(i,j)[1];
-					p1.r = img2.at<Vec3b>(i,j)[2];
-					sightFlat->points.push_back(p1);
-					
-					if(x>=0 & y>=0 & x<result.cols & y<result.rows){
-						x = cvRound(x);
-						y = cvRound(y);
-						logFile << "original: " << p << " ------>> " << "calculated: (" << x << "," << y << ")" << endl;
-						//cout<< "calculated coordinates: " << x << "," << y << endl;
-						result.at<Vec3b>(y,x)[0] = img2.at<Vec3b>(i,j)[0];
-						result.at<Vec3b>(y,x)[1] =  img2.at<Vec3b>(i,j)[1];
-						result.at<Vec3b>(y,x)[2] =  img2.at<Vec3b>(i,j)[2];
-						
-						
-						
+//					if(x>=0 & y>=0 & x<result.cols & y<result.rows){
+//						x = cvRound(x);
+//						y = cvRound(y);
+//						logFile << "original: " << p << " ------>> " << "calculated: (" << x << "," << y << ")" << endl;
+//						//cout<< "calculated coordinates: " << x << "," << y << endl;
+//						result.at<Vec3b>(y,x)[0] = img2.at<Vec3b>(i,j)[0];
+//						result.at<Vec3b>(y,x)[1] =  img2.at<Vec3b>(i,j)[1];
+//						result.at<Vec3b>(y,x)[2] =  img2.at<Vec3b>(i,j)[2];
+//						
+//						
+//						
 
-						resultT.at<Vec3b>(y,x)[0] = colors[k].val[0];
-						resultT.at<Vec3b>(y,x)[1] =  colors[k].val[1];
-						resultT.at<Vec3b>(y,x)[2] =  colors[k].val[2];
+//						resultT.at<Vec3b>(y,x)[0] = colors[k].val[0];
+//						resultT.at<Vec3b>(y,x)[1] =  colors[k].val[1];
+//						resultT.at<Vec3b>(y,x)[2] =  colors[k].val[2];
 
 
-//						//result.at<Vec3b>(k,i)[2] = img2.at<Vec3b>(k,i)[2];
-//	//					Vec6f t = triangles1[j];
-//	//					pt[0] = Point(cvRound(t[0]), cvRound(t[1]));
-//	//					pt[1] = Point(cvRound(t[2]), cvRound(t[3]));
-//	//					pt[2] = Point(cvRound(t[4]), cvRound(t[5]));
-					}
-				}
+////						//result.at<Vec3b>(k,i)[2] = img2.at<Vec3b>(k,i)[2];
+////	//					Vec6f t = triangles1[j];
+////	//					pt[0] = Point(cvRound(t[0]), cvRound(t[1]));
+////	//					pt[1] = Point(cvRound(t[2]), cvRound(t[3]));
+////	//					pt[2] = Point(cvRound(t[4]), cvRound(t[5]));
+//					}
+//				}
 //			
 				
 //				cout << "------------------------------------" << endl;

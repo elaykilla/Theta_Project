@@ -384,15 +384,15 @@ int main(int argc, char** argv)
 	//delaunayMatchedTrianglesTest(allImages[0], allImages[1]);
 	//
 	
-	cv::Mat inter = cv::Mat::ones(ori.rows/2, ori.cols/2, ori.type());
+	cv::Mat inter = cv::Mat::ones(ori.rows/4, ori.cols/4, ori.type());
 	cv::resize(ori,inter,inter.size(),0,0,INTER_CUBIC);
 	//cv::pyrDown(ori,inter,Size(ori.cols/2,ori.rows/2));
-	ori = inter;
+	//ori = inter;
 	
 	//cv::pyrDown(templ,inter,Size(ori.cols/2,ori.rows/2));
-	cv::Mat inter2 = cv::Mat::ones(ori.rows/2, ori.cols/2, ori.type());
+	cv::Mat inter2 = cv::Mat::ones(ori.rows/4, ori.cols/4, ori.type());
 	cv::resize(templ,inter2,inter.size(),0,0,INTER_CUBIC);
-	templ = inter2;
+	//templ = inter2;
 	
 	delaunayMatchedTrianglesTest(ori, templ,sightFlat);
 	//delaunayMatchedTrianglesBoundTest(ori, templ,sightFlat);
