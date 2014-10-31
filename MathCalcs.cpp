@@ -95,36 +95,80 @@ bool sameTriangle(cv::Vec6f t1, cv::Vec6f t){
 
 }
 
+
+
+double triangleArea(double x1,double y1,double x2,double y2,double x3,double y3){
+
+	return abs((x1*(y2-y3) + x2*(y3-y1)+ x3*(y1-y2))/2.0);
+}
+
+
+bool inTriangleArea(cv::Point2f p, cv::Vec6f triangle){
+	cv::Point2f p1,p2,p3; 
+	double epsilon = 0.01;
+	
+	p1.x = triangle[0];
+	p1.y = triangle[1];
+	p2.x = triangle[2];
+	p2.y = triangle[3];
+	p3.x = triangle[4];
+	p3.y = triangle[5];
+	
+	
+	/* Calculate area of triangle ABC */
+   float A = triangleArea (p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
+ 
+   /* Calculate area of triangle PBC */  
+   float A1 = triangleArea (p.x, p.y, p2.x, p2.y, p3.x, p3.y);
+ 
+   /* Calculate area of triangle PAC */  
+   float A2 = triangleArea (p1.x, p1.y, p.x, p.y, p3.x, p3.y);
+ 
+   /* Calculate area of triangle PAB */   
+   float A3 = triangleArea (p1.x, p1.y, p2.x, p2.y, p.x, p.y);
+   
+   /* Check if sum of A1, A2 and A3 is same as A */
+   return (A1 + A2 + A3 - epsilon <= A && A <= A1 + A2 + A3 + epsilon);
+
+}
+
+
 bool inTriangle(cv::Point2f p, cv::Vec6f triangle){
 
 	//Epsilon is used for points on the edges 
 	double epsilon = 0.001;
 	
 	
-	cv::Point2f a,b,c; 
-	a.x = triangle[0];
-	a.y = triangle[1];
-	b.x = triangle[2];
-	b.y = triangle[3];
-	c.x = triangle[4];
-	c.y = triangle[5];
+	cv::Point2f p1,p2,p3; 
+	p1.x = triangle[0];
+	p1.y = triangle[1];
+	p2.x = triangle[2];
+	p2.y = triangle[3];
+	p3.x = triangle[4];
+	p3.y = triangle[5];
 	
-	double xmax = max(a.x, max(b.x,c.x)) + epsilon;
-	double ymax = max(a.y, max(b.y,c.y)) + epsilon;
-	double xmin = min(a.x, min(b.x,c.x)) - epsilon;
-	double ymin = min(a.y, min(b.y,c.y)) - epsilon;
+	double xmax = max(p1.x, max(p2.x,p3.x)) + epsilon;
+	double ymax = max(p1.x, max(p2.y,p3.y)) + epsilon;
+	double xmin = min(p1.x, min(p2.x,p3.x)) - epsilon;
+	double ymin = min(p1.x, min(p2.y,p3.y)) - epsilon;
 	
 	if(p.x < xmin || p.y < ymin || p.x > xmax || p.y > ymax){
 		return false;
 	}
 	
 	else{
-		double denum = a.x*(b.y - c.y) + a.y*(c.x-b.x) + b.x*c.y - b.y*c.x;
-		double t1 = (p.x*(c.y - a.y) + p.y*(a.x - c.x) - a.x*c.y + a.y*c.x) / denum;
-		double t2 = (p.x*(b.y - a.y) + p.y*(a.x - b.x) - a.x*b.y + a.y*b.x) / denum;
-  		double s = t1 + t2;
+//		double denum = p1.x*(p2.y - p3.y) + p1.x*(p3.x-p2.x) + p2.x*p3.y - p2.y*p3.x;
+//		double t1 = (p.x*(p3.y - p1.x) + p.y*(p1.x - p3.x) - p1.x*p3.y + p1.x*p3.x) / denum;
+//		double t2 = (p.x*(p2.y - p1.x) + p.y*(p1.x - p2.x) - p1.x*p2.y + p1.x*p2.x) / denum;
+//  		double s = t1 + t2;
   		
-  		return 0<= t1 && t1 <= 1 && 0<= t2 && t2<= 1 && s <=1;
+		double denum = ((p2.y - p3.y)*(p1.x - p3.x) + (p3.x - p2.x)*(p1.y - p3.y));		
+		double t1 =  ((p2.y - p3.y)*(p.x - p3.x) + (p3.x - p2.x)*(p.y - p3.y))/ denum;
+		double t2 = ((p3.y - p1.y)*(p.x - p3.x) + (p1.x - p3.x)*(p.y - p3.y)) / denum;
+  		double s = t1 + t2;
+
+  		//return 0<= t1 && t1 <= 1 && 0<= t2 && t2<= 1 && s <=1;
+  		return 0<= t1 && 0<= t2  && s <=1;
 	}
 	
 }

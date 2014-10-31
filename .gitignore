@@ -1,2 +1,15 @@
-theta_pics
+#compilation files
 CMakeFiles/
+
+#log files and txt files
+*.txt
+*~
+
+
+#picture folders
+theta_pics
+theta_pics2
+DownSampled*
+Just* 
+*.jpg
+*.png

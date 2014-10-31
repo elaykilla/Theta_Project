@@ -34,6 +34,11 @@ void loadImageTop(string name, cv::Mat &image, string topOrbottom);
 */
 vector<cv::KeyPoint> get2DKeypoints(cv::Mat image);
 
+/**
+* This function returns a cv::vector containing the Keypoints from the input image using SIFT
+*/
+vector<cv::KeyPoint> getSiftKeypoints(cv::Mat image);
+
 
 /**
 * This function, given a keypoint array returns the points with scale 1
@@ -49,11 +54,14 @@ void symmetryTest(const std::vector<std::vector<cv::DMatch> >& matches1,
 		std::vector<cv::DMatch>& symMatches);
 
 
+//Computes the matches between 2 images and returns matches using BruteForce
+vector<cv::DMatch> getMatches(cv::Mat image1, cv::Mat image2);
+
 //Computes the matches between 2 images and returns matches using Flann
 vector<cv::DMatch> getFlannMatches(cv::Mat image1, cv::Mat image2,vector<cv::KeyPoint> keypoints1 ,vector<cv::KeyPoint> keypoints2);
 
 //Computes the matches between 2 images and returns matches using BruteForce
-vector<cv::DMatch> getMatches(cv::Mat image1, cv::Mat image2);
+//vector<cv::DMatch> getSiftMatches(cv::Mat image1, cv::Mat image2);
 
 
 //Returns a vector of all matching points in image 1 and image 2 therefore: points1[i] matches to points2[i] 
@@ -65,6 +73,13 @@ vector<vector<cv::KeyPoint> > getMatchedKeypoints(vector<cv::KeyPoint> keypoints
 
 //Computes keypoints and matches between 2 images
 void getKeypointsAndMatches(Mat image1, Mat image2, vector<KeyPoint> &keypoints1, vector<KeyPoint> &keypoints2,vector<DMatch> &matches);
+
+
+
+//Computes Sift keypoints and matches between 2 images
+void getSiftKeypointsAndMatches(Mat image1, Mat image2, vector<KeyPoint> &keypoints1, vector<KeyPoint> &keypoints2,vector<DMatch> &matches);
+
+
 /**
 * This function takes 2 input images, finds the keypoints, matches them then draws Epipolar lines on both images
 */
@@ -74,7 +89,7 @@ void drawEpipolarLines(Mat &image1, Mat &image2, Mat &imageMatches);
 ///////////////Line Detection
 vector<cv::Vec4i> getLinesProb(cv::Mat image);
 
-
+cv::Mat detectEdges(cv::Mat img);
 
 
 ///////////////////////////Image Interpolation and Triangulation
@@ -82,6 +97,17 @@ vector<cv::Vec4i> getLinesProb(cv::Mat image);
 * Function to interpolate between 2 images where the center has been translated 
 */
 cv::Mat linearInterpolate(cv::Mat image1, cv::Mat image2, double dist, double pos);
+
+/** 
+* Function to interpolate between 2 images using Delaunay triangulation
+*/
+cv::Mat delaunayInterpolate(cv::Mat image1, cv::Mat image2, double dist, double pos);
+
+/** 
+* Function to interpolate n times between 2 images using Delaunay triangulation
+*/
+vector<cv::Mat> delaunayInterpolateMultiple(cv::Mat image1, cv::Mat image2, double dist, int n);
+
 
 
 /**

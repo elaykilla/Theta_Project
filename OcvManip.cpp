@@ -47,6 +47,15 @@ vector<cv::KeyPoint> get2DKeypoints(cv::Mat image){
 	return keypoints;
 }
 
+
+vector<cv::KeyPoint> getSiftKeypoints(cv::Mat image){
+	cv::SiftFeatureDetector detector(0,4,0.04,10,1.6);
+	vector<cv::KeyPoint> keypoints;
+	
+	detector.detect( image, keypoints );
+	
+	return keypoints;
+}
 int ratioTest(std::vector<std::vector<cv::DMatch> >& matches, float ratio) {
 
 	int removed=0;
@@ -173,8 +182,8 @@ vector<cv::DMatch> getMatches(cv::Mat image1, cv::Mat image2,vector<cv::KeyPoint
 	matcher.knnMatch(descriptors1,descriptors2, matches1,2);
 	matcher.knnMatch(descriptors2,descriptors1, matches2,2);
 
-	ratioTest(matches1, 0.65f);
-	ratioTest(matches2, 0.65f);	
+	ratioTest(matches1, 0.35f);
+	ratioTest(matches2, 0.35f);	
 
 	symmetryTest(matches1,matches2,matches);
 	//matcher.match(descriptors1,descriptors2,matches);
@@ -212,6 +221,39 @@ void getKeypointsAndMatches(Mat image1, Mat image2, vector<KeyPoint> &keypoints1
 
 	//	Mat fundemental= rmatcher.match(image1,image2,matches, keypoints1, keypoints2);
 }
+
+void getSiftKeypointsAndMatches(Mat img1, Mat img2, vector<KeyPoint> &keypoints1, vector<KeyPoint> &keypoints2,vector<DMatch> &matches){
+	if (!img1.data || !img2.data){
+		cout << "getKeypointsAndMatches Error:" <<endl;
+		cout<< "One of the input Images does not contains any data please verify" << endl;
+		return ;
+	}
+	
+	cv::Mat image1,image2;
+	//Convert images to grayscale
+	cv::cvtColor(img1,image1,COLOR_BGR2GRAY);
+	cv::cvtColor(img2,image2,COLOR_BGR2GRAY);
+	
+	keypoints1 = getSiftKeypoints(image1);
+	keypoints2 = getSiftKeypoints(image2);
+
+	//matches = getMatches(image1, image2, keypoints1, keypoints2);
+
+	matches = getFlannMatches(image1, image2, keypoints1, keypoints2);
+
+	//To compute fundamental matrix at the same time!
+
+	//	RobustMatcher rmatcher;
+	//	rmatcher.setConfidenceLevel(0.98);
+	//	rmatcher.setMinDistanceToEpipolar(1.0);
+	//	rmatcher.setRatio(0.65f);
+	//	cv::Ptr<cv::FeatureDetector> pfd= new cv::SurfFeatureDetector(10); 
+	//	rmatcher.setFeatureDetector(pfd);
+
+	//	Mat fundemental= rmatcher.match(image1,image2,matches, keypoints1, keypoints2);
+
+}
+
 
 
 vector<vector<cv::Point2f> > getMatchedPoints(vector<cv::KeyPoint> keypoints1, vector<cv::KeyPoint> keypoints2, vector<cv::DMatch> matches){
@@ -347,33 +389,54 @@ void drawEpipolarLines2(Mat &image1, Mat &image2, Mat &imageMatches){
 
 ////////////Line Detection
 vector<cv::Vec4i> getLinesProb(cv::Mat image){
-	
+
 	vector<Vec4i> lines;
 	if(image.empty())
 	{
 		cout << "getLines: Can not open Image, please verify" << endl;
 		vector<Vec4i> lines;
 	}
-	
+
 	//Detect image edges using canny detection
 	Mat dst, cdst;
 	cv::Canny(image, dst, 50, 200, 3);
 	//cvtColor(dst, cdst, CV_GRAY2BGR);
-	
-	
+
+
 	//Normal Hough Transform
-//	vecotr<Vec2f> lines;
-//	HoughLines(dst, lines, 1, CV_PI/180, 100, 0, 0 );
+	//	vecotr<Vec2f> lines;
+	//	HoughLines(dst, lines, 1, CV_PI/180, 100, 0, 0 );
 
 	//Probabilistic Hough Transform
-	
-  	HoughLinesP(dst, lines, 1, CV_PI/180, 50, 50, 10 );
-	
+
+	HoughLinesP(dst, lines, 1, CV_PI/180, 20, 50, 10 );
+
 	return lines;
 }
 
 
+//Edge Detection
+cv::Mat detectEdges(cv::Mat img){
 
+	int lowThreshold = 50;
+	int ratio = 3;
+	int kernel_size = 3;
+	
+	Mat img_gray, dst, detected_edges;
+	
+	 /// Convert the image to grayscale
+  	cv::cvtColor( img, img_gray, CV_BGR2GRAY );
+	
+	//Reduce noise with gaussian kernel 3x3
+	cv::blur(img_gray, detected_edges, cv::Size(3,3));
+	
+	cv::Canny(detected_edges, detected_edges,lowThreshold, lowThreshold*ratio,kernel_size );
+	
+	img.copyTo(dst,detected_edges);
+	
+	return detected_edges;	
+	
+}
 
 
 
@@ -686,7 +749,7 @@ void makeCorrespondingDelaunayTriangles(vector<cv::Point2f> points1, vector<cv::
 			newtrianglesList2.push_back(t2);
 		}else{
 			if(!ptPos1 < points1.size()){
-				cout<< "Point not found in points: " << pp1 << endl;
+				//cout<< "Point not found in points: " << pp1 << endl;
 				pp1 = p1;
 			}
 			else{
@@ -833,6 +896,370 @@ vector<cv::Mat> getAffineTriangleTransforms (vector<Vec6f> triangles1, vector<Ve
 	}
 
 	return transforms;
+}
+
+
+cv::Mat delaunayInterpolate(cv::Mat img1, cv::Mat img2, double dist, double pos){
+	
+	cv::Mat image1;
+	//Extend second Image beyond border for border triangles
+	cv::Mat image2(img2.rows, img2.cols + img2.cols/2,img2.type());
+
+	//Resulting image
+	cv::Mat result = cv::Mat::zeros(img1.rows,img1.cols + img1.cols/2,img1.type());
+
+	//Create Subdivision of Image1
+	cv::Subdiv2D subdiv1;
+	image1 = img1.clone();
+	img2.copyTo(image2(cv::Rect(cv::Point(0, 0), img2.size())));
+	//Fill the right side with values of left side to complete second image
+	int io = img2.rows;
+	int jo = img2.cols;
+
+	
+
+
+	//Vectors for keypoints
+	vector<cv::KeyPoint> keypoints1, keypoints2 ; 
+	vector<cv::Point2f> points1, points2;
+
+
+
+	//Vector for matches
+	vector<cv::DMatch> matches;
+
+
+
+
+	//Retrive keypoints from each image, and match them
+	getKeypointsAndMatches(image1, image2, keypoints1, keypoints2,matches);
+
+	
+	
+	
+	//For every point in Keypoints1 -- it's matched keypoint is in Keypoints2 at the same position
+	vector<vector<cv::KeyPoint> > matched = getMatchedKeypoints(keypoints1, keypoints2, matches);
+	vector<vector<cv::Point2f> > matchedPts = getMatchedPoints(keypoints1, keypoints2, matches);
+
+	//Matched keypoints only
+	keypoints1 = matched[0];
+	keypoints2 = matched[1];
+
+	//Extracted points from the Keypoints
+	points1 = matchedPts[0];
+	points2 = matchedPts[1];
+
+	//Create Delaunay triangulation of the first image
+	subdiv1 = getDelaunayTriangles(matched[0], image1.rows, image1.cols);
+
+	//Extend 2nd image by half of image size
+	for(int i=0;i<io;i++){
+		for(int j=jo;j<jo+jo/2;j++){
+			//cout << "i,j" << i << "," << j << endl;
+			image2.at<Vec3b>(i,j)[0] = img2.at<Vec3b>(i, j-jo)[0];
+			image2.at<Vec3b>(i,j)[1] = img2.at<Vec3b>(i, j-jo)[1];
+			image2.at<Vec3b>(i,j)[2] = img2.at<Vec3b>(i, j-jo)[2];
+		}
+	}
+	
+	//Go through all the matched keypoints, and if the point is on the first half, put it on the 		//other side if the distance to the point in the 1st image is more than 1/3 of image size
+	double max_dist = sqrt(img1.rows*img1.rows + img1.cols*img1.cols)/4;
+	for(int i=0; i<points2.size();i++){
+		PointXYZRGB p1,p2;
+		p1.x = points1[i].x;
+		p1.y = points1[i].y;
+		
+		p2.x = points2[i].x;
+		p2.y = points2[i].y;
+		
+		if (distanceP(p1,p2)>max_dist){
+			points2[i].x += img2.cols;
+		} 
+	}
+	
+	//Vectors for the triangles
+	vector<Vec6f> triangles1, triangles2;
+
+	//Retrive the triangles from Image1
+	subdiv1.getTriangleList(triangles1);
+
+	//Make matched triangles in image 2
+	makeCorrespondingDelaunayTriangles(points1, points2, triangles1,triangles2);
+
+	//Vector for the transformations between all triangles
+	vector<cv::Mat> transforms;
+
+	//Get the affine transform between each of the triangles
+	transforms = getAffineTriangleTransforms(triangles1, triangles2);
+
+
+	cv::Mat tWarp(2,3,CV_32FC1) ;
+	cv::Point2f p;
+	
+	
+	cout << "Beginning Image point calculations" << endl;
+	//Go through all the Triangles in the second image
+	for(int k=0;k<triangles2.size();k++){
+		tWarp = transforms[k];
+		double* uprow = tWarp.ptr<double>(0);
+		double* downrow = tWarp.ptr<double>(1);
+		//					
+		Vec6f triangle = triangles2[k];
+
+		cv::Point2f a,b,c; 
+		a.x = triangle[0];
+		a.y = triangle[1];
+		b.x = triangle[2];
+		b.y = triangle[3];
+		c.x = triangle[4];
+		c.y = triangle[5];
+
+		//Get the bouding box around the triangle
+		int xmax = cvRound(max(a.x, max(b.x,c.x)));
+		int ymax = cvRound(max(a.y, max(b.y,c.y)));
+		int xmin = cvRound(min(a.x, min(b.x,c.x)));
+		int ymin = cvRound(min(a.y, min(b.y,c.y)));
+
+
+		cv::Point2f p;
+
+		for(int i=ymin;i<=ymax;i++){
+			for(int j=xmin;j<=xmax;j++){
+				p.x = j;
+				p.y = i;
+
+
+				if(i>0 && j>0 && j<img2.cols && i<img2.rows){
+					float x = uprow[0] * p.x + uprow[1]* p.y + uprow[2];
+					float y = downrow[0] * p.x + downrow[1]* p.y + downrow[2];
+
+
+					if(inTriangleArea(p,triangle)){
+						//Get the position of the point in the first image
+						float x = uprow[0] * p.x + uprow[1]* p.y + uprow[2];
+						float y = downrow[0] * p.x + downrow[1]* p.y + downrow[2];
+						
+						//calculate the resulting position in intermediate image
+						float xinter = (x*(dist-pos) + p.x*pos)/dist; 
+						float yinter = (y*(dist-pos) + p.y*pos)/dist; 
+						
+						//
+						xinter = cvRound(xinter);
+						yinter = cvRound(yinter);
+
+						if(y>0 && x>0 && x<result.cols && y<result.rows){
+							//Get interpolated pixel values
+							uchar b,g,r;
+//							b = (img2.at<Vec3b>(i,j)[0]*pos + img1.at<Vec3b>(y,x)[0]*(dist-pos))/dist;
+//							g = (img2.at<Vec3b>(i,j)[1]*pos + img1.at<Vec3b>(y,x)[1]*(dist-pos))/dist;
+//							r = (img2.at<Vec3b>(i,j)[2]*pos + img1.at<Vec3b>(y,x)[2]*(dist-pos))/dist;
+//							if(pos<dist/2){
+//								b = img1.at<Vec3b>(y,x)[0];
+//								g = img1.at<Vec3b>(y,x)[1];
+//								r = img1.at<Vec3b>(y,x)[2];
+//							}
+//							
+//							else{
+								b = img2.at<Vec3b>(i,j)[0];
+								g = img2.at<Vec3b>(i,j)[1];
+								r = img2.at<Vec3b>(i,j)[2];
+							//}
+							result.at<Vec3b>(yinter,xinter)[0] = b;
+							result.at<Vec3b>(yinter,xinter)[1] = g;
+							result.at<Vec3b>(yinter,xinter)[2] = r;
+						}	
+					}
+				}
+			}
+		}
+		
+	}
+	
+	return result;
+} 
+
+vector<cv::Mat> delaunayInterpolateMultiple(cv::Mat img1, cv::Mat img2, double dist, int n){
+
+	cout << "Called DelaunayInterpolateMultiple with: " << n << " images to interpoate" << endl;
+	vector<cv::Mat> interpolated;
+
+	
+	cv::Mat image1;
+	//Extend second Image beyond border for border triangles
+	cv::Mat image2(img2.rows, img2.cols + img2.cols/2,img2.type());
+
+	//Resulting image
+	cv::Mat result = cv::Mat::zeros(img1.rows,img1.cols + img1.cols/2,img1.type());
+
+	for(int r=0;r<n;r++){
+		interpolated.push_back(result);
+	}
+	
+	cout << "Interpolated size: " << interpolated.size() << endl;
+	//Create Subdivision of Image1
+	cv::Subdiv2D subdiv1;
+	image1 = img1.clone();
+	img2.copyTo(image2(cv::Rect(cv::Point(0, 0), img2.size())));
+	//Fill the right side with values of left side to complete second image
+	int io = img2.rows;
+	int jo = img2.cols;
+
+	
+
+
+	//Vectors for keypoints
+	vector<cv::KeyPoint> keypoints1, keypoints2 ; 
+	vector<cv::Point2f> points1, points2;
+
+
+
+	//Vector for matches
+	vector<cv::DMatch> matches;
+
+
+
+
+	//Retrive keypoints from each image, and match them
+	getKeypointsAndMatches(image1, image2, keypoints1, keypoints2,matches);
+
+	
+	
+	
+	//For every point in Keypoints1 -- it's matched keypoint is in Keypoints2 at the same position
+	vector<vector<cv::KeyPoint> > matched = getMatchedKeypoints(keypoints1, keypoints2, matches);
+	vector<vector<cv::Point2f> > matchedPts = getMatchedPoints(keypoints1, keypoints2, matches);
+
+	//Matched keypoints only
+	keypoints1 = matched[0];
+	keypoints2 = matched[1];
+
+	//Extracted points from the Keypoints
+	points1 = matchedPts[0];
+	points2 = matchedPts[1];
+
+	//Create Delaunay triangulation of the first image
+	subdiv1 = getDelaunayTriangles(matched[0], image1.rows, image1.cols);
+
+	//Extend 2nd image by half of image size
+	for(int i=0;i<io;i++){
+		for(int j=jo;j<jo+jo/2;j++){
+			//cout << "i,j" << i << "," << j << endl;
+			image2.at<Vec3b>(i,j)[0] = img2.at<Vec3b>(i, j-jo)[0];
+			image2.at<Vec3b>(i,j)[1] = img2.at<Vec3b>(i, j-jo)[1];
+			image2.at<Vec3b>(i,j)[2] = img2.at<Vec3b>(i, j-jo)[2];
+		}
+	}
+	
+	//Go through all the matched keypoints, and if the point is on the first half, put it on the 		//other side if the distance to the point in the 1st image is more than 1/3 of image size
+	double max_dist = sqrt(img1.rows*img1.rows + img1.cols*img1.cols)/4;
+	for(int i=0; i<points2.size();i++){
+		PointXYZRGB p1,p2;
+		p1.x = points1[i].x;
+		p1.y = points1[i].y;
+		
+		p2.x = points2[i].x;
+		p2.y = points2[i].y;
+		
+		if (distanceP(p1,p2)>max_dist){
+			points2[i].x += img2.cols;
+		} 
+	}
+	
+	//Vectors for the triangles
+	vector<Vec6f> triangles1, triangles2;
+
+	//Retrive the triangles from Image1
+	subdiv1.getTriangleList(triangles1);
+
+	//Make matched triangles in image 2
+	makeCorrespondingDelaunayTriangles(points1, points2, triangles1,triangles2);
+
+	//Vector for the transformations between all triangles
+	vector<cv::Mat> transforms;
+
+	//Get the affine transform between each of the triangles
+	transforms = getAffineTriangleTransforms(triangles1, triangles2);
+
+
+	cv::Mat tWarp(2,3,CV_32FC1) ;
+	cv::Point2f p;
+	
+	
+	cout << "Beginning Image point calculations" << endl;
+	//Go through all the Triangles in the second image
+	for(int k=0;k<triangles2.size();k++){
+		tWarp = transforms[k];
+		double* uprow = tWarp.ptr<double>(0);
+		double* downrow = tWarp.ptr<double>(1);
+		//					
+		Vec6f triangle = triangles2[k];
+
+		cv::Point2f a,b,c; 
+		a.x = triangle[0];
+		a.y = triangle[1];
+		b.x = triangle[2];
+		b.y = triangle[3];
+		c.x = triangle[4];
+		c.y = triangle[5];
+
+		//Get the bouding box around the triangle
+		int xmax = cvRound(max(a.x, max(b.x,c.x)));
+		int ymax = cvRound(max(a.y, max(b.y,c.y)));
+		int xmin = cvRound(min(a.x, min(b.x,c.x)));
+		int ymin = cvRound(min(a.y, min(b.y,c.y)));
+
+
+		cv::Point2f p;
+
+		for(int i=ymin;i<=ymax;i++){
+			for(int j=xmin;j<=xmax;j++){
+				p.x = j;
+				p.y = i;
+
+
+				if(i>0 && j>0 && j<img2.cols && i<img2.rows){
+					float x = uprow[0] * p.x + uprow[1]* p.y + uprow[2];
+					float y = downrow[0] * p.x + downrow[1]* p.y + downrow[2];
+
+
+					if(inTriangleArea(p,triangle)){
+						
+						//Get the position of the point in the first image
+						float x = uprow[0] * p.x + uprow[1]* p.y + uprow[2];
+						float y = downrow[0] * p.x + downrow[1]* p.y + downrow[2];
+						
+						//calculate the resulting position in each intermediate image
+						for(int l=0;l<n;l++){
+							//Get image at position
+							result = interpolated[l];
+							double pos = (dist/n)*l;
+							float xinter = (x*(dist-pos) + p.x*pos)/dist; 
+							float yinter = (y*(dist-pos) + p.y*pos)/dist; 
+						
+							//
+							xinter = cvRound(xinter);
+							yinter = cvRound(yinter);
+
+							if(y>0 && x>0 && x<result.cols && y<result.rows){
+								//Get interpolated pixel values
+								uchar b,g,r;
+								b = (img2.at<Vec3b>(i,j)[0]*pos + img1.at<Vec3b>(y,x)[0]*(dist-pos))/dist;
+								g = (img2.at<Vec3b>(i,j)[1]*pos + img1.at<Vec3b>(y,x)[1]*(dist-pos))/dist;
+								r = (img2.at<Vec3b>(i,j)[2]*pos + img1.at<Vec3b>(y,x)[2]*(dist-pos))/dist;
+							
+								result.at<Vec3b>(yinter,xinter)[0] = b;
+								result.at<Vec3b>(yinter,xinter)[1] = g;
+								result.at<Vec3b>(yinter,xinter)[2] = r;
+							}	
+						}
+					}
+				}
+			}
+		}
+		
+	}
+	
+	return interpolated;
 }
 
 

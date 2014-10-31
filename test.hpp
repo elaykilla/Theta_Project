@@ -605,19 +605,89 @@ void getLinesTest(cv::Mat image){
 	Mat imagebw;
 	lines = getLinesProb(image);
 	
-	cv::cvtColor(image, imagebw, CV_GRAY2BGR);
+	cv::cvtColor(image, imagebw, CV_BGR2GRAY);
 	
 	for( size_t i = 0; i < lines.size(); i++ ){
 	  Vec4i l = lines[i];
 	  line( imagebw, Point(l[0], l[1]), Point(l[2], l[3]), cv::Scalar(0,0,255), 3, CV_AA);
 	}
+	
+	cv::namedWindow("Image", 0);
+	cv::namedWindow("Lines", 0);
+	cv::imshow("Image",image);
+	cv::imshow("Lines",imagebw);
+	
 
 
 }
-
 void delaunayTriangleTest(cv::Mat img, string name){
 
 	cv::Mat image = img.clone();
+	cv::Mat coloredtriangles(img.rows, img.cols, img.type());
+	cv::Mat squares(img.rows, img.cols, img.type());
+	vector<KeyPoint> keypoints  = get2DKeypoints(image);
+	cout << "Number of Keypoints Original " << name << " : " << keypoints.size()<< endl;
+	cv::Subdiv2D subdiv = getDelaunayTriangles(keypoints, image.rows, image.cols);
+	
+	vector<Vec6f> triangleList;
+	subdiv.getTriangleList(triangleList);
+	vector<cv::Point> pt(3);
+	cv::Scalar delaunay_color(255,255,255);
+	
+	
+	vector<cv::Scalar> colors;
+	for( size_t i = 0; i < triangleList.size(); i++ ){
+		cv::Scalar delaunay_color(rand() % 255 + 1, rand() % 255 + 1, rand() % 255 + 1);
+		Vec6f t = triangleList[i];
+		pt[0] = Point(cvRound(t[0]), cvRound(t[1]));
+		pt[1] = Point(cvRound(t[2]), cvRound(t[3]));
+		pt[2] = Point(cvRound(t[4]), cvRound(t[5]));
+		cv::line(image, pt[0], pt[1], delaunay_color, 1, CV_AA, 0);
+		cv::line(image, pt[1], pt[2], delaunay_color, 1, CV_AA, 0);
+		cv::line(image, pt[2], pt[0], delaunay_color, 1, CV_AA, 0);
+		colors.push_back(delaunay_color);
+	}
+	
+	for(int i=0;i<img.rows;i++){
+		for(int k=0;k<img.cols;k++){
+			//if((i+k)%1000 == 0){
+				cv::Point2f p;
+				p.x = k;
+				p.y = i;
+			
+			
+				int j = locateTriangleIndex(subdiv,triangleList,p);
+			
+				if(j!=-1){
+					coloredtriangles.at<Vec3b>(i,j)[0] = colors[j].val[0];
+					coloredtriangles.at<Vec3b>(i,j)[1] = colors[j].val[1];
+					coloredtriangles.at<Vec3b>(i,j)[2] = colors[j].val[2];	
+				
+				}
+			
+		
+	
+		}	
+	}
+	
+
+	cv::drawKeypoints( image, keypoints, image, cv::Scalar::all(-1), cv::DrawMatchesFlags::DEFAULT );
+	cv::namedWindow(name, 0);
+	cv::namedWindow("Triangles", 0);
+	cv::namedWindow("Squares", 0);
+	cv::imshow(name,image);
+	cv::imshow("Triangles",coloredtriangles);
+	cv::imshow("Squares", squares);
+	
+}
+
+
+
+void delaunayTriangleTestBound(cv::Mat img, string name){
+
+	cv::Mat image = img.clone();
+	cv::Mat coloredtriangles(img.rows, img.cols, img.type());
+	cv::Mat squares(img.rows, img.cols, img.type());
 	vector<KeyPoint> keypoints  = get2DKeypoints(image);
 	cout << "Number of Keypoints Original " << name << " : " << keypoints.size()<< endl;
 	cv::Subdiv2D subdiv = getDelaunayTriangles(keypoints, image.rows, image.cols);
@@ -637,39 +707,97 @@ void delaunayTriangleTest(cv::Mat img, string name){
 		cv::line(image, pt[2], pt[0], delaunay_color, 1, CV_AA, 0);
 	}
 	
-	for(int i=0;i<img.rows;i++){
-		for(int k=0;k<img.cols;k++){
-			//if((i+k)%1000 == 0){
-				cv::Point2f p;
-				p.x = k;
-				p.y = i;
-			
-			
-				int j = locateTriangleIndex(subdiv,triangleList,p);
-			
-				if(j!=-1){
-					Vec6f t = triangleList[j];
-					pt[0] = Point(cvRound(t[0]), cvRound(t[1]));
-					pt[1] = Point(cvRound(t[2]), cvRound(t[3]));
-					pt[2] = Point(cvRound(t[4]), cvRound(t[5]));
-				
-				}
-			
-			
-//				cout << "------------------------------------" << endl;
-//				cout << "Considered point p: " << p << endl;		
-
+//	for(int i=0;i<img.rows;i++){
+//		for(int k=0;k<img.cols;k++){
+//			//if((i+k)%1000 == 0){
+//				cv::Point2f p;
+//				p.x = k;
+//				p.y = i;
 //			
-//				cout << "Located in triangle: " << j << endl;
-//				cout << "Triangle points: " << pt[0] << "|||" << pt[1] << "|||" << pt[2] << endl;
-			//}
+//			
+//				int j = locateTriangleIndex(subdiv,triangleList,p);
+//			
+//				if(j!=-1){
+//					Vec6f t = triangleList[j];
+//					pt[0] = Point(cvRound(t[0]), cvRound(t[1]));
+//					pt[1] = Point(cvRound(t[2]), cvRound(t[3]));
+//					pt[2] = Point(cvRound(t[4]), cvRound(t[5]));
+//				
+//				}
+//			
+//			
+////				cout << "------------------------------------" << endl;
+////				cout << "Considered point p: " << p << endl;		
+
+////			
+////				cout << "Located in triangle: " << j << endl;
+////				cout << "Triangle points: " << pt[0] << "|||" << pt[1] << "|||" << pt[2] << endl;
+//			//}
+//	
+//		}	
+//	}
+//	
+	cv::Point2f p;
+	bool once = true;
+	int nbTriangles = 0;
+	for(int k=0;k<triangleList.size();k++){			
+		Vec6f triangle = triangleList[k];
+		
+		cv::Point2f a,b,c; 
+		a.x = triangle[0];
+		a.y = triangle[1];
+		b.x = triangle[2];
+		b.y = triangle[3];
+		c.x = triangle[4];
+		c.y = triangle[5];
 	
-		}	
+		//Get the bouding box around the triangle
+		int xmax = cvRound(max(a.x, max(b.x,c.x)));
+		int ymax = cvRound(max(a.y, max(b.y,c.y)));
+		int xmin = cvRound(min(a.x, min(b.x,c.x)));
+		int ymin = cvRound(min(a.y, min(b.y,c.y)));
+	
+		cv::Scalar delaunay_color(rand() % 255 + 1, rand() % 255 + 1, rand() % 255 + 1);
+		for(int i=ymin;i<ymax;i++){
+			for(int j=xmin;j<xmax;j++){
+				if(i>0 && j>0 && j<img.cols && i<img.rows){
+					p.x = j;
+					p.y = i;
+					
+//					squares.at<Vec3b>(i,j)[0] = img.at<Vec3b>(i,j)[0];
+//					squares.at<Vec3b>(i,j)[1] = img.at<Vec3b>(i,j)[1];
+//					squares.at<Vec3b>(i,j)[2] = img.at<Vec3b>(i,j)[2];
+//					
+//					image.at<Vec3b>(i,j)[0] = delaunay_color.val[0];
+//					image.at<Vec3b>(i,j)[1] = delaunay_color.val[1];
+//					image.at<Vec3b>(i,j)[2] = delaunay_color.val[2];
+					
+					if(inTriangleArea(p,triangle)){
+						if(once) {					
+							nbTriangles++ ;
+							once = false;
+						}
+						squares.at<Vec3b>(i,j)[0] = delaunay_color.val[0];
+						squares.at<Vec3b>(i,j)[1] = delaunay_color.val[1];
+						squares.at<Vec3b>(i,j)[2] = delaunay_color.val[2];
+												
+						coloredtriangles.at<Vec3b>(i,j)[0] = img.at<Vec3b>(i,j)[0];
+						coloredtriangles.at<Vec3b>(i,j)[1] = img.at<Vec3b>(i,j)[1];
+						coloredtriangles.at<Vec3b>(i,j)[2] = img.at<Vec3b>(i,j)[2];	
+					}
+				}
+			}
+		}
+		once = true;
 	}
 	cout << "Number of Triangles Original " << name << " : " << triangleList.size()<< endl;
 	cv::drawKeypoints( image, keypoints, image, cv::Scalar::all(-1), cv::DrawMatchesFlags::DEFAULT );
 	cv::namedWindow(name, 0);
+	cv::namedWindow("Triangles", 0);
+	cv::namedWindow("Squares", 0);
 	cv::imshow(name,image);
+	cv::imshow("Triangles",coloredtriangles);
+	cv::imshow("Squares", squares);
 	
 }
 
@@ -729,17 +857,17 @@ void delaunayMatchedTrianglesTest(cv::Mat img1, cv::Mat img2, PointCloud<PointXY
 	
 	//////////////////////////////////////////////////////
 	//Get triangles using subdiv
-	subdiv2.getTriangleList(triangles2);
+	//subdiv2.getTriangleList(triangles2);
 //	//Keep only corresponding triangles
-	getCorrespondingDelaunayTriangles(keypoints1,keypoints2,triangles1,triangles2);
+	//getCorrespondingDelaunayTriangles(keypoints1,keypoints2,triangles1,triangles2);
 	//\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 	
 	/********************************************************/
 	//Get triangles from 2 as the same triangles from 1
 //	cout << "Making Triangle Correspondances..." << endl;
-//	makeCorrespondingDelaunayTriangles(points1,points2,triangles1,triangles2);
-//	cout << "Triangles in first image: " << triangles1.size() << endl;
-//	cout << "Triangles in second image: " << triangles2.size() << endl;
+	makeCorrespondingDelaunayTriangles(points1,points2,triangles1,triangles2);
+	cout << "Triangles in first image: " << triangles1.size() << endl;
+	cout << "Triangles in second image: " << triangles2.size() << endl;
 	/**********************************************************/
 	
 	
@@ -812,67 +940,67 @@ void delaunayMatchedTrianglesTest(cv::Mat img1, cv::Mat img2, PointCloud<PointXY
 				
 				p.x = j;
 				p.y = i;
-//				//cout << "Initial point: " << p << endl;
-//			
-				//int k = locateTriangleIndex(subdiv2,triangles2, p);
-				//logFile << "Triangles number: " << k << endl;
+				//cout << "Initial point: " << p << endl;
+			
+				int k = locateTriangleIndex(subdiv2,triangles2, p);
+				logFile << "Triangles number: " << k << endl;
 				//cout << "Triangles number: " << k << endl;
-//				//int k = 1;
-//				if(k!=-1){
-////					//cv::Scalar delaunay_color(rand() % 255 + 1, rand() % 255 + 1, rand() % 255 + 1);
-////					//cout << "triange: " << j << endl;
-////					
-//					tWarp = transforms[k];
-//					double* uprow = tWarp.ptr<double>(0);
-//					double* downrow = tWarp.ptr<double>(1);
-////					
-//					logFile << "Warp Matrix: " << tWarp << endl;
-////					//cout << "Warp Matrix: " << tWarp << endl;
-//					float x = uprow[0] * p.x + uprow[1]* p.y + uprow[2];
-//					float y = downrow[0] * p.x + downrow[1]* p.y + downrow[2];
-//					p1.x = x;
-//					p1.y = y;
-//					p1.b = img2.at<Vec3b>(i,j)[0];
-//					p1.g = img2.at<Vec3b>(i,j)[1];
-//					p1.r = img2.at<Vec3b>(i,j)[2];
-//					sightFlat->points.push_back(p1);
+				//int k = 1;
+				if(k!=-1){
+//					//cv::Scalar delaunay_color(rand() % 255 + 1, rand() % 255 + 1, rand() % 255 + 1);
+//					//cout << "triange: " << j << endl;
 //					
-//					if(x>=0 & y>=0 & x<result.cols & y<result.rows){
-//						x = cvRound(x);
-//						y = cvRound(y);
-//						logFile << "original: " << p << " ------>> " << "calculated: (" << x << "," << y << ")" << endl;
-//						//cout<< "calculated coordinates: " << x << "," << y << endl;
-//						result.at<Vec3b>(y,x)[0] = img2.at<Vec3b>(i,j)[0];
-//						result.at<Vec3b>(y,x)[1] =  img2.at<Vec3b>(i,j)[1];
-//						result.at<Vec3b>(y,x)[2] =  img2.at<Vec3b>(i,j)[2];
-//						
-//						
-//						
+					tWarp = transforms[k];
+					double* uprow = tWarp.ptr<double>(0);
+					double* downrow = tWarp.ptr<double>(1);
+//					
+					logFile << "Warp Matrix: " << tWarp << endl;
+//					//cout << "Warp Matrix: " << tWarp << endl;
+					float x = uprow[0] * p.x + uprow[1]* p.y + uprow[2];
+					float y = downrow[0] * p.x + downrow[1]* p.y + downrow[2];
+					p1.x = x;
+					p1.y = y;
+					p1.b = img2.at<Vec3b>(i,j)[0];
+					p1.g = img2.at<Vec3b>(i,j)[1];
+					p1.r = img2.at<Vec3b>(i,j)[2];
+					sightFlat->points.push_back(p1);
+					
+					if(x>=0 & y>=0 & x<result.cols & y<result.rows){
+						x = cvRound(x);
+						y = cvRound(y);
+						logFile << "original: " << p << " ------>> " << "calculated: (" << x << "," << y << ")" << endl;
+						//cout<< "calculated coordinates: " << x << "," << y << endl;
+						result.at<Vec3b>(y,x)[0] = img2.at<Vec3b>(i,j)[0];
+						result.at<Vec3b>(y,x)[1] =  img2.at<Vec3b>(i,j)[1];
+						result.at<Vec3b>(y,x)[2] =  img2.at<Vec3b>(i,j)[2];
+						
+						
+						
 
-//						resultT.at<Vec3b>(y,x)[0] = colors[k].val[0];
-//						resultT.at<Vec3b>(y,x)[1] =  colors[k].val[1];
-//						resultT.at<Vec3b>(y,x)[2] =  colors[k].val[2];
+						resultT.at<Vec3b>(y,x)[0] = colors[k].val[0];
+						resultT.at<Vec3b>(y,x)[1] =  colors[k].val[1];
+						resultT.at<Vec3b>(y,x)[2] =  colors[k].val[2];
 
 
-////						//result.at<Vec3b>(k,i)[2] = img2.at<Vec3b>(k,i)[2];
-////	//					Vec6f t = triangles1[j];
-////	//					pt[0] = Point(cvRound(t[0]), cvRound(t[1]));
-////	//					pt[1] = Point(cvRound(t[2]), cvRound(t[3]));
-////	//					pt[2] = Point(cvRound(t[4]), cvRound(t[5]));
-//					}
-//				}
-//			
+//						//result.at<Vec3b>(k,i)[2] = img2.at<Vec3b>(k,i)[2];
+//	//					Vec6f t = triangles1[j];
+//	//					pt[0] = Point(cvRound(t[0]), cvRound(t[1]));
+//	//					pt[1] = Point(cvRound(t[2]), cvRound(t[3]));
+//	//					pt[2] = Point(cvRound(t[4]), cvRound(t[5]));
+					}
+				}
+			
 				
-//				cout << "------------------------------------" << endl;
-//				cout << "Considered point p: " << p << endl;		
+				//cout << "------------------------------------" << endl;
+				//cout << "Considered point p: " << p << endl;		
 
-//			
-//				cout << "Located in triangle: " << j << endl;
-//				cout << "Triangle points: " << pt[0] << "|||" << pt[1] << "|||" << pt[2] << endl;
+			
+				//cout << "Located in triangle: " << j << endl;
+				//cout << "Triangle points: " << pt[0] << "|||" << pt[1] << "|||" << pt[2] << endl;
 			//}
 	
 		}
-//		cout << "Considered point p: " << p << endl;	
+		//cout << "Considered point p: " << p << endl;	
 //		
 	}
 	logFile.close();
@@ -894,20 +1022,30 @@ void delaunayMatchedTrianglesTest(cv::Mat img1, cv::Mat img2, PointCloud<PointXY
 	
 	cv::namedWindow("Triangles Result", 0);
 	cv::imshow("Triangles Result", resultT);
+	
+	return;
 }
 
 
 void delaunayMatchedTrianglesBoundTest(cv::Mat img1, cv::Mat img2, PointCloud<PointXYZRGB>::Ptr &sightFlat ){
-	cv::Mat image1, image2;
-	cv::Mat result = cv::Mat::zeros(img1.rows,img1.cols,img1.type());
+	cv::Mat image1(img1.rows, img1.cols + img1.cols/2,img1.type());
+	cv::Mat image2(img2.rows, img2.cols + img2.cols/2,img2.type());
+	cv::Mat result = cv::Mat::zeros(img1.rows,img1.cols + img1.cols/2,img1.type());
+	cv::Mat resultT = cv::Mat::zeros(img1.rows,img1.cols,img1.type());
 	cv::Subdiv2D subdiv1;
-	
 	image1 = img1.clone();
-	image2 = img2.clone();
+	//image2 = img2.clone();
 	vector<cv::KeyPoint> keypoints1, keypoints2 ; 
 	vector<cv::Point2f> points1, points2;
-
+	//Extend the image 2 to the left
+	//img1.copyTo(image1(cv::Rect(cv::Point(0, 0), img1.size())));
+	img2.copyTo(image2(cv::Rect(cv::Point(0, 0), img2.size())));
+	
+	//Add half of the image to the right side of the second image for boundary consistency
 	vector<cv::DMatch> matches;
+	
+	
+	
 	
 	//Retrive keypoints from each image, and match them
 	getKeypointsAndMatches(image1, image2, keypoints1, keypoints2,matches);
@@ -926,6 +1064,34 @@ void delaunayMatchedTrianglesBoundTest(cv::Mat img1, cv::Mat img2, PointCloud<Po
 	
 	subdiv1 = getDelaunayTriangles(matched[0], image1.rows, image1.cols);
 
+	//Fill the right side with values of left side
+	int io = img2.rows;
+	int jo = img2.cols;
+	
+	for(int i=0;i<io;i++){
+		for(int j=jo;j<jo+jo/2;j++){
+			//cout << "i,j" << i << "," << j << endl;
+			image2.at<Vec3b>(i,j)[0] = img2.at<Vec3b>(i, j-jo)[0];
+			image2.at<Vec3b>(i,j)[1] = img2.at<Vec3b>(i, j-jo)[1];
+			image2.at<Vec3b>(i,j)[2] = img2.at<Vec3b>(i, j-jo)[2];
+		}
+	}
+	
+	//Go through all the matched keypoints, and if the point is on the first half, put it on the 		//other side if the distance to the point in the 1st image is more than 1/3 of image size
+	double max_dist = sqrt(img1.rows*img1.rows + img1.cols*img1.cols)/4;
+	for(int i=0; i<points2.size();i++){
+		PointXYZRGB p1,p2;
+		p1.x = points1[i].x;
+		p1.y = points1[i].y;
+		
+		p2.x = points2[i].x;
+		p2.y = points2[i].y;
+		
+		if (distanceP(p1,p2)>max_dist){
+			points2[i].x += img2.cols;
+		} 
+	}
+	
 	
 	
 	vector<Vec6f> triangles1, triangles2;
@@ -977,9 +1143,9 @@ void delaunayMatchedTrianglesBoundTest(cv::Mat img1, cv::Mat img2, PointCloud<Po
 		logFile << "Points Forming Triangles1 " << i << " : " << pt[0] << "," << pt[1] << "," << pt[2] << endl;
 		
 		//Draw the line on resulting image
-		cv::line(result, pt[0], pt[1], delaunay_color, 1, CV_AA, 0);
-		cv::line(result, pt[1], pt[2], delaunay_color, 1, CV_AA, 0);
-		cv::line(result, pt[2], pt[0], delaunay_color, 1, CV_AA, 0);
+		//cv::line(result, pt[0], pt[1], delaunay_color, 1, CV_AA, 0);
+		//cv::line(result, pt[1], pt[2], delaunay_color, 1, CV_AA, 0);
+		//cv::line(result, pt[2], pt[0], delaunay_color, 1, CV_AA, 0);
 		
 		t = triangles2[i];
 		pt[0] = Point(cvRound(t[0]), cvRound(t[1]));
@@ -1012,6 +1178,7 @@ void delaunayMatchedTrianglesBoundTest(cv::Mat img1, cv::Mat img2, PointCloud<Po
 		double* downrow = tWarp.ptr<double>(1);
 //					
 		Vec6f triangle = triangles2[k];
+		Vec6f triangleOri = triangles1[k];
 		
 		cv::Point2f a,b,c; 
 		a.x = triangle[0];
@@ -1028,10 +1195,10 @@ void delaunayMatchedTrianglesBoundTest(cv::Mat img1, cv::Mat img2, PointCloud<Po
 		int ymin = cvRound(min(a.y, min(b.y,c.y)));
 	
 		
-		cv::Point2f p;
+		cv::Point2f p,pOri;
 		PointXYZRGB p1;
-		for(int i=ymin;i<ymax;i++){
-			for(int j=xmin;j<xmax;j++){
+		for(int i=ymin;i<=ymax;i++){
+			for(int j=xmin;j<=xmax;j++){
 				p.x = j;
 				p.y = i;
 				
@@ -1039,36 +1206,49 @@ void delaunayMatchedTrianglesBoundTest(cv::Mat img1, cv::Mat img2, PointCloud<Po
 				if(i>0 && j>0 && j<img2.cols && i<img2.rows){
 					float x = uprow[0] * p.x + uprow[1]* p.y + uprow[2];
 					float y = downrow[0] * p.x + downrow[1]* p.y + downrow[2];
-					p1.x = x;
-					p1.y = -y; 
-					p1.b = img2.at<Vec3b>(i,j)[0];
-					p1.g = img2.at<Vec3b>(i,j)[1];
-					p1.r = img2.at<Vec3b>(i,j)[2];
-					sightFlat->points.push_back(p1);
+//					p1.x = x;
+//					p1.y = -y; 
+//					p1.b = img2.at<Vec3b>(i,j)[0];
+//					p1.g = img2.at<Vec3b>(i,j)[1];
+//					p1.r = img2.at<Vec3b>(i,j)[2];
+//					sightFlat->points.push_back(p1);
 				
-					if(inTriangle(p,triangle)){
+					if(inTriangleArea(p,triangle)){
 						if(once) {					
 							nbTriangles++ ;
 							once = false;
 						}
 						float x = uprow[0] * p.x + uprow[1]* p.y + uprow[2];
 						float y = downrow[0] * p.x + downrow[1]* p.y + downrow[2];
-//						p1.x = x;
-//						p1.y = y;
-//						p1.b = img2.at<Vec3b>(i,j)[0];
-//						p1.g = img2.at<Vec3b>(i,j)[1];
-//						p1.r = img2.at<Vec3b>(i,j)[2];
-//						sightFlat->points.push_back(p1);
+						p1.x = x;
+						p1.y = -y;
+						p1.b = img2.at<Vec3b>(i,j)[0];
+						p1.g = img2.at<Vec3b>(i,j)[1];
+						p1.r = img2.at<Vec3b>(i,j)[2];
+						//sightFlat->points.push_back(p1);
 					
 						
 						//For copying into image
 						x = cvRound(x);
 						y = cvRound(y);
-						
-						if(y>0 && x>0 && x<img2.cols && y<img2.rows){
+						pOri.x = x;
+						pOri.y = y;
+						if(y>0 && x>0 && x<result.cols && y<result.rows){
+							//sightFlat->points.push_back(p1);
 							result.at<Vec3b>(y,x)[0] = img2.at<Vec3b>(i,j)[0];
-							result.at<Vec3b>(y,x)[1] =  img2.at<Vec3b>(i,j)[1];
-							result.at<Vec3b>(y,x)[2] =  img2.at<Vec3b>(i,j)[2];
+							result.at<Vec3b>(y,x)[1] = img2.at<Vec3b>(i,j)[1];
+							result.at<Vec3b>(y,x)[2] = img2.at<Vec3b>(i,j)[2];
+							
+//							result.at<Vec3b>(y,x)[0] = img2.at<Vec3b>(i,j)[0] - img1.at<Vec3b>(y,x)[0];
+//							result.at<Vec3b>(y,x)[1] = img2.at<Vec3b>(i,j)[1] - img1.at<Vec3b>(y,x)[1];
+//							result.at<Vec3b>(y,x)[2] = img2.at<Vec3b>(i,j)[2] - img1.at<Vec3b>(y,x)[2];
+						
+							//Image with just triangles
+							if(inTriangleArea(pOri,triangleOri)){
+								resultT.at<Vec3b>(y,x)[0] = img2.at<Vec3b>(i,j)[0]- img1.at<Vec3b>(y,x)[0];
+								resultT.at<Vec3b>(y,x)[1] = img2.at<Vec3b>(i,j)[1]- img1.at<Vec3b>(y,x)[1];
+								resultT.at<Vec3b>(y,x)[2] = img2.at<Vec3b>(i,j)[2]- img1.at<Vec3b>(y,x)[2];
+							}
 						}	
 					}
 				}
@@ -1076,7 +1256,7 @@ void delaunayMatchedTrianglesBoundTest(cv::Mat img1, cv::Mat img2, PointCloud<Po
 		}
 		once = true;
 	}
-	
+	sightFlat = EquiToSphere(resultT, 1,0,0,0);
 
 	cv::namedWindow("first image", 0);
 	cv::imshow("first image",image1);
@@ -1086,6 +1266,11 @@ void delaunayMatchedTrianglesBoundTest(cv::Mat img1, cv::Mat img2, PointCloud<Po
 	
 	cv::namedWindow("Result", 0);
 	cv::imshow("Result", result);
+	
+	cv::namedWindow("Result Triangles", 0);
+	cv::imshow("Result Triangles", resultT);
+	
+	return;
 }
 
 

@@ -219,7 +219,7 @@ int main(int argc, char** argv)
 		//cout << "Height: " << allImages[k].rows << endl;
 		//Verify image has content
 		if(!ori.data){
-			cout << "Input image was not loaded, please verify: " << argv[1] << im_num <<".jpg" << endl;
+			cout << "Input image was not loaded, please verify: " << argv[1] << k+1 <<".jpg" << endl;
 			return -1;
 		}
 
@@ -363,7 +363,7 @@ int main(int argc, char** argv)
 	//KeyPointAndMatchesTest(allImages[0], allImages[1]);
 	
 	//Test of image interpolation
-	//ori = cv::imread("test1.jpg",1);
+//	ori = cv::imread("test1.jpg",1);
 	ori = allImages[0];
 	
 	//cv::Mat templ = cv::imread("test2.jpg",1);
@@ -376,26 +376,54 @@ int main(int argc, char** argv)
 //	//Test of optical flow 
 	//optFlowMapTest(allImages[0], allImages[1]);
 	
+	//Line detection testing
+	//getLinesTest(ori);
 	
-//	//Test of Delaunay Triangles
-	//delaunayTriangleTest(ori, "T1");
-	//delaunayTriangleTest(allImages[1], "T2");
+//	edge detection test
+//	cv::Mat result1 = detectEdges(ori);
+//	cv::Mat result2 = detectEdges(templ);
+//	cv::namedWindow("edges1", 0);
+//	cv::namedWindow("edges2", 0);
+//	cv::imshow("edges1", result1);
+//	cv::imshow("edges2", result2);
 	
-	//delaunayMatchedTrianglesTest(allImages[0], allImages[1]);
-	//
 	
-	cv::Mat inter = cv::Mat::ones(ori.rows/4, ori.cols/4, ori.type());
+	cv::Mat inter = cv::Mat::ones(ori.rows/1, ori.cols/1, ori.type());
 	cv::resize(ori,inter,inter.size(),0,0,INTER_CUBIC);
 	//cv::pyrDown(ori,inter,Size(ori.cols/2,ori.rows/2));
-	//ori = inter;
+	ori = inter;
 	
 	//cv::pyrDown(templ,inter,Size(ori.cols/2,ori.rows/2));
-	cv::Mat inter2 = cv::Mat::ones(ori.rows/4, ori.cols/4, ori.type());
+	cv::Mat inter2 = cv::Mat::ones(ori.rows/1, ori.cols/1, ori.type());
 	cv::resize(templ,inter2,inter.size(),0,0,INTER_CUBIC);
-	//templ = inter2;
+	templ = inter2;
 	
-	delaunayMatchedTrianglesTest(ori, templ,sightFlat);
-	//delaunayMatchedTrianglesBoundTest(ori, templ,sightFlat);
+	//Test of Delaunay Triangles
+	//delaunayTriangleTest(ori, "T1");
+	//delaunayTriangleTestBound(ori, "T1");
+	//delaunayTriangleTest(allImages[1], "T2");
+	
+	//Test with Maching
+	//delaunayMatchedTrianglesTest(ori, templ,sightFlat);
+	//delaunayMatchedTrianglesBoundTest(result1, result2,sightFlat);
+	
+	//Test delaunay interpolation
+	int i=0;
+	//vector<cv::Mat> interpolated = delaunayInterpolateMultiple(ori,templ,1,10);
+	
+	//cout<< "Number of interpolated images: " << interpolated.size() <<endl;
+	for(i=0;i<10;i++){
+		ostringstream nameWindow;
+		nameWindow << "Interpolated Image_" << i ;
+		cout << nameWindow.str() << endl;
+		cv::Mat result = delaunayInterpolate(ori,templ,1,i/10.);
+		//cv::Mat result = interpolated[i];
+		//cv::namedWindow(nameWindow.str(), 0);
+		//cv::imshow(nameWindow.str(), result);
+		nameWindow << ".jpg" ;
+		cv::imwrite(nameWindow.str(),result);	
+	}
+	
 	
 	
 	cv::waitKey(0);
