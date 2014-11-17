@@ -363,7 +363,7 @@ int main(int argc, char** argv)
 	//KeyPointAndMatchesTest(allImages[0], allImages[1]);
 	
 	//Test of image interpolation
-//	ori = cv::imread("test1.jpg",1);
+	//ori = cv::imread("test1.jpg",1);
 	ori = allImages[0];
 	
 	//cv::Mat templ = cv::imread("test2.jpg",1);
@@ -405,24 +405,26 @@ int main(int argc, char** argv)
 	
 	//Test with Maching
 	//delaunayMatchedTrianglesTest(ori, templ,sightFlat);
-	//delaunayMatchedTrianglesBoundTest(result1, result2,sightFlat);
+	//delaunayMatchedTrianglesBoundTest(ori, templ,sightFlat);
 	
 	//Test delaunay interpolation
+	double nb_inter = 10;
 	int i=0;
-	//vector<cv::Mat> interpolated = delaunayInterpolateMultiple(ori,templ,1,10);
+	//vector<cv::Mat> interpolated = delaunayInterpolateMultiple(ori,templ,1,nb_inter);
 	
 	//cout<< "Number of interpolated images: " << interpolated.size() <<endl;
-	for(i=0;i<10;i++){
-		ostringstream nameWindow;
-		nameWindow << "Interpolated Image_" << i ;
-		cout << nameWindow.str() << endl;
-		cv::Mat result = delaunayInterpolate(ori,templ,1,i/10.);
-		//cv::Mat result = interpolated[i];
-		//cv::namedWindow(nameWindow.str(), 0);
-		//cv::imshow(nameWindow.str(), result);
-		nameWindow << ".jpg" ;
-		cv::imwrite(nameWindow.str(),result);	
-	}
+	
+//	for(i=0;i<nb_inter;i++){
+//		ostringstream nameWindow;
+//		nameWindow << "temp/Interpolated Image_"<< i ;
+//		cout << nameWindow.str() << endl;
+//		cv::Mat result = delaunayInterpolate(ori,templ,1,i/nb_inter);
+//		//cv::Mat result = interpolated[i];
+//		//cv::namedWindow(nameWindow.str(), 0);
+//		//cv::imshow(nameWindow.str(), result);
+//		nameWindow << ".jpg" ;
+//		cv::imwrite(nameWindow.str(),result);	
+//	}
 	
 	
 	
@@ -529,16 +531,16 @@ int main(int argc, char** argv)
 	//	cViewer.showCloud (allPtClouds[0]);
 	//	cViewer.showCloud (sightFlat);
 	//cViewer.showCloud(sightFlat);
-	viewer.addPointCloud(sightFlat, "Sphere");
+	//viewer.addPointCloud(sightFlat, "Sphere");
 
 	//	viewer.addPointCloud(sight, "Sphere");
 	//viewer.addPointCloud(sight, "Sphere1");
 
-	//viewer.addPointCloud(allPtClouds[0], "Sphere");
+	viewer.addPointCloud(allPtClouds[0], "Sphere");
 	//	viewer.addPointCloud(allPtClouds[1], "Sphere1");
 		//viewer.addPointCloud(allPtClouds[2], "Sphere2");
 	//	viewer.addPointCloud(allPtClouds[3], "Sphere3");
-	imshow("Original",allImages[0]);
+	//imshow("Original",allImages[0]);
 
 	viewer.addCoordinateSystem (radius);
 	viewer.setPointCloudRenderingProperties (visualization::PCL_VISUALIZER_POINT_SIZE, 1, "Sphere");

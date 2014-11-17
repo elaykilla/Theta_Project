@@ -55,6 +55,10 @@ bool sameTriangle(cv::Vec6f t1, cv::Vec6f t2);
 double triangleArea(double x1,double y1,double x2,double y2,double x3,double y3);
 
 /** 
+This function returns the area difference between 2 triangles
+*/
+double triangleDifference(cv::Vec6f t1, cv::Vec6f t2);
+/** 
 * Given a point and a triangle, this function verifies where the point is located inside the triangle using the areas of the 4 triangles 
 */
 bool inTriangleArea(cv::Point2f p, cv::Vec6f triangle);

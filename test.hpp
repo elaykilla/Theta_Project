@@ -1034,12 +1034,12 @@ void delaunayMatchedTrianglesBoundTest(cv::Mat img1, cv::Mat img2, PointCloud<Po
 	cv::Mat resultT = cv::Mat::zeros(img1.rows,img1.cols,img1.type());
 	cv::Subdiv2D subdiv1;
 	image1 = img1.clone();
-	//image2 = img2.clone();
+	image2 = img2.clone();
 	vector<cv::KeyPoint> keypoints1, keypoints2 ; 
 	vector<cv::Point2f> points1, points2;
 	//Extend the image 2 to the left
 	//img1.copyTo(image1(cv::Rect(cv::Point(0, 0), img1.size())));
-	img2.copyTo(image2(cv::Rect(cv::Point(0, 0), img2.size())));
+	//img2.copyTo(image2(cv::Rect(cv::Point(0, 0), img2.size())));
 	
 	//Add half of the image to the right side of the second image for boundary consistency
 	vector<cv::DMatch> matches;
@@ -1068,14 +1068,14 @@ void delaunayMatchedTrianglesBoundTest(cv::Mat img1, cv::Mat img2, PointCloud<Po
 	int io = img2.rows;
 	int jo = img2.cols;
 	
-	for(int i=0;i<io;i++){
-		for(int j=jo;j<jo+jo/2;j++){
-			//cout << "i,j" << i << "," << j << endl;
-			image2.at<Vec3b>(i,j)[0] = img2.at<Vec3b>(i, j-jo)[0];
-			image2.at<Vec3b>(i,j)[1] = img2.at<Vec3b>(i, j-jo)[1];
-			image2.at<Vec3b>(i,j)[2] = img2.at<Vec3b>(i, j-jo)[2];
-		}
-	}
+//	for(int i=0;i<io;i++){
+//		for(int j=jo;j<jo+jo/2;j++){
+//			//cout << "i,j" << i << "," << j << endl;
+//			image2.at<Vec3b>(i,j)[0] = img2.at<Vec3b>(i, j-jo)[0];
+//			image2.at<Vec3b>(i,j)[1] = img2.at<Vec3b>(i, j-jo)[1];
+//			image2.at<Vec3b>(i,j)[2] = img2.at<Vec3b>(i, j-jo)[2];
+//		}
+//	}
 	
 	//Go through all the matched keypoints, and if the point is on the first half, put it on the 		//other side if the distance to the point in the 1st image is more than 1/3 of image size
 	double max_dist = sqrt(img1.rows*img1.rows + img1.cols*img1.cols)/4;
@@ -1154,9 +1154,11 @@ void delaunayMatchedTrianglesBoundTest(cv::Mat img1, cv::Mat img2, PointCloud<Po
 		cv::line(image2, pt[0], pt[1], delaunay_color, 1, CV_AA, 0);
 		cv::line(image2, pt[1], pt[2], delaunay_color, 1, CV_AA, 0);
 		cv::line(image2, pt[2], pt[0], delaunay_color, 1, CV_AA, 0);
-		
-		
 		logFile << "Matching Points Forming Triangles2 " << i << " : "<< pt[0] << "," << pt[1] << "," << pt[2] << endl;
+		
+		cv::Mat tWarp = transforms[i];
+		
+		logFile << "Affine Transformation matrix" << tWarp << endl;
 		logFile << "-----------------------------------------------------------------------------------------"<< endl;
 		
 		colors.push_back(delaunay_color);
@@ -1172,7 +1174,7 @@ void delaunayMatchedTrianglesBoundTest(cv::Mat img1, cv::Mat img2, PointCloud<Po
 	cout << "Beginning Image point calculations" << endl;
 	int nbTriangles = 0;
 	bool once = true;
-	for(int k=0;k<triangles2.size();k++){
+	for(int k=0;k<triangles1.size();k++){
 		tWarp = transforms[k];
 		double* uprow = tWarp.ptr<double>(0);
 		double* downrow = tWarp.ptr<double>(1);
@@ -1233,22 +1235,22 @@ void delaunayMatchedTrianglesBoundTest(cv::Mat img1, cv::Mat img2, PointCloud<Po
 						y = cvRound(y);
 						pOri.x = x;
 						pOri.y = y;
-						if(y>0 && x>0 && x<result.cols && y<result.rows){
+						if(inTriangleArea(pOri,triangleOri)){
 							//sightFlat->points.push_back(p1);
-							result.at<Vec3b>(y,x)[0] = img2.at<Vec3b>(i,j)[0];
-							result.at<Vec3b>(y,x)[1] = img2.at<Vec3b>(i,j)[1];
-							result.at<Vec3b>(y,x)[2] = img2.at<Vec3b>(i,j)[2];
+							result.at<Vec3b>(y,x)[0] = img1.at<Vec3b>(i,j)[0];
+							result.at<Vec3b>(y,x)[1] = img1.at<Vec3b>(i,j)[1];
+							result.at<Vec3b>(y,x)[2] = img1.at<Vec3b>(i,j)[2];
 							
 //							result.at<Vec3b>(y,x)[0] = img2.at<Vec3b>(i,j)[0] - img1.at<Vec3b>(y,x)[0];
 //							result.at<Vec3b>(y,x)[1] = img2.at<Vec3b>(i,j)[1] - img1.at<Vec3b>(y,x)[1];
 //							result.at<Vec3b>(y,x)[2] = img2.at<Vec3b>(i,j)[2] - img1.at<Vec3b>(y,x)[2];
 						
 							//Image with just triangles
-							if(inTriangleArea(pOri,triangleOri)){
-								resultT.at<Vec3b>(y,x)[0] = img2.at<Vec3b>(i,j)[0]- img1.at<Vec3b>(y,x)[0];
-								resultT.at<Vec3b>(y,x)[1] = img2.at<Vec3b>(i,j)[1]- img1.at<Vec3b>(y,x)[1];
-								resultT.at<Vec3b>(y,x)[2] = img2.at<Vec3b>(i,j)[2]- img1.at<Vec3b>(y,x)[2];
-							}
+//							if(inTriangleArea(pOri,triangleOri)){
+//								resultT.at<Vec3b>(y,x)[0] = img2.at<Vec3b>(i,j)[0]- img1.at<Vec3b>(y,x)[0];
+//								resultT.at<Vec3b>(y,x)[1] = img2.at<Vec3b>(i,j)[1]- img1.at<Vec3b>(y,x)[1];
+//								resultT.at<Vec3b>(y,x)[2] = img2.at<Vec3b>(i,j)[2]- img1.at<Vec3b>(y,x)[2];
+//							}
 						}	
 					}
 				}
@@ -1256,7 +1258,7 @@ void delaunayMatchedTrianglesBoundTest(cv::Mat img1, cv::Mat img2, PointCloud<Po
 		}
 		once = true;
 	}
-	sightFlat = EquiToSphere(resultT, 1,0,0,0);
+	//sightFlat = EquiToSphere(resultT, 1,0,0,0);
 
 	cv::namedWindow("first image", 0);
 	cv::imshow("first image",image1);
@@ -1267,8 +1269,8 @@ void delaunayMatchedTrianglesBoundTest(cv::Mat img1, cv::Mat img2, PointCloud<Po
 	cv::namedWindow("Result", 0);
 	cv::imshow("Result", result);
 	
-	cv::namedWindow("Result Triangles", 0);
-	cv::imshow("Result Triangles", resultT);
+//	cv::namedWindow("Result Triangles", 0);
+//	cv::imshow("Result Triangles", resultT);
 	
 	return;
 }

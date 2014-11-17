@@ -103,6 +103,37 @@ double triangleArea(double x1,double y1,double x2,double y2,double x3,double y3)
 }
 
 
+double triangleDifference(cv::Vec6f t1, cv::Vec6f t2){
+	//Points from the 1st triangle
+	double x1,y1,x2,y2,x3,y3;
+	
+	//Points from the 2nd triangle
+	double xp1,yp1,xp2,yp2,xp3,yp3;
+	
+	//triangle areas
+	double area1,area2;
+	
+	x1 = t1[0];
+	y1 = t1[1];
+	x2 = t1[2];
+	y2 = t1[3];
+	x3 = t1[4];
+	y3 = t1[5];
+	
+	xp1 = t2[0];
+	yp1 = t2[1];
+	xp2 = t2[2];
+	yp2 = t2[3];
+	xp3 = t2[4];
+	yp3 = t2[5];
+	
+	area1 = triangleArea(x1,y1,x2,y2,x3,y3);
+	area2 = triangleArea(xp1,yp1,xp2,yp2,xp3,yp3);
+	
+	return abs(area1 - area2);
+
+}
+
 bool inTriangleArea(cv::Point2f p, cv::Vec6f triangle){
 	cv::Point2f p1,p2,p3; 
 	double epsilon = 0.01;
