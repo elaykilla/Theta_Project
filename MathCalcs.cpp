@@ -204,6 +204,84 @@ bool inTriangle(cv::Point2f p, cv::Vec6f triangle){
 	
 }
 
+
+/**
+* Compute the affine 3*4 matrix between 2 triangles given with the 3D coordinates of each point
+*/
+cv::Mat getAffine3D(Vec9f t1, Vec9f t2){
+	//Points from 1st triangle
+	double x1,x2,x3,y1,y2,y3,z1,z2,z3;
+
+	x1 = t1[0];
+	x2 = t1[1];
+	x3 = t1[2];
+	y1 = t1[3];
+	y2 = t1[4];
+	y3 = t1[5];
+	z1 = t1[6];
+	z2 = t1[7];
+	z3 = t1[8];
+
+
+	//Points from 2nd triangle
+	double xp1,xp2,xp3,yp1,yp2,yp3,zp1,zp2,zp3;	
+	xp1 = t2[0];
+	xp2 = t2[1];
+	xp3 = t2[2];
+	yp1 = t2[3];
+	yp2 = t2[4];
+	yp3 = t2[5];
+	zp1 = t2[6];
+	zp2 = t2[7];
+	zp3 = t2[8];
+	
+	cv::Mat tri_map1(4,3,CV_32FC1), tri_map2(4,3,CV_32FC1);
+	
+	double* r0 = tri_map1.ptr<double>(0);
+	double* r1 = tri_map1.ptr<double>(1);
+	double* r2 = tri_map1.ptr<double>(2);
+	double* r3 = tri_map1.ptr<double>(3);
+	
+	r0[0] = x1;
+	r0[1] = x2;
+	r0[2] = x3;
+	
+	r1[0] = y1;
+	r1[1] = y2;
+	r1[2] = y3;
+	
+	r2[0] = z1;
+	r2[1] = z2;
+	r2[2] = z3;
+	
+	r3[0] = 1;
+	r3[1] = 1;
+	r3[2] = 1;
+	
+	
+	double* rt0 = tri_map2.ptr<double>(0);
+	double* rt1 = tri_map2.ptr<double>(1);
+	double* rt2 = tri_map2.ptr<double>(2);
+	double* rt3 = tri_map2.ptr<double>(3);
+	
+	rt0[0] = xp1;
+	rt0[1] = xp2;
+	rt0[2] = xp3;
+	
+	rt1[0] = yp1;
+	rt1[1] = yp2;
+	rt1[2] = yp3;
+	
+	rt2[0] = zp1;
+	rt2[1] = zp2;
+	rt2[2] = zp3;
+	
+	rt3[0] = 0;
+	rt3[1] = 0;
+	rt3[2] = 1;
+
+}
+
 void rotateX(PointXYZRGB &p, double alpha)
 {
 
@@ -362,7 +440,7 @@ void spheric2Cartesian(double r, double theta, double phi, PointXYZRGB &p){
  * @Outputs 
  * 	(x,y,z) are the cartesian coordinates of the point on the surface of the sphere
  */
-void sphereCoordinates(int i, int j, double r, int rows, int cols, double &x, double &y, double &z)
+void sphereCoordinates(float i, float j, double r, int rows, int cols, double &x, double &y, double &z)
 {
 	//Convert from (i,j) pixel values to (theta,phi) angle values 
 	double theta,phi;

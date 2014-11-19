@@ -13,6 +13,10 @@
 #include "standard_headers.hpp"
 #include "cv_headers.hpp"
 #include "pcl_headers.hpp"
+
+//Define new types 
+typedef cv::Vec<float, 9> Vec9f;
+
 //#include "boost_headers.hpp"
 /*
 * 
@@ -67,6 +71,11 @@ bool inTriangleArea(cv::Point2f p, cv::Vec6f triangle);
 * Given a point and a triangle, this function verifies where the point is located inside the triangle
 */
 bool inTriangle(cv::Point2f p, cv::Vec6f triangle);
+
+/**
+* Compute the affine 3*4 matrix between 2 triangles given with the 3D coordinates of each point
+*/
+cv::Mat getAffine3D(Vec9f t1, Vec9f t2);
 /** 
 Rotate a point by an angle theta around the X axis
 */
@@ -130,7 +139,7 @@ void spheric2Cartesian(double r, double theta, double phi, PointXYZRGB &p);
 * @Outputs 
 * 	(x,y,z) are the cartesian coordinates of the point on the surface of the sphere
 */
-void sphereCoordinates(int i, int j, double r, int rows, int cols, double &x, double &y, double &z);
+void sphereCoordinates(float i, float j, double r, int rows, int cols, double &x, double &y, double &z);
 /**
 * This is the inverse of the previous functions. Given a point on the surface of the sphere, it gives its (i,j) pixel 
 * coordinates

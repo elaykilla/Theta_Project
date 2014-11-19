@@ -207,11 +207,11 @@ void getKeypointsAndMatches(Mat image1, Mat image2, vector<KeyPoint> &keypoints1
 		return ;
 	}
 
-//	keypoints1 = get2DKeypoints(image1);
-//	keypoints2 = get2DKeypoints(image2);
+	keypoints1 = get2DKeypoints(image1);
+	keypoints2 = get2DKeypoints(image2);
 	
-	keypoints1 = getSiftKeypoints(image1);
-	keypoints2 = getSiftKeypoints(image2);
+	//keypoints1 = getSiftKeypoints(image1);
+	//keypoints2 = getSiftKeypoints(image2);
 
 	matches = getMatches(image1, image2, keypoints1, keypoints2);
 
@@ -862,6 +862,39 @@ int locateTriangleIndex(Subdiv2D subdiv , vector<Vec6f> triangles, cv::Point2f p
 
 }
 
+
+//Get 3D triangle from 2D triangle list
+void get3DSphereTriangles(int rows, int cols, double r, vector<Vec6f> triangles2D,vector<Vec9f> triangles3D){
+	Vec6f t2D;
+	Vec9f t3D;
+	int i,j;
+	double x,y,z;
+	
+	//For every triangle
+	for(int k=0;k<triangles2D.size();k++){
+		t2D = triangles2D[k];
+		int p = 0;
+		
+		//For each point in the triangle
+		for(int l=0;l<6;l+=2){
+			//Get (i,j) coordinates of the point
+			i = cvRound(t2D[l]);
+			j = cvRound(t2D[l+1]);
+			
+			//Calculate position on Sphere
+			sphereCoordinates(i,j, r, rows,cols, x, y, z);
+			
+			t3D[l+p] = x;
+			t3D[l+p+1] = y;
+			t3D[l+p+2] = z;
+			p++;
+		}
+		triangles3D.push_back(t3D);
+	}
+}
+
+
+
 vector<cv::Mat> getAffineTriangleTransforms (vector<Vec6f> triangles1, vector<Vec6f> triangles2){
 
 
@@ -997,7 +1030,7 @@ cv::Mat delaunayInterpolate(cv::Mat img1, cv::Mat img2, double dist, double pos)
 	vector<cv::Mat> transforms;
 
 	//Get the affine transform between each of the triangles
-	transforms = getAffineTriangleTransforms(triangles2, triangles1);
+	transforms = getAffineTriangleTransforms(triangles1, triangles2);
 
 
 	cv::Mat tWarp(2,3,CV_32FC1) ;
@@ -1006,7 +1039,7 @@ cv::Mat delaunayInterpolate(cv::Mat img1, cv::Mat img2, double dist, double pos)
 	
 	cout << "Beginning Image point calculations" << endl;
 	//Go through all the Triangles in the second image
-	for(int k=0;k<triangles2.size();k++){
+	for(int k=0;k<triangles1.size();k++){
 	//for(int k=10;k<11;k++){
 		tWarp = transforms[k];
 		//cout << "transform matrix: " << tWarp << endl;
@@ -1027,6 +1060,12 @@ cv::Mat delaunayInterpolate(cv::Mat img1, cv::Mat img2, double dist, double pos)
 		c.x = triangle[4];
 		c.y = triangle[5];
 		
+		
+		//Skip big triangels outside image1
+		if(a.x < 0 || a.x > img1.cols || a.y<0 || a.y > img1.rows || b.x < 0 || b.x > img1.cols || b.y<0 || b.y > img1.rows || c.x < 0 || c.x > img1.cols || c.y<0 || c.y > img1.rows){
+			continue;
+		}
+		
 		//////For printing purposes
 		a1.x = triangle2[0];
 		a1.y = triangle2[1];
@@ -1046,10 +1085,23 @@ cv::Mat delaunayInterpolate(cv::Mat img1, cv::Mat img2, double dist, double pos)
 		cinter.x = (c.x*(dist-pos) + c1.x*pos)/dist; 
 		cinter.y = (c.y*(dist-pos) + c1.y*pos)/dist;
 		
-		cv::Scalar delaunay_color(0, 0, 0);
+		cv::Scalar delaunay_color(255, 255, 255);
 		cv::line(result, ainter, binter, delaunay_color, 1, CV_AA, 0);
 		cv::line(result, binter, cinter, delaunay_color, 1, CV_AA, 0);
 		cv::line(result, cinter, ainter, delaunay_color, 1, CV_AA, 0);
+		
+		
+		//Picture 1 Triangles
+		delaunay_color = cv::Scalar(255, 0, 0);
+		cv::line(result, a, b, delaunay_color, 1, CV_AA, 0);
+		cv::line(result, b, c, delaunay_color, 1, CV_AA, 0);
+		cv::line(result, c, a, delaunay_color, 1, CV_AA, 0);
+		
+		//Pic 2 triangles1
+		delaunay_color = cv::Scalar(0, 0, 255);
+		cv::line(result, a1, b1, delaunay_color, 1, CV_AA, 0);
+		cv::line(result, b1, c1, delaunay_color, 1, CV_AA, 0);
+		cv::line(result, c1, a1, delaunay_color, 1, CV_AA, 0);
 		
 		
 		Vec6f triangle_inter;
@@ -1110,7 +1162,7 @@ cv::Mat delaunayInterpolate(cv::Mat img1, cv::Mat img2, double dist, double pos)
 		int ymin = cvRound(min(a.y, min(b.y,c.y)));
 
 
-		cv::Point2f p,p2;
+		cv::Point2f p,pinter,p2;
 
 		for(int i=ymin;i<=ymax;i++){
 			for(int j=xmin;j<=xmax;j++){
@@ -1119,8 +1171,8 @@ cv::Mat delaunayInterpolate(cv::Mat img1, cv::Mat img2, double dist, double pos)
 
 
 				if(i>0 && j>0 && j<img2.cols && i<img2.rows){
-					float x = uprow[0] * p.x + uprow[1]* p.y + uprow[2];
-					float y = downrow[0] * p.x + downrow[1]* p.y + downrow[2];
+					//float x = uprow[0] * p.y + uprow[1]* p.x + uprow[2];
+					//float y = downrow[0] * p.y + downrow[1]* p.x + downrow[2];
 
 
 					if(inTriangleArea(p,triangle)){
@@ -1135,50 +1187,57 @@ cv::Mat delaunayInterpolate(cv::Mat img1, cv::Mat img2, double dist, double pos)
 						//
 						xinter = cvRound(xinter);
 						yinter = cvRound(yinter);
-						p2.x = xinter;
-						p2.y = yinter;
-						if(inTriangleArea(p2,triangle2)){
+						pinter.x = xinter;
+						pinter.y = yinter;
+						p2.x = cvRound(x);
+						p2.y = cvRound(y);
+						//if(cvRound(x)>0 & cvRound(y)>0 && cvRound(y)<result.cols && cvRound(x)<result.rows){
+						
+							//result.at<Vec3b>(p)[0] = img1.at<Vec3b>(p)[0];
+							//result.at<Vec3b>(p)[1] = img1.at<Vec3b>(p)[1];
+							//result.at<Vec3b>(p)[2] = img1.at<Vec3b>(p)[2];
+						if(inTriangleArea(pinter,triangle_inter)){
 							//Get interpolated pixel values
 							uchar b,g,r = 0;
 
 							if(use_first){
-								b = img1.at<Vec3b>(y,x)[0];
-								g = img1.at<Vec3b>(y,x)[1];
-								r = img1.at<Vec3b>(y,x)[2];
-								
-								
-								result.at<Vec3b>(yinter,xinter)[0] = b;
-								result.at<Vec3b>(yinter,xinter)[1] = g;
-								result.at<Vec3b>(yinter,xinter)[2] = r;
+								b = img1.at<Vec3b>(p)[0];
+								g = img1.at<Vec3b>(p)[1];
+								r = img1.at<Vec3b>(p)[2];
+//								
+//								
+//								result.at<Vec3b>(p2)[0] = b;
+//								result.at<Vec3b>(p2)[1] = g;
+//								result.at<Vec3b>(p2)[2] = r;
 							}
 							
 							else if(use_second){
-								b = img2.at<Vec3b>(i,j)[0];
-								g = img2.at<Vec3b>(i,j)[1];
-								r = img2.at<Vec3b>(i,j)[2];
+								b = img2.at<Vec3b>(p2)[0];
+								g = img2.at<Vec3b>(p2)[1];
+								r = img2.at<Vec3b>(p2)[2];
 							
-								result.at<Vec3b>(yinter,xinter)[0] = b;
-								result.at<Vec3b>(yinter,xinter)[1] = g;
-								result.at<Vec3b>(yinter,xinter)[2] = r;
+//								result.at<Vec3b>(yinter,xinter)[0] = b;
+//								result.at<Vec3b>(yinter,xinter)[1] = g;
+//								result.at<Vec3b>(yinter,xinter)[2] = r;
 							}
-							
+//							
 							else{
-//								b = 255;
-//								g = 255;
-//								r = 255;
-								
-								b = (img2.at<Vec3b>(i,j)[0]*pos + img1.at<Vec3b>(y,x)[0]*(dist-pos))/dist;
-								g = (img2.at<Vec3b>(i,j)[1]*pos + img1.at<Vec3b>(y,x)[1]*(dist-pos))/dist;
-								r = (img2.at<Vec3b>(i,j)[2]*pos + img1.at<Vec3b>(y,x)[2]*(dist-pos))/dist;
+////								b = 255;
+////								g = 255;
+////								r = 255;
+//								
+								b = (img2.at<Vec3b>(p2)[0]*pos + img1.at<Vec3b>(p)[0]*(dist-pos))/dist;
+								g = (img2.at<Vec3b>(p2)[1]*pos + img1.at<Vec3b>(p)[1]*(dist-pos))/dist;
+								r = (img2.at<Vec3b>(p2)[2]*pos + img1.at<Vec3b>(p)[2]*(dist-pos))/dist;
 								result.at<Vec3b>(yinter,xinter)[0] = b;
-								result.at<Vec3b>(yinter,xinter)[1] = g;
-								result.at<Vec3b>(yinter,xinter)[2] = r;
-							
+//								result.at<Vec3b>(yinter,xinter)[1] = g;
+//								result.at<Vec3b>(yinter,xinter)[2] = r;
+//							
 							}
 							
-//							result.at<Vec3b>(yinter,xinter)[0] = b;
-//							result.at<Vec3b>(yinter,xinter)[1] = g;
-//							result.at<Vec3b>(yinter,xinter)[2] = r;
+							result.at<Vec3b>(pinter)[0] = b;
+							result.at<Vec3b>(pinter)[1] = g;
+							result.at<Vec3b>(pinter)[2] = r;
 						}	
 					}
 				}
@@ -1361,8 +1420,8 @@ vector<cv::Mat> delaunayInterpolateMultiple(cv::Mat img1, cv::Mat img2, double d
 
 
 					if(i>0 && j>0 && j<img2.cols && i<img2.rows){
-						float x = uprow[0] * p.x + uprow[1]* p.y + uprow[2];
-						float y = downrow[0] * p.x + downrow[1]* p.y + downrow[2];
+						//float x = uprow[0] * p.x + uprow[1]* p.y + uprow[2];
+						//float y = downrow[0] * p.x + downrow[1]* p.y + downrow[2];
 
 
 						if(inTriangleArea(p,triangle)){

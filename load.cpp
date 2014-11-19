@@ -363,11 +363,11 @@ int main(int argc, char** argv)
 	//KeyPointAndMatchesTest(allImages[0], allImages[1]);
 	
 	//Test of image interpolation
-	//ori = cv::imread("test1.jpg",1);
-	ori = allImages[0];
+	ori = cv::imread("test1.jpg",1);
+	//ori = allImages[0];
 	
-	//cv::Mat templ = cv::imread("test2.jpg",1);
-	cv::Mat templ = allImages[1];
+	cv::Mat templ = cv::imread("test2.jpg",1);
+	//cv::Mat templ = allImages[1];
 //	interpolate2DTest(allImages[0], allImages[1], 8, 4);
 	
 	//Test of sphereInterpolate
@@ -414,17 +414,17 @@ int main(int argc, char** argv)
 	
 	//cout<< "Number of interpolated images: " << interpolated.size() <<endl;
 	
-//	for(i=0;i<nb_inter;i++){
-//		ostringstream nameWindow;
-//		nameWindow << "temp/Interpolated Image_"<< i ;
-//		cout << nameWindow.str() << endl;
-//		cv::Mat result = delaunayInterpolate(ori,templ,1,i/nb_inter);
-//		//cv::Mat result = interpolated[i];
-//		//cv::namedWindow(nameWindow.str(), 0);
-//		//cv::imshow(nameWindow.str(), result);
-//		nameWindow << ".jpg" ;
-//		cv::imwrite(nameWindow.str(),result);	
-//	}
+	for(i=0;i<nb_inter;i++){
+		ostringstream nameWindow;
+		nameWindow << "temp/Interpolated Image_"<< i ;
+		cout << nameWindow.str() << endl;
+		//cv::Mat result = delaunayInterpolate(ori,templ,1,i/nb_inter);
+		//cv::Mat result = interpolated[i];
+		//cv::namedWindow(nameWindow.str(), 0);
+		//cv::imshow(nameWindow.str(), result);
+		nameWindow << ".jpg" ;
+		cv::imwrite(nameWindow.str(),delaunayInterpolate(ori,templ,1,(double)i/nb_inter));	
+	}
 	
 	
 	
@@ -536,14 +536,14 @@ int main(int argc, char** argv)
 	//	viewer.addPointCloud(sight, "Sphere");
 	//viewer.addPointCloud(sight, "Sphere1");
 
-	viewer.addPointCloud(allPtClouds[0], "Sphere");
+	//viewer.addPointCloud(allPtClouds[0], "Sphere");
 	//	viewer.addPointCloud(allPtClouds[1], "Sphere1");
 		//viewer.addPointCloud(allPtClouds[2], "Sphere2");
 	//	viewer.addPointCloud(allPtClouds[3], "Sphere3");
 	//imshow("Original",allImages[0]);
 
-	viewer.addCoordinateSystem (radius);
-	viewer.setPointCloudRenderingProperties (visualization::PCL_VISUALIZER_POINT_SIZE, 1, "Sphere");
+	//viewer.addCoordinateSystem (radius*2);
+	//viewer.setPointCloudRenderingProperties (visualization::PCL_VISUALIZER_POINT_SIZE, 1, "Sphere");
 	viewer.registerKeyboardCallback (keyboardEventOccurred, (void*)&viewer);
 	while (!viewer.wasStopped ()){
 		// This seems to cause trouble when having cloud viewer and viewr running

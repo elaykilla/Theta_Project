@@ -16,6 +16,9 @@
 
 
 using namespace cv;
+
+//Define new types 
+typedef Vec<float, 9> Vec9f;
 /***************************************Image Manipulation Cv***********************************************/
 
 ////////////////////////// KeyPoints and Matching
@@ -75,7 +78,6 @@ vector<vector<cv::KeyPoint> > getMatchedKeypoints(vector<cv::KeyPoint> keypoints
 void getKeypointsAndMatches(Mat image1, Mat image2, vector<KeyPoint> &keypoints1, vector<KeyPoint> &keypoints2,vector<DMatch> &matches);
 
 
-
 //Computes Sift keypoints and matches between 2 images
 void getSiftKeypointsAndMatches(Mat image1, Mat image2, vector<KeyPoint> &keypoints1, vector<KeyPoint> &keypoints2,vector<DMatch> &matches);
 
@@ -131,6 +133,12 @@ void getCorrespondingDelaunayTriangles(vector<cv::KeyPoint> keypoints1, vector<c
 
 //Given a list of triangles using keypoints 1, this function calculates the relating triangles obtained using keypoint matches
 void makeCorrespondingDelaunayTriangles(vector<cv::Point2f> points1, vector<cv::Point2f> points2, vector<cv::Vec6f> &trianglesList1, vector<cv::Vec6f> &trianglesList2);
+
+
+/**
+* This function calculates the corresponding vertices of a triangle list from 2D (i,j) to 3D (x,y,z) using * the warping of the 2D image onto a Sphere 
+*/
+void get3DSphereTriangles(int rows, int cols, double r, vector<Vec6f> triangles2D,vector<Vec9f> triangles3D);
 /**
 * This function find the position of a given triangle in a list of triangles. It returns -1 if no triangle is found. A triangle is represented as a list of 6 floating points
 */

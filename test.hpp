@@ -1275,4 +1275,180 @@ void delaunayMatchedTrianglesBoundTest(cv::Mat img1, cv::Mat img2, PointCloud<Po
 	return;
 }
 
+public void testAffineTransform2D(cv::Mat img1, cv::Mat img2){
+cv::Mat image1;
+	//Extend second Image beyond border for border triangles
+	cv::Mat image2(img2.rows, img2.cols + img2.cols/2,img2.type());
+
+	//Resulting image
+	cv::Mat result = cv::Mat::zeros(img1.rows,img1.cols + img1.cols/2,img1.type());
+
+	//Create Subdivision of Image1
+	cv::Subdiv2D subdiv1;
+	image1 = img1.clone();
+	img2.copyTo(image2(cv::Rect(cv::Point(0, 0), img2.size())));
+	//Fill the right side with values of left side to complete second image
+	int io = img2.rows;
+	int jo = img2.cols;
+
+	
+
+
+	//Vectors for keypoints
+	vector<cv::KeyPoint> keypoints1, keypoints2 ; 
+	vector<cv::Point2f> points1, points2;
+
+
+
+	//Vector for matches
+	vector<cv::DMatch> matches;
+
+
+
+
+	//Retrive keypoints from each image, and match them
+	getKeypointsAndMatches(image1, image2, keypoints1, keypoints2,matches);
+
+	
+	
+	
+	//For every point in Keypoints1 -- it's matched keypoint is in Keypoints2 at the same position
+	vector<vector<cv::KeyPoint> > matched = getMatchedKeypoints(keypoints1, keypoints2, matches);
+	vector<vector<cv::Point2f> > matchedPts = getMatchedPoints(keypoints1, keypoints2, matches);
+
+	//Matched keypoints only
+	keypoints1 = matched[0];
+	keypoints2 = matched[1];
+
+	//Extracted points from the Keypoints
+	points1 = matchedPts[0];
+	points2 = matchedPts[1];
+
+	//Create Delaunay triangulation of the first image
+	subdiv1 = getDelaunayTriangles(matched[0], image1.rows, image1.cols);
+
+	//Extend 2nd image by half of image size
+	for(int i=0;i<io;i++){
+		for(int j=jo;j<jo+jo/2;j++){
+			//cout << "i,j" << i << "," << j << endl;
+			image2.at<Vec3b>(i,j)[0] = img2.at<Vec3b>(i, j-jo)[0];
+			image2.at<Vec3b>(i,j)[1] = img2.at<Vec3b>(i, j-jo)[1];
+			image2.at<Vec3b>(i,j)[2] = img2.at<Vec3b>(i, j-jo)[2];
+		}
+	}
+	
+	//Go through all the matched keypoints, and if the point is on the first half, put it on the 		//other side if the distance to the point in the 1st image is more than 1/3 of image size
+	double max_dist = sqrt(img1.rows*img1.rows + img1.cols*img1.cols)/4;
+	for(int i=0; i<points2.size();i++){
+		PointXYZRGB p1,p2;
+		p1.x = points1[i].x;
+		p1.y = points1[i].y;
+		
+		p2.x = points2[i].x;
+		p2.y = points2[i].y;
+		
+		if (distanceP(p1,p2)>max_dist){
+			points2[i].x += img2.cols;
+		} 
+	}
+	
+	//Vectors for the triangles
+	vector<Vec6f> triangles1, triangles2;
+
+	//Retrive the triangles from Image1
+	subdiv1.getTriangleList(triangles1);
+
+	//Make matched triangles in image 2
+	makeCorrespondingDelaunayTriangles(points1, points2, triangles1,triangles2);
+
+	//Vector for the transformations between all triangles
+	vector<cv::Mat> transforms;
+
+	//Get the affine transform between each of the triangles
+	transforms = getAffineTriangleTransforms(triangles1, triangles2);
+
+
+	cv::Mat tWarp(2,3,CV_32FC1) ;
+	cv::Point2f p;
+	
+	
+	int nbErrors = 0;
+	double epsilon = 0.01;
+	for(int k=0;k<triangles1.size();k++){
+	//for(int k=10;k<11;k++){
+		tWarp = transforms[k];
+		//cout << "transform matrix: " << tWarp << endl;
+		double* uprow = tWarp.ptr<double>(0);
+		double* downrow = tWarp.ptr<double>(1);
+		
+		//Triangle from Image1					
+		Vec6f triangle = triangles1[k];
+		
+		//Triangle from image2
+		Vec6f triangle2 = triangles2[k];
+		
+		cv::Point2f a,b,c,a1,b1,c1,acal,bcal,ccal; 
+		a.x = triangle[0];
+		a.y = triangle[1];
+		b.x = triangle[2];
+		b.y = triangle[3];
+		c.x = triangle[4];
+		c.y = triangle[5];
+		
+
+		
+		//////For printing purposes
+		a1.x = triangle2[0];
+		a1.y = triangle2[1];
+		b1.x = triangle2[2];
+		b1.y = triangle2[3];
+		c1.x = triangle2[4];
+		c1.y = triangle2[5];
+	
+
+		
+		
+		//Picture 1 Triangles
+		delaunay_color = cv::Scalar(255, 0, 0);
+		cv::line(result, a, b, delaunay_color, 1, CV_AA, 0);
+		cv::line(result, b, c, delaunay_color, 1, CV_AA, 0);
+		cv::line(result, c, a, delaunay_color, 1, CV_AA, 0);
+		
+		//Pic 2 triangles1
+		delaunay_color = cv::Scalar(0, 0, 255);
+		cv::line(result, a1, b1, delaunay_color, 1, CV_AA, 0);
+		cv::line(result, b1, c1, delaunay_color, 1, CV_AA, 0);
+		cv::line(result, c1, a1, delaunay_color, 1, CV_AA, 0);
+		
+		
+
+		
+		
+		//Apply transform to triangle points
+		acal.x = uprow[0] * a.x + uprow[1]* a.y + uprow[2];
+		acal.y = downrow[0] * a.x + downrow[1]* a.y + downrow[2];	
+		bcal.x = uprow[0] * b.x + uprow[1]* b.y + uprow[2];
+		bcal.y = downrow[0] * b.x + downrow[1]* b.y + downrow[2];	
+		ccal.x = uprow[0] * c.x + uprow[1]* c.y + uprow[2];
+		ccal.y = downrow[0] * c.x + downrow[1]* c.y + downrow[2];
+		
+		cout << "Triangle " << k << "errors" << endl;
+		if(!abs(acal.x-a1.x)<=epsilon || !abs(acal.y-a1.y)<=epsilon){
+			cout << "Error, expected: " << a1 << "calculated: " << acal << endl;
+			cout << "============================"
+		}
+		if(!abs(bcal.x-b1.x)<=epsilon || !abs(bcal.y-b1.y)<=epsilon){
+			cout << "Error, expected: " << b1 << "calculated: " << bcal << endl;
+			cout << "============================"
+		}
+		if(!abs(acal.x-a1.x)<=epsilon || !abs(acal.y-a1.y)<=epsilon){
+			cout << "Error, expected: " << c1 << "calculated: " << ccal << endl;
+			cout << "============================"
+		}	
+	}
+	
+	
+} 
+
+
 

@@ -14,7 +14,7 @@
 * @Outputs 
 * 	(x,y,z) are the cartesian coordinates of the point on the surface of the sphere
 */
-void sphereCoordinates(int i, int j, double r, int rows, int cols, double &x, double &y, double &z)
+void sphereCoordinates(float i, float j, double r, int rows, int cols, double &x, double &y, double &z)
 {
  	//Convert from (i,j) pixel values to (theta,phi) angle values 
  	double theta,phi;
