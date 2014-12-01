@@ -1076,14 +1076,14 @@ cv::Mat delaunayInterpolate(cv::Mat img1, cv::Mat img2, double dist, double pos)
 	
 		//Triangle from interpolated Image
 		cv::Point2f ainter,binter,cinter;
-		ainter.x = (a.x*(dist-pos) + a1.x*pos)/dist; 
-		ainter.y = (a.y*(dist-pos) + a1.y*pos)/dist; 
+		ainter.x = (a1.x*(dist-pos) + a.x*pos)/dist; 
+		ainter.y = (a1.y*(dist-pos) + a.y*pos)/dist; 
 		
-		binter.x = (b.x*(dist-pos) + b1.x*pos)/dist; 
-		binter.y = (b.y*(dist-pos) + b1.y*pos)/dist;
+		binter.x = (b1.x*(dist-pos) + b.x*pos)/dist; 
+		binter.y = (b1.y*(dist-pos) + b.y*pos)/dist;
 			
-		cinter.x = (c.x*(dist-pos) + c1.x*pos)/dist; 
-		cinter.y = (c.y*(dist-pos) + c1.y*pos)/dist;
+		cinter.x = (c1.x*(dist-pos) + c.x*pos)/dist; 
+		cinter.y = (c1.y*(dist-pos) + c.y*pos)/dist;
 		
 		cv::Scalar delaunay_color(255, 255, 255);
 		cv::line(result, ainter, binter, delaunay_color, 1, CV_AA, 0);
@@ -1196,7 +1196,7 @@ cv::Mat delaunayInterpolate(cv::Mat img1, cv::Mat img2, double dist, double pos)
 							//result.at<Vec3b>(p)[0] = img1.at<Vec3b>(p)[0];
 							//result.at<Vec3b>(p)[1] = img1.at<Vec3b>(p)[1];
 							//result.at<Vec3b>(p)[2] = img1.at<Vec3b>(p)[2];
-						if(inTriangleArea(pinter,triangle_inter)){
+//						if(inTriangleArea(pinter,triangle_inter)){
 							//Get interpolated pixel values
 							uchar b,g,r = 0;
 
@@ -1229,7 +1229,7 @@ cv::Mat delaunayInterpolate(cv::Mat img1, cv::Mat img2, double dist, double pos)
 								b = (img2.at<Vec3b>(p2)[0]*pos + img1.at<Vec3b>(p)[0]*(dist-pos))/dist;
 								g = (img2.at<Vec3b>(p2)[1]*pos + img1.at<Vec3b>(p)[1]*(dist-pos))/dist;
 								r = (img2.at<Vec3b>(p2)[2]*pos + img1.at<Vec3b>(p)[2]*(dist-pos))/dist;
-								result.at<Vec3b>(yinter,xinter)[0] = b;
+//								result.at<Vec3b>(yinter,xinter)[0] = b;
 //								result.at<Vec3b>(yinter,xinter)[1] = g;
 //								result.at<Vec3b>(yinter,xinter)[2] = r;
 //							
@@ -1238,7 +1238,7 @@ cv::Mat delaunayInterpolate(cv::Mat img1, cv::Mat img2, double dist, double pos)
 							result.at<Vec3b>(pinter)[0] = b;
 							result.at<Vec3b>(pinter)[1] = g;
 							result.at<Vec3b>(pinter)[2] = r;
-						}	
+//						}	
 					}
 				}
 			}
