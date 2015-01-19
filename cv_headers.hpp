@@ -20,7 +20,7 @@
 
 #include "opencv2/video/tracking.hpp"
 //using namespace cv;
-
+typedef cv::Vec<float, 9> Vec9f;
 
 #endif
   

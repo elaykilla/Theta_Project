@@ -21,6 +21,11 @@ using namespace cv;
 typedef Vec<float, 9> Vec9f;
 /***************************************Image Manipulation Cv***********************************************/
 
+/**
+* This function displays the mat values
+*/
+void showMat(Mat mat);
+
 ////////////////////////// KeyPoints and Matching
 /**
 * This function takes the image prefix name, adds the position i and saves in a cv::Mat

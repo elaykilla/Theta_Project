@@ -7,7 +7,23 @@
 
 #include"OcvManip.hpp"
 
-
+/**
+* This function displays the mat values
+*/
+void showMat(Mat mat){
+	cout << "[" ;
+	for(int i=0;i<mat.rows;i++){
+	
+		for(int j=0;j<mat.cols;j++){
+			cout << mat.at<float>(i,j);
+			
+			if(j!=mat.cols-1){ cout << "," ;}
+		}
+		
+		cout << ";" << endl;
+	}
+	cout << "]" << endl;
+}
 
 /***************************************************Image Manipulation Cv***********************************************/
 
@@ -1086,22 +1102,33 @@ cv::Mat delaunayInterpolate(cv::Mat img1, cv::Mat img2, double dist, double pos)
 		cinter.y = (c1.y*(dist-pos) + c.y*pos)/dist;
 		
 		cv::Scalar delaunay_color(255, 255, 255);
-		cv::line(result, ainter, binter, delaunay_color, 1, CV_AA, 0);
-		cv::line(result, binter, cinter, delaunay_color, 1, CV_AA, 0);
-		cv::line(result, cinter, ainter, delaunay_color, 1, CV_AA, 0);
+//		cv::line(result, ainter, binter, delaunay_color, 1, CV_AA, 0);
+//		cv::line(result, binter, cinter, delaunay_color, 1, CV_AA, 0);
+//		cv::line(result, cinter, ainter, delaunay_color, 1, CV_AA, 0);
 		
 		
 		//Picture 1 Triangles
 		delaunay_color = cv::Scalar(255, 0, 0);
-		cv::line(result, a, b, delaunay_color, 1, CV_AA, 0);
-		cv::line(result, b, c, delaunay_color, 1, CV_AA, 0);
-		cv::line(result, c, a, delaunay_color, 1, CV_AA, 0);
+//		cv::line(result, a, b, delaunay_color, 1, CV_AA, 0);
+//		cv::line(result, b, c, delaunay_color, 1, CV_AA, 0);
+//		cv::line(result, c, a, delaunay_color, 1, CV_AA, 0);
+		
+		//Draw on image !
+		cv::line(image1, a, b, delaunay_color, 1, CV_AA, 0);
+		cv::line(image1, b, c, delaunay_color, 1, CV_AA, 0);
+		cv::line(image1, c, a, delaunay_color, 1, CV_AA, 0);
 		
 		//Pic 2 triangles1
 		delaunay_color = cv::Scalar(0, 0, 255);
-		cv::line(result, a1, b1, delaunay_color, 1, CV_AA, 0);
-		cv::line(result, b1, c1, delaunay_color, 1, CV_AA, 0);
-		cv::line(result, c1, a1, delaunay_color, 1, CV_AA, 0);
+//		cv::line(result, a1, b1, delaunay_color, 1, CV_AA, 0);
+//		cv::line(result, b1, c1, delaunay_color, 1, CV_AA, 0);
+//		cv::line(result, c1, a1, delaunay_color, 1, CV_AA, 0);
+		
+		
+		//Draw on image 2
+		cv::line(image2, a1, b1, delaunay_color, 1, CV_AA, 0);
+		cv::line(image2, b1, c1, delaunay_color, 1, CV_AA, 0);
+		cv::line(image2, c1, a1, delaunay_color, 1, CV_AA, 0);
 		
 		
 		Vec6f triangle_inter;
@@ -1221,7 +1248,7 @@ cv::Mat delaunayInterpolate(cv::Mat img1, cv::Mat img2, double dist, double pos)
 //								result.at<Vec3b>(yinter,xinter)[2] = r;
 							}
 //							
-							else{
+							//else{
 ////								b = 255;
 ////								g = 255;
 ////								r = 255;
@@ -1233,7 +1260,7 @@ cv::Mat delaunayInterpolate(cv::Mat img1, cv::Mat img2, double dist, double pos)
 //								result.at<Vec3b>(yinter,xinter)[1] = g;
 //								result.at<Vec3b>(yinter,xinter)[2] = r;
 //							
-							}
+							//}
 							
 							result.at<Vec3b>(pinter)[0] = b;
 							result.at<Vec3b>(pinter)[1] = g;
@@ -1246,6 +1273,11 @@ cv::Mat delaunayInterpolate(cv::Mat img1, cv::Mat img2, double dist, double pos)
 		
 	}
 	
+	//cv::namedWindow("first image", 0);
+	//cv::imshow("first image",image1);
+	
+	//cv::namedWindow("Second Image", 0);
+	//cv::imshow("Second Image",image2);
 	return result;
 } 
 

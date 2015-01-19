@@ -15,7 +15,7 @@
 #include "pcl_headers.hpp"
 
 //Define new types 
-typedef cv::Vec<float, 9> Vec9f;
+//typedef Vec<float, 9> Vec9f;
 
 //#include "boost_headers.hpp"
 /*
@@ -71,6 +71,13 @@ bool inTriangleArea(cv::Point2f p, cv::Vec6f triangle);
 * Given a point and a triangle, this function verifies where the point is located inside the triangle
 */
 bool inTriangle(cv::Point2f p, cv::Vec6f triangle);
+
+
+/**
+* Sample points in a triangle defined by it's 3 Points in 3D. The Sampling is done depending on the size of the biggest vertex of the triangle
+*/
+vector<PointXYZRGB> sampleTriangle(Vec9f triangle);
+
 
 /**
 * Compute the affine 3*4 matrix between 2 triangles given with the 3D coordinates of each point

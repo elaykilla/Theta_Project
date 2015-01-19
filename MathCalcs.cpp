@@ -210,37 +210,43 @@ bool inTriangle(cv::Point2f p, cv::Vec6f triangle){
 */
 cv::Mat getAffine3D(Vec9f t1, Vec9f t2){
 	//Points from 1st triangle
-	double x1,x2,x3,y1,y2,y3,z1,z2,z3;
+	float x1,x2,x3,y1,y2,y3,z1,z2,z3;
+	
+	//Matrices
+	cv::Mat tri_map1(4,3,CV_32FC1), tri_map2(4,3,CV_32FC1);
+	cv::Mat tri_map1_t(3,4,CV_32FC1);
+	cv::Mat t1_t1t(4,4,CV_32FC1), t2_t1t(4,4,CV_32FC1), t1_t1t_invert(4,4,CV_32FC1),affine_transform(4,4,CV_32FC1);
 
 	x1 = t1[0];
-	x2 = t1[1];
-	x3 = t1[2];
-	y1 = t1[3];
+	y1 = t1[1];
+	z1 = t1[2];
+	x2 = t1[3];
 	y2 = t1[4];
-	y3 = t1[5];
-	z1 = t1[6];
-	z2 = t1[7];
+	z2 = t1[5];
+	x3 = t1[6];
+	y3 = t1[7];
 	z3 = t1[8];
 
 
 	//Points from 2nd triangle
-	double xp1,xp2,xp3,yp1,yp2,yp3,zp1,zp2,zp3;	
+	float xp1,xp2,xp3,yp1,yp2,yp3,zp1,zp2,zp3;	
 	xp1 = t2[0];
-	xp2 = t2[1];
-	xp3 = t2[2];
-	yp1 = t2[3];
+	yp1  = t2[1];
+	zp1 = t2[2];
+	xp2 = t2[3];
 	yp2 = t2[4];
-	yp3 = t2[5];
-	zp1 = t2[6];
-	zp2 = t2[7];
+	zp2 = t2[5];
+	xp3 = t2[6];
+	yp3 = t2[7];
 	zp3 = t2[8];
 	
-	cv::Mat tri_map1(4,3,CV_32FC1), tri_map2(4,3,CV_32FC1);
 	
-	double* r0 = tri_map1.ptr<double>(0);
-	double* r1 = tri_map1.ptr<double>(1);
-	double* r2 = tri_map1.ptr<double>(2);
-	double* r3 = tri_map1.ptr<double>(3);
+	
+	//Fill Tmap1
+	float* r0 = tri_map1.ptr<float>(0);
+	float* r1 = tri_map1.ptr<float>(1);
+	float* r2 = tri_map1.ptr<float>(2);
+	float* r3 = tri_map1.ptr<float>(3);
 	
 	r0[0] = x1;
 	r0[1] = x2;
@@ -259,10 +265,11 @@ cv::Mat getAffine3D(Vec9f t1, Vec9f t2){
 	r3[2] = 1;
 	
 	
-	double* rt0 = tri_map2.ptr<double>(0);
-	double* rt1 = tri_map2.ptr<double>(1);
-	double* rt2 = tri_map2.ptr<double>(2);
-	double* rt3 = tri_map2.ptr<double>(3);
+	//Fill Tmap2
+	float* rt0 = tri_map2.ptr<float>(0);
+	float* rt1 = tri_map2.ptr<float>(1);
+	float* rt2 = tri_map2.ptr<float>(2);
+	float* rt3 = tri_map2.ptr<float>(3);
 	
 	rt0[0] = xp1;
 	rt0[1] = xp2;
@@ -279,8 +286,75 @@ cv::Mat getAffine3D(Vec9f t1, Vec9f t2){
 	rt3[0] = 0;
 	rt3[1] = 0;
 	rt3[2] = 1;
+	
+	//Get the transpose of T_map1
+	cv::transpose(tri_map1, tri_map1_t);
+	
+	//Get T1*T1t and T2*T1t which are square matrices
+	t1_t1t = tri_map1 * tri_map1_t;
+	t2_t1t = tri_map2 * tri_map1_t;
+	
+	cv::invert(t1_t1t, t1_t1t_invert);
+	
+	affine_transform = t2_t1t * t1_t1t_invert;
+	
+	cout<< "T1:" << tri_map1 << endl;
+	cout<< "T1_transpose:" << tri_map1_t << endl;
+	cout<< "T1*T1_transpose:" << t1_t1t << endl;
+	cout<< "Inverse T1*T1_transpose:" << t1_t1t_invert << endl;
+	cout<< "T1*T1_transpose * Inverse T1*T1_transpose:" << t1_t1t * t1_t1t_invert << endl;
+	
+	cout<< "Affine:" << affine_transform << endl;
+	
+	cout<< "T2:" << tri_map2 << endl;
+	cout << "Verification: affine*t1:" << affine_transform * tri_map1 << endl;
+	
+	cout<< "T2*T1_transpose:" << t2_t1t << endl;
+	cout << "Verification: affine*t1*t1_transpose:" << affine_transform * t1_t1t << endl;
+	
+	
+	return affine_transform;
+	
+	
+	
 
 }
+
+/**
+* Sample points in a triangle defined by it's 3 Points in 3D. The Sampling is done depending on the size of the biggest vertex of the triangle
+*/
+vector<PointXYZRGB> sampleTriangle(Vec9f triangle){
+	PointXYZ a,b,c,temp ; 
+	vector<PointXYZRGB> points; 
+	double abnorm, acnorm;
+	
+	a.x = triangle[1];
+	a.y = triangle[2];
+	a.z = triangle[3];
+	b.x = triangle[4];
+	b.y = triangle[5];
+	b.z = triangle[6];
+	c.x = triangle[7];
+	c.y = triangle[8];
+	c.z = triangle[9];
+	
+	//Calculate norm of ab
+	temp.x = b.x - a.x;
+	temp.y = b.y - a.y;
+	temp.z = b.z - a.z;
+	
+	//abnorm = norm(temp);
+
+	//Calculate norm of ac
+	temp.x = c.x - a.x;
+	temp.y = c.y - a.y;
+	temp.z = c.z - a.z;
+	//acnorm = norm(temp);
+	
+	return points;
+	
+}
+
 
 void rotateX(PointXYZRGB &p, double alpha)
 {

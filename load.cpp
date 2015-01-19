@@ -363,11 +363,11 @@ int main(int argc, char** argv)
 	//KeyPointAndMatchesTest(allImages[0], allImages[1]);
 	
 	//Test of image interpolation
-	ori = cv::imread("test1.jpg",1);
-	//ori = allImages[0];
+	//ori = cv::imread("test1.jpg",1);
+	ori = allImages[0];
 	
-	cv::Mat templ = cv::imread("test2.jpg",1);
-	//cv::Mat templ = allImages[1];
+	//cv::Mat templ = cv::imread("test2.jpg",1);
+	cv::Mat templ = allImages[2];
 //	interpolate2DTest(allImages[0], allImages[1], 8, 4);
 	
 	//Test of sphereInterpolate
@@ -413,18 +413,18 @@ int main(int argc, char** argv)
 	//vector<cv::Mat> interpolated = delaunayInterpolateMultiple(ori,templ,1,nb_inter);
 	
 	//cout<< "Number of interpolated images: " << interpolated.size() <<endl;
-	
-	for(i=0;i<nb_inter;i++){
+//	
+//	for(i=0;i<nb_inter;i++){
 		ostringstream nameWindow;
-		nameWindow << "temp/Interpolated Image_"<< i ;
-		cout << nameWindow.str() << endl;
-		//cv::Mat result = delaunayInterpolate(ori,templ,1,i/nb_inter);
-		//cv::Mat result = interpolated[i];
-		//cv::namedWindow(nameWindow.str(), 0);
-		//cv::imshow(nameWindow.str(), result);
+		nameWindow << "temp/Interpolated Image_"<< 5 ;
+//		cout << nameWindow.str() << endl;
+		cv::Mat result = delaunayInterpolate(ori,templ,1,0.5);
+//		//cv::Mat result = interpolated[i];
+//		//cv::namedWindow(nameWindow.str(), 0);
+//		//cv::imshow(nameWindow.str(), result);
 		nameWindow << ".jpg" ;
-		cv::imwrite(nameWindow.str(),delaunayInterpolate(ori,templ,1,(double)i/nb_inter));	
-	}
+		cv::imwrite(nameWindow.str(),result);	
+//	}
 	
 	
 	
@@ -521,6 +521,36 @@ int main(int argc, char** argv)
 //		pxy.z = pws.z;
 //		sightFlat->points.push_back(pxy);
 //	}
+
+
+	////////////////////////////////////////Test of 3D affine transformations
+//	Vec9f t1, t2; cv::Mat affine_transform(4,4,CV_32FC1);
+//	
+//	t1[0] = 1;
+//	t1[1] = 1;
+//	t1[2] = 0;
+//	t1[3] = -1;
+//	t1[4] = 1;
+//	t1[5] = 1;
+//	t1[6] = 1;
+//	t1[7] = 0;
+//	t1[8] = 1;
+//	
+//	t2[0] = 1; 
+//	t2[1] = 1;
+//	t2[2] = 0;
+//	t2[3] = -1;
+//	t2[4] = 1;
+//	t2[5] = 1;
+//	t2[6] = 1;
+//	t2[7] = 0;
+//	t2[8] = 1;
+	
+	
+	//affine_transform = getAffine3D(t1,t2);
+	
+	
+	
 	/******************************************* End of Test Zone ***************************************************************/
 
 
