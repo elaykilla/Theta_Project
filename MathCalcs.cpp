@@ -205,6 +205,50 @@ bool inTriangle(cv::Point2f p, cv::Vec6f triangle){
 }
 
 
+/** 
+* Given a point in 3D P(x,y,z) and a triangle also in 3D defined by P1,P2,P3 ,
+* this function:
+	- projects the point P onto the plane defined by the 3 Points
+	- verifies if the point lays within the triangle 
+*/
+bool inTriangle3D(PointXYZRGB p, Vec9f triangle3D){
+	//Get triangle points
+	PointXYZRGB p1,p2,p3;
+	
+	p1.x = triangle3D[0];
+	p1.y = triangle3D[1];
+	p1.z = triangle3D[2];
+	
+	p2.x = triangle3D[3];
+	p2.y = triangle3D[4];
+	p2.z = triangle3D[5];
+	
+	p3.x = triangle3D[6];
+	p3.y = triangle3D[7];
+	p3.z = triangle3D[8];
+
+	//Get the normal vector to the plane
+	PointXYZRGB u, v, w; 
+	u.x = p2.x - p1.x ; 
+	u.y = p2.y - p1.y ; 
+	u.z = p2.z - p1.z ; 
+	
+	v.x = p3.x - p1.x ; 
+	v.y = p3.y - p1.y ; 
+	v.z = p3.z - p1.z ;
+	
+	//The cross product of u and v
+	w.x = u.y*v.z - u.z *v.y;
+	w.y = u.z * v.x - u.x*v.z;
+	w.z = u.x*v.y - u.y*v.x;
+	
+	//Get the projection of P onto the plane (P1,w);
+	PointXYZRGB pproj = orthogonalProjection2Plane(p,p1,w);
+	
+	
+
+}
+
 /**
 * Compute the affine 3*4 matrix between 2 triangles given with the 3D coordinates of each point
 */
@@ -652,7 +696,7 @@ void translateCenter(double xc, double yc, double &x, double &y){
 
 
 /**
- * Find the orthogonal projection of a point p onto a plane defined by a point and it's normal vector
+ * Find the orthogonal projection of a point p onto a plane defined by a point u and it's normal vector v
  */
 PointXYZRGB orthogonalProjection2Plane(PointXYZRGB p, PointXYZRGB u, PointXYZRGB v){
 	//Define the equation of the plane ax + by + cz = d;

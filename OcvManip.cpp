@@ -48,6 +48,24 @@ void loadImageTop(string name, cv::Mat &image, string topOrbottom){
 }
 
 
+
+/**
+
+**/
+Mat rotateImagey(Mat image, double y){
+	Mat rotated = cv::Mat::zeros(image.rows,image.cols,image.type());
+	int shift = cvRound(image.cols*y/360);
+	
+	for(int i=0;i<image.rows;i++){
+		for(int j=0;j<image.cols;j++){
+			int posj = (j+shift)%image.cols;
+			rotated.at<Vec3b>(i,posj) = image.at<Vec3b>(i,j);
+		}
+	}
+	
+	return rotated;
+}
+
 /**
  * This function returns a cv::vector containing the Keypoints from the input image using SURF
  */
@@ -989,8 +1007,8 @@ cv::Mat delaunayInterpolate(cv::Mat img1, cv::Mat img2, double dist, double pos)
 
 	//Retrive keypoints from each image, and match them
 	getKeypointsAndMatches(image1, image2, keypoints1, keypoints2,matches);
-
-	
+	//Using Sift
+	//getSiftKeypointsAndMatches(image1, image2, keypoints1, keypoints2,matches);
 	
 	
 	//For every point in Keypoints1 -- it's matched keypoint is in Keypoints2 at the same position
@@ -1079,7 +1097,7 @@ cv::Mat delaunayInterpolate(cv::Mat img1, cv::Mat img2, double dist, double pos)
 		
 		//Skip big triangels outside image1
 		if(a.x < 0 || a.x > img1.cols || a.y<0 || a.y > img1.rows || b.x < 0 || b.x > img1.cols || b.y<0 || b.y > img1.rows || c.x < 0 || c.x > img1.cols || c.y<0 || c.y > img1.rows){
-			continue;
+			//continue;
 		}
 		
 		//////For printing purposes
@@ -1227,8 +1245,17 @@ cv::Mat delaunayInterpolate(cv::Mat img1, cv::Mat img2, double dist, double pos)
 							//Get interpolated pixel values
 							uchar b,g,r = 0;
 
+							if(!use_first & !use_second){
+								if(pos<dist/2){
+									use_second = true;
+								}
+								else{
+									use_first = true;
+								}
+							}
 							if(use_first){
 								b = img1.at<Vec3b>(p)[0];
+								//b = 255;
 								g = img1.at<Vec3b>(p)[1];
 								r = img1.at<Vec3b>(p)[2];
 //								
@@ -1242,25 +1269,26 @@ cv::Mat delaunayInterpolate(cv::Mat img1, cv::Mat img2, double dist, double pos)
 								b = img2.at<Vec3b>(p2)[0];
 								g = img2.at<Vec3b>(p2)[1];
 								r = img2.at<Vec3b>(p2)[2];
+								//r = 255;
 							
 //								result.at<Vec3b>(yinter,xinter)[0] = b;
 //								result.at<Vec3b>(yinter,xinter)[1] = g;
 //								result.at<Vec3b>(yinter,xinter)[2] = r;
 							}
 //							
-							//else{
+							else{
 ////								b = 255;
 ////								g = 255;
 ////								r = 255;
 //								
-								b = (img2.at<Vec3b>(p2)[0]*pos + img1.at<Vec3b>(p)[0]*(dist-pos))/dist;
-								g = (img2.at<Vec3b>(p2)[1]*pos + img1.at<Vec3b>(p)[1]*(dist-pos))/dist;
-								r = (img2.at<Vec3b>(p2)[2]*pos + img1.at<Vec3b>(p)[2]*(dist-pos))/dist;
+								//b = (img2.at<Vec3b>(p2)[0]*pos + img1.at<Vec3b>(p)[0]*(dist-pos))/dist;
+								//g = (img2.at<Vec3b>(p2)[1]*pos + img1.at<Vec3b>(p)[1]*(dist-pos))/dist;
+								//r = (img2.at<Vec3b>(p2)[2]*pos + img1.at<Vec3b>(p)[2]*(dist-pos))/dist;
 //								result.at<Vec3b>(yinter,xinter)[0] = b;
 //								result.at<Vec3b>(yinter,xinter)[1] = g;
 //								result.at<Vec3b>(yinter,xinter)[2] = r;
 //							
-							//}
+							}
 							
 							result.at<Vec3b>(pinter)[0] = b;
 							result.at<Vec3b>(pinter)[1] = g;

@@ -300,6 +300,21 @@ int main(int argc, char** argv)
 	vector<PointXYZRGB> linep(50);
 
 
+	
+	//Image rotation test multiple
+	for(int i=13;i<51;i++){
+	ostringstream filenameb, filenamea;
+	filenameb << "ToRotate/Bottom (" << i << ").jpg" ; 
+	filenamea << "Rotated/Bottom (" << i << ").jpg" ;
+	
+	ori = cv::imread(filenameb.str(),1);
+	//ori = allImages[2];
+	
+	//cv::Mat templ = cv::imread("ToRotate/Bottom (14).JPG",1);
+	
+	cv::imwrite(filenamea.str(), rotateImagey(ori,90));
+	
+	}
 	// Project to Sphere test 
 	//	projectToSphereTest(nbPoints,step,sight);
 
@@ -363,18 +378,18 @@ int main(int argc, char** argv)
 	//KeyPointAndMatchesTest(allImages[0], allImages[1]);
 	
 	//Test of image interpolation
-	//ori = cv::imread("test1.jpg",1);
-	ori = allImages[0];
+	//ori = cv::imread("test3.jpg",1);
+	//ori = allImages[2];
 	
-	//cv::Mat templ = cv::imread("test2.jpg",1);
-	cv::Mat templ = allImages[2];
+	cv::Mat templ = cv::imread("test4.jpg",1);
+	//cv::Mat templ = allImages[3];
 //	interpolate2DTest(allImages[0], allImages[1], 8, 4);
 	
 	//Test of sphereInterpolate
 	//sightFlat = sphereInterpolate(allImages[0], allImages[1], 8, 4);
 	
 //	//Test of optical flow 
-	//optFlowMapTest(allImages[0], allImages[1]);
+	//optFlowMapTest(ori, templ);
 	
 	//Line detection testing
 	//getLinesTest(ori);
@@ -414,17 +429,17 @@ int main(int argc, char** argv)
 	
 	//cout<< "Number of interpolated images: " << interpolated.size() <<endl;
 //	
-//	for(i=0;i<nb_inter;i++){
-		ostringstream nameWindow;
-		nameWindow << "temp/Interpolated Image_"<< 5 ;
+	//for(i=0;i<nb_inter;i++){
+		//ostringstream nameWindow;
+		//nameWindow << "temp/Interpolated Image_"<< 5 ;
 //		cout << nameWindow.str() << endl;
-		cv::Mat result = delaunayInterpolate(ori,templ,1,0.5);
+		//cv::Mat result = delaunayInterpolate(ori,templ,1,0.5);
 //		//cv::Mat result = interpolated[i];
 //		//cv::namedWindow(nameWindow.str(), 0);
 //		//cv::imshow(nameWindow.str(), result);
-		nameWindow << ".jpg" ;
-		cv::imwrite(nameWindow.str(),result);	
-//	}
+		//nameWindow << ".jpg" ;
+		//cv::imwrite(nameWindow.str(),result);	
+	//}
 	
 	
 	

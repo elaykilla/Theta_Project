@@ -36,6 +36,10 @@ void loadImagei(string name, int i, cv::Mat &image);
 */
 void loadImageTop(string name, cv::Mat &image, string topOrbottom);
 
+/**
+rotate image y axis by y degrees celcius
+**/
+Mat rotateImagey(Mat image, double y);
 
 /**
 * This function returns a cv::vector containing the Keypoints from the input image using SURF

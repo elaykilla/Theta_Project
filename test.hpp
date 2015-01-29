@@ -9,6 +9,21 @@
 #include"PclManip.hpp"
 
 
+//////////////////////////////////////Rotate Image Test /////////////////////////////////
+
+void rotateImageTest(cv::Mat image, double y){
+	cv::Mat result;
+	
+	result = rotateImagey(image,y);
+	
+	cv::namedWindow("Original",0);
+	cv::namedWindow("Rotated ",0);
+	
+	cv::imshow("Original", image);
+	cv::imshow("Rotated ", result);
+
+}
+
 
 ////////////////////////////////////// Project to Sphere test ///////////////////////////
 

@@ -72,6 +72,18 @@ bool inTriangleArea(cv::Point2f p, cv::Vec6f triangle);
 */
 bool inTriangle(cv::Point2f p, cv::Vec6f triangle);
 
+/** 
+* Given a point in 3D P(x,y,z) and a triangle also in 3D defined by P1,P2,P3 ,
+* this function:
+	- projects the point onto the plane defined by the 3 Points
+	- verifies if the point lays within the triangle 
+*/
+bool inTriangle3D(PointXYZ p, Vec9f triangle3D);
+
+/** 
+* Given a point and a triangle, this function verifies where the point is located inside the triangle
+*/
+bool inTriangle(cv::Point2f p, cv::Vec6f triangle);
 
 /**
 * Sample points in a triangle defined by it's 3 Points in 3D. The Sampling is done depending on the size of the biggest vertex of the triangle
