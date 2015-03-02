@@ -302,19 +302,21 @@ int main(int argc, char** argv)
 
 	
 	//Image rotation test multiple
-	for(int i=13;i<51;i++){
-	ostringstream filenameb, filenamea;
-	filenameb << "ToRotate/Bottom (" << i << ").jpg" ; 
-	filenamea << "Rotated/Bottom (" << i << ").jpg" ;
+	double ang = 20;
+	//for(int i=10;i<13;i++){
+	//	ostringstream filenameb, filenamea;
+		//filenameb << "ToRotate/Bottom (" << i << ").jpg" ; 
+		//filenamea << "Rotated/Bottom (" << i << ").jpg" ;
 	
-	ori = cv::imread(filenameb.str(),1);
-	//ori = allImages[2];
+		//ori = cv::imread(filenameb.str(),1);
+		//ori = allImages[2];
 	
-	//cv::Mat templ = cv::imread("ToRotate/Bottom (14).JPG",1);
+		//cv::Mat templ = cv::imread("ToRotate/Bottom (14).JPG",1);
 	
-	cv::imwrite(filenamea.str(), rotateImagey(ori,90));
+		//cv::imwrite(filenamea.str(), rotateImagey(ori,ang));
+		//ang += 20;
 	
-	}
+	//}
 	// Project to Sphere test 
 	//	projectToSphereTest(nbPoints,step,sight);
 
@@ -332,11 +334,11 @@ int main(int argc, char** argv)
 
 
 	/////////////////////////////// end Test of viewing angle origin //////////////////////////////////
-	//viewingAngleOriginTest( u,  v, radius,  rows, cols,cloud, sightFlat);
-//	int trows = round(2048*70/360);
-//	int tcols = round(1024*57/180);
-//	sph = imageFromPcPlane(sightFlat,allImages[0],trows, tcols);
-//	cv::imshow("SightMat" , sph);
+	viewingAngleOriginTest( u,  v, radius,  rows, cols,cloud, sightFlat);
+	//int trows = round(2048*70/360);
+	//int tcols = round(1024*57/180);
+	//sph = imageFromPcPlane(sightFlat,allImages[0],trows, tcols);
+	//cv::imshow("SightMat" , sph);
 //	cv::waitKey(0);
 	//Viewing angles
 	///////////////////////////////////////  Test point on ray ////////////////////////////////////////
@@ -378,11 +380,11 @@ int main(int argc, char** argv)
 	//KeyPointAndMatchesTest(allImages[0], allImages[1]);
 	
 	//Test of image interpolation
-	//ori = cv::imread("test3.jpg",1);
-	//ori = allImages[2];
+	//ori = cv::imread("test3.JPG",1);
+	ori = allImages[0];
 	
-	cv::Mat templ = cv::imread("test4.jpg",1);
-	//cv::Mat templ = allImages[3];
+	//cv::Mat templ = cv::imread("test4.JPG",1);
+	cv::Mat templ = allImages[1];
 //	interpolate2DTest(allImages[0], allImages[1], 8, 4);
 	
 	//Test of sphereInterpolate
@@ -428,22 +430,26 @@ int main(int argc, char** argv)
 	//vector<cv::Mat> interpolated = delaunayInterpolateMultiple(ori,templ,1,nb_inter);
 	
 	//cout<< "Number of interpolated images: " << interpolated.size() <<endl;
-//	
+	cv::Mat result;
 	//for(i=0;i<nb_inter;i++){
-		//ostringstream nameWindow;
-		//nameWindow << "temp/Interpolated Image_"<< 5 ;
+	//	ostringstream nameWindow;
+	//	nameWindow << "temp/Interpolated Image_"<< i ;
 //		cout << nameWindow.str() << endl;
-		//cv::Mat result = delaunayInterpolate(ori,templ,1,0.5);
+	//	cv::Mat result = delaunayInterpolate(ori,templ,1,i/nb_inter);
 //		//cv::Mat result = interpolated[i];
 //		//cv::namedWindow(nameWindow.str(), 0);
 //		//cv::imshow(nameWindow.str(), result);
-		//nameWindow << ".jpg" ;
-		//cv::imwrite(nameWindow.str(),result);	
+	//	nameWindow << ".jpg" ;
+	//	cv::imwrite(nameWindow.str(),result);	
 	//}
 	
+//	sightFlat = EquiToSphere(result, 1,0,0,0);
 	
 	
-	cv::waitKey(0);
+	
+	
+	
+	//cv::waitKey(0);
 
 	//Test of Epipolar Lines
 	//cv::Mat temp = cv::imread("template3.jpg",1);
@@ -576,7 +582,7 @@ int main(int argc, char** argv)
 	//	cViewer.showCloud (allPtClouds[0]);
 	//	cViewer.showCloud (sightFlat);
 	//cViewer.showCloud(sightFlat);
-	//viewer.addPointCloud(sightFlat, "Sphere");
+	viewer.addPointCloud(sightFlat, "Sphere");
 
 	//	viewer.addPointCloud(sight, "Sphere");
 	//viewer.addPointCloud(sight, "Sphere1");
@@ -588,7 +594,7 @@ int main(int argc, char** argv)
 	//imshow("Original",allImages[0]);
 
 	//viewer.addCoordinateSystem (radius*2);
-	//viewer.setPointCloudRenderingProperties (visualization::PCL_VISUALIZER_POINT_SIZE, 1, "Sphere");
+	viewer.setPointCloudRenderingProperties (visualization::PCL_VISUALIZER_POINT_SIZE, 1, "Sphere");
 	viewer.registerKeyboardCallback (keyboardEventOccurred, (void*)&viewer);
 	while (!viewer.wasStopped ()){
 		// This seems to cause trouble when having cloud viewer and viewr running

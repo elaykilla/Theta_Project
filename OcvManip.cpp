@@ -1254,8 +1254,8 @@ cv::Mat delaunayInterpolate(cv::Mat img1, cv::Mat img2, double dist, double pos)
 								}
 							}
 							if(use_first){
-								b = img1.at<Vec3b>(p)[0];
-								//b = 255;
+								//b = img1.at<Vec3b>(p)[0];
+								b = 255;
 								g = img1.at<Vec3b>(p)[1];
 								r = img1.at<Vec3b>(p)[2];
 //								
@@ -1268,8 +1268,8 @@ cv::Mat delaunayInterpolate(cv::Mat img1, cv::Mat img2, double dist, double pos)
 							else if(use_second){
 								b = img2.at<Vec3b>(p2)[0];
 								g = img2.at<Vec3b>(p2)[1];
-								r = img2.at<Vec3b>(p2)[2];
-								//r = 255;
+								//r = img2.at<Vec3b>(p2)[2];
+								r = 255;
 							
 //								result.at<Vec3b>(yinter,xinter)[0] = b;
 //								result.at<Vec3b>(yinter,xinter)[1] = g;

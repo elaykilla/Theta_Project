@@ -34,6 +34,11 @@ double norm(PointXYZRGB u);
 
 double dotProduct(PointXYZRGB u, PointXYZRGB v);
 
+
+/**
+* The cross product of u and v
+*/
+PointXYZRGB crossProduct(PointXYZRGB u, PointXYZRGB v);
 /**
 * returns weather or not u is in [a,b] 
 */
@@ -58,6 +63,11 @@ bool sameTriangle(cv::Vec6f t1, cv::Vec6f t2);
 */
 double triangleArea(double x1,double y1,double x2,double y2,double x3,double y3);
 
+
+/*
+* Calculate the area of a triangle defined by 3 points in 3D 
+*/
+double triangleArea3D(PointXYZRGB p1,PointXYZRGB p2,PointXYZRGB p3 );
 /** 
 This function returns the area difference between 2 triangles
 */

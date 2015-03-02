@@ -28,6 +28,20 @@ double dotProduct(PointXYZRGB u, PointXYZRGB v){
 	return (u.x * v.x + u.y*v.y + u.z * v.z);
 }
 
+
+/**
+* The cross product of u and v
+*/
+PointXYZRGB crossProduct(PointXYZRGB u, PointXYZRGB v){
+
+	PointXYZRGB w;
+
+	w.x = u.y*v.z - u.z *v.y;
+	w.y = u.z * v.x - u.x*v.z;
+	w.z = u.x*v.y - u.y*v.x;
+	
+	return w;
+}
 /**
  * returns weather or not u is in [a,b] 
  */
@@ -102,6 +116,20 @@ double triangleArea(double x1,double y1,double x2,double y2,double x3,double y3)
 	return abs((x1*(y2-y3) + x2*(y3-y1)+ x3*(y1-y2))/2.0);
 }
 
+
+double triangleArea3D(PointXYZRGB p1,PointXYZRGB p2,PointXYZRGB p3 ){
+	PointXYZRGB u,v;
+	u.x = p2.x - p1.x ; 
+	u.y = p2.y - p1.y ; 
+	u.z = p2.z - p1.z ; 
+	
+	v.x = p3.x - p1.x ; 
+	v.y = p3.y - p1.y ; 
+	v.z = p3.z - p1.z ;
+	
+	return norm(crossProduct(u,v))/2;
+	
+}
 
 double triangleDifference(cv::Vec6f t1, cv::Vec6f t2){
 	//Points from the 1st triangle
@@ -228,6 +256,9 @@ bool inTriangle3D(PointXYZRGB p, Vec9f triangle3D){
 	p3.z = triangle3D[8];
 
 	//Get the normal vector to the plane
+	// u = P1 --> P2
+	// v = P1 --> P3
+	// w normal vector of the plane formed by P1,P2, and P3
 	PointXYZRGB u, v, w; 
 	u.x = p2.x - p1.x ; 
 	u.y = p2.y - p1.y ; 
@@ -245,6 +276,39 @@ bool inTriangle3D(PointXYZRGB p, Vec9f triangle3D){
 	//Get the projection of P onto the plane (P1,w);
 	PointXYZRGB pproj = orthogonalProjection2Plane(p,p1,w);
 	
+	
+	//Create vectors pP1, pP2, pP3 which are vectors from each triangle vertex, 
+	// to the projected point on the triangle plane
+	PointXYZRGB pP1, pP2, pP3;
+	pP1.x =  p1.x - pproj.x ; 
+	pP1.y =  p1.y - pproj.y ;
+	pP1.z =  p1.z - pproj.z ;
+	
+	pP2.x = + p2.x - pproj.x ; 
+	pP2.y = + p2.y - pproj.y ;
+	pP2.z = + p2.z - pproj.z ;
+	
+	pP3.x = + p3.x - pproj.x ; 
+	pP3.y = + p3.y - pproj.y ;
+	pP3.z = + p3.z - pproj.z ;
+	
+	//Compare the surfaces of the 3 sub triangles: 
+	//T1:(P1,P,P2), T2:(P1,P,P3), T3:(P2,P,P3) with that of T:(P1,P2,P3) 
+	double A1,A2,A3,A;
+	//T1, T2, T3
+	A1 = triangleArea3D(p1,pproj,p2);
+	A2 = triangleArea3D(p1,pproj,p3);
+	A3 = triangleArea3D(p2,pproj,p3);
+	
+	A = norm(crossProduct(u,v))/2.;
+	
+	//We define epsilon as a small variation equal to about 5% of the mean length of arrays
+	// We then verify that the sum of the aires is 
+	// equal to the big air at epsilon difference
+	
+	double epsilon = 5*(norm(u)+norm(v))/200;
+	double aSum = A1+A2+A3;
+	return inInterval(aSum, A-epsilon, A+epsilon);
 	
 
 }
