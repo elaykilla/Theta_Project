@@ -615,6 +615,7 @@ void optFlowMapTest(cv::Mat image1, cv::Mat image2){
 
 }
 
+
 void getLinesTest(cv::Mat image){
 	vector<cv::Vec4i> lines;
 	Mat imagebw;
@@ -635,6 +636,8 @@ void getLinesTest(cv::Mat image){
 
 
 }
+
+/////////////////////////////////////// Testing triangulation ////////////////////////////////////////////
 void delaunayTriangleTest(cv::Mat img, string name){
 
 	cv::Mat image = img.clone();
@@ -697,7 +700,7 @@ void delaunayTriangleTest(cv::Mat img, string name){
 }
 
 
-
+///////////////////////////// Test to see if using triangle boudaries works /////////////////////////////
 void delaunayTriangleTestBound(cv::Mat img, string name){
 
 	cv::Mat image = img.clone();
@@ -816,6 +819,8 @@ void delaunayTriangleTestBound(cv::Mat img, string name){
 	
 }
 
+
+////////////////////////////Delaunay Triangle interpolation matching Triangles test ////////////////////
 void delaunayMatchedTrianglesTest(cv::Mat img1, cv::Mat img2, PointCloud<PointXYZRGB>::Ptr &sightFlat ){
 	
 	//For writing to files
@@ -1041,7 +1046,7 @@ void delaunayMatchedTrianglesTest(cv::Mat img1, cv::Mat img2, PointCloud<PointXY
 	return;
 }
 
-
+//////////////////////////////Delaumay Interpolation test using Triangle Boudaries//////////////////////
 void delaunayMatchedTrianglesBoundTest(cv::Mat img1, cv::Mat img2, PointCloud<PointXYZRGB>::Ptr &sightFlat ){
 	cv::Mat image1(img1.rows, img1.cols + img1.cols/2,img1.type());
 	cv::Mat image2(img2.rows, img2.cols + img2.cols/2,img2.type());

@@ -71,7 +71,7 @@ void setupClouds(string name, vector<cv::Mat> &images, vector<PointCloud<PointXY
 
 
 
-/************************************************* End Setup ***********************************************/
+/************************************************* End Setup ******************************************/
 
 
 void keyboardEventOccurred (const pcl::visualization::KeyboardEvent &event, void* viewer_void){
@@ -334,7 +334,7 @@ int main(int argc, char** argv)
 
 
 	/////////////////////////////// end Test of viewing angle origin //////////////////////////////////
-	viewingAngleOriginTest( u,  v, radius,  rows, cols,cloud, sightFlat);
+	//viewingAngleOriginTest( u,  v, radius,  rows, cols,cloud, sightFlat);
 	//int trows = round(2048*70/360);
 	//int tcols = round(1024*57/180);
 	//sph = imageFromPcPlane(sightFlat,allImages[0],trows, tcols);
@@ -425,24 +425,45 @@ int main(int argc, char** argv)
 	//delaunayMatchedTrianglesBoundTest(ori, templ,sightFlat);
 	
 	//Test delaunay interpolation
-	double nb_inter = 10;
+	double nb_inter = 50;
 	int i=0;
 	//vector<cv::Mat> interpolated = delaunayInterpolateMultiple(ori,templ,1,nb_inter);
 	
+	
+	//Multi image vector for test
+	vector<cv::Mat> images;
+		
 	//cout<< "Number of interpolated images: " << interpolated.size() <<endl;
 	cv::Mat result;
-	//for(i=0;i<nb_inter;i++){
-	//	ostringstream nameWindow;
-	//	nameWindow << "temp/Interpolated Image_"<< i ;
+//	for(i=0;i<nb_inter;i++){
+//		ostringstream nameWindow;
+//		nameWindow << "temp/Interpolated Image_"<< i ;
 //		cout << nameWindow.str() << endl;
-	//	cv::Mat result = delaunayInterpolate(ori,templ,1,i/nb_inter);
+//		cv::Mat result = delaunayInterpolate(ori,templ,1,i/nb_inter);
 //		//cv::Mat result = interpolated[i];
 //		//cv::namedWindow(nameWindow.str(), 0);
 //		//cv::imshow(nameWindow.str(), result);
-	//	nameWindow << ".jpg" ;
-	//	cv::imwrite(nameWindow.str(),result);	
-	//}
-	
+//		nameWindow << ".jpg" ;
+//		cv::imwrite(nameWindow.str(),result);	
+//		//images[i] = result;
+//		images.push_back(result);
+//	}
+
+
+	//Read and write files from tmp
+	for(i=0;i<nb_inter;i++){
+		ostringstream nameWindow;
+		nameWindow << "temp/Interpolated Image_"<< i << ".jpg" ;
+		//nameWindow << "Bottom/Bottom"<< i+1 << ".jpg" ;
+		Mat image = cv::imread(nameWindow.str(),1);
+		if(!image.data()){}
+		
+		else{
+			images.push_back(image);
+		}
+	}
+	string videoName = "temp/Interpolated Video" ;
+	imageListToVideo(images,videoName);
 //	sightFlat = EquiToSphere(result, 1,0,0,0);
 	
 	

@@ -111,6 +111,30 @@ load/fast:
 	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/build
 .PHONY : load/fast
 
+EquiTrans.o: EquiTrans.cpp.o
+.PHONY : EquiTrans.o
+
+# target to build an object file
+EquiTrans.cpp.o:
+	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/EquiTrans.cpp.o
+.PHONY : EquiTrans.cpp.o
+
+EquiTrans.i: EquiTrans.cpp.i
+.PHONY : EquiTrans.i
+
+# target to preprocess a source file
+EquiTrans.cpp.i:
+	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/EquiTrans.cpp.i
+.PHONY : EquiTrans.cpp.i
+
+EquiTrans.s: EquiTrans.cpp.s
+.PHONY : EquiTrans.s
+
+# target to generate assembly for a file
+EquiTrans.cpp.s:
+	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/EquiTrans.cpp.s
+.PHONY : EquiTrans.cpp.s
+
 MathCalcs.o: MathCalcs.cpp.o
 .PHONY : MathCalcs.o
 
@@ -216,6 +240,9 @@ help:
 	@echo "... edit_cache"
 	@echo "... load"
 	@echo "... rebuild_cache"
+	@echo "... EquiTrans.o"
+	@echo "... EquiTrans.i"
+	@echo "... EquiTrans.s"
 	@echo "... MathCalcs.o"
 	@echo "... MathCalcs.i"
 	@echo "... MathCalcs.s"

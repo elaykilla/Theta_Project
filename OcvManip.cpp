@@ -25,6 +25,51 @@ void showMat(Mat mat){
 	cout << "]" << endl;
 }
 
+
+
+void imageListToVideo(vector<cv::Mat> images , string fileName) {
+	if(images.size() == 0){
+		cout << "Please provide images" << endl;
+		return;
+	}
+	
+	
+	
+	else{
+		//Get the first image as reference for frame size 
+		Mat img = images[0]; 
+	
+		//Setup parameters for the video writer
+		ostringstream name;
+		name << fileName << ".mpeg";
+	
+		//Define framerate
+		double fps = 20;
+	
+		//Define frame size
+		Size fSize = img.size();
+		
+	
+	
+		int ex = CV_FOURCC('M','P','E','G');
+		VideoWriter outputVideo;
+		
+		outputVideo.open(name.str(),ex,fps,fSize,true); 	
+	
+		if(!outputVideo.isOpened()){
+			cout  << "Could not open the output video for write: " << name << endl;
+        		return ;
+		}
+		
+		else{
+			for(int i=0;i<images.size();i++){
+				img = images[i];
+				outputVideo.write(img);
+			}
+		}
+	}
+
+} 
 /***************************************************Image Manipulation Cv***********************************************/
 
 /**
@@ -981,7 +1026,7 @@ cv::Mat delaunayInterpolate(cv::Mat img1, cv::Mat img2, double dist, double pos)
 
 	//Resulting image
 	cv::Mat result = cv::Mat::zeros(img1.rows,img1.cols + img1.cols/2,img1.type());
-
+	cv::Mat resultNormalSize = cv::Mat::zeros(img1.rows,img1.cols,img1.type());
 	//Create Subdivision of Image1
 	cv::Subdiv2D subdiv1;
 	image1 = img1.clone();
@@ -1236,7 +1281,7 @@ cv::Mat delaunayInterpolate(cv::Mat img1, cv::Mat img2, double dist, double pos)
 						pinter.y = yinter;
 						p2.x = cvRound(x);
 						p2.y = cvRound(y);
-						//if(cvRound(x)>0 & cvRound(y)>0 && cvRound(y)<result.cols && cvRound(x)<result.rows){
+//						if(cvRound(x)>0 & cvRound(y)>0 && cvRound(y)<result.cols && cvRound(x)<result.rows){
 						
 							//result.at<Vec3b>(p)[0] = img1.at<Vec3b>(p)[0];
 							//result.at<Vec3b>(p)[1] = img1.at<Vec3b>(p)[1];

@@ -2,7 +2,7 @@
  * Transform images in Equirectangular form
  */
 #include <math.h>
-#include <EquiTrans.hpp>
+#include "EquiTrans.hpp"
 
 using namespace std;
 
@@ -135,12 +135,6 @@ Mat EquiTrans::toRegular(Mat src, double cam_phi_deg, double cam_theta_deg){
       intensity = src.at<Vec3b>(e_j, e_i);     
       dst.at<Vec3b>(j, i) = intensity;
     }
-  }
-
-  debug = true;
-  if(debug){
-    imshow("Plane image", dst);
-    waitKey(0);
   }
 
   return dst;

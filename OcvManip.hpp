@@ -19,14 +19,21 @@ using namespace cv;
 
 //Define new types 
 typedef Vec<float, 9> Vec9f;
-/***************************************Image Manipulation Cv***********************************************/
+/***********************************Image Manipulation Cv***********************************************/
 
 /**
 * This function displays the mat values
 */
 void showMat(Mat mat);
 
-////////////////////////// KeyPoints and Matching
+
+/**
+* This function takes a list of images and makes a video
+*/
+void imageListToVideo(vector<cv::Mat> images, string fileName) ; 
+
+
+////////////////////////// KeyPoints and Matching /////////////////////////////////////////////////////////
 /**
 * This function takes the image prefix name, adds the position i and saves in a cv::Mat
 */
@@ -96,14 +103,15 @@ void getSiftKeypointsAndMatches(Mat image1, Mat image2, vector<KeyPoint> &keypoi
 */
 void drawEpipolarLines(Mat &image1, Mat &image2, Mat &imageMatches);
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-///////////////Line Detection
+/////////////////////////////////// Line Detection //////////////////////////////////////////////////////
 vector<cv::Vec4i> getLinesProb(cv::Mat image);
 
 cv::Mat detectEdges(cv::Mat img);
 
 
-///////////////////////////Image Interpolation and Triangulation
+///////////////////////////Image Interpolation and Triangulation /////////////////////////////////////////
 /** 
 * Function to interpolate between 2 images where the center has been translated 
 */
@@ -169,5 +177,11 @@ int locateTriangleIndex(cv::Subdiv2D subdiv , vector<cv::Vec6f> triangles, cv::P
 */
 vector<cv::Mat> getAffineTriangleTransforms (vector<Vec6f> triangles1, vector<Vec6f> triangles2);
 
+////////////////////////////////////////////Image Classification /////////////////////////////////////////
 
+
+/** 
+* Given a list of images, this function returns a Kmean clustering of the images using intensity histograms for classification.
+*/
+vector<vector< cv::Mat> > histoCluster(vector<cv::Mat>, int nbClusters);
 #endif
