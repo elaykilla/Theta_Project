@@ -1,3 +1,6 @@
+#ifndef PclManip
+#define PclMnip
+
 #include "cv_headers.hpp"
 
 using namespace cv;
@@ -8,12 +11,23 @@ using namespace cv;
 class EquiTrans {
   
 private:
-  double focal_length; // 35mm equivalent for regular camera projection
-  double film_width;   // 35mm equivalent film size
-  double film_height;
+  double focal_length; // in file size pixel
+  int film_width;   // Film size in pixel
+  int film_height;
+  double hfov;  // Horizontal field of view in degrees
+  double vfov;  // Vertical field of view in degrees
+  int getFOV(Mat, int*, int*, double*);
+  void getCubeCam(Mat, int*, int*, double*);
+  void setCamera(int, int, double);
 
 public:
   EquiTrans();
   EquiTrans(double);
-  Mat toRegular(Mat, double, double);
+
+  void makeCubeFaces(Mat, Mat[6]);
+  bool setFOV(double, double);
+  Mat toPerspective(Mat, double, double);
+  void unsetFOV();
 };
+
+#endif

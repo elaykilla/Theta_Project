@@ -15,6 +15,7 @@
 #include"test.hpp"
 
 
+
 //Constants for images
 const double alpha = 15;
 const double nb_images = 24;
@@ -139,7 +140,7 @@ int main(int argc, char** argv)
 
 
 	//Setup 3D visualizer
-	visualization::PCLVisualizer viewer("3D viewer");
+	//visualization::PCLVisualizer viewer("3D viewer");
 	//	visualization::CloudViewer cViewer ("Simple Cloud Viewer");
 	//	//viewer.setBackgroundColor (0, 0, 0);
 
@@ -425,130 +426,44 @@ int main(int argc, char** argv)
 	//delaunayMatchedTrianglesBoundTest(ori, templ,sightFlat);
 	
 	//Test delaunay interpolation
-	double nb_inter = 50;
+	double nb_inter = 10;
 	int i=0;
 	//vector<cv::Mat> interpolated = delaunayInterpolateMultiple(ori,templ,1,nb_inter);
 	
 	
 	//Multi image vector for test
 	vector<cv::Mat> images;
-		
-	//cout<< "Number of interpolated images: " << interpolated.size() <<endl;
-	cv::Mat result;
-//	for(i=0;i<nb_inter;i++){
-//		ostringstream nameWindow;
-//		nameWindow << "temp/Interpolated Image_"<< i ;
-//		cout << nameWindow.str() << endl;
-//		cv::Mat result = delaunayInterpolate(ori,templ,1,i/nb_inter);
-//		//cv::Mat result = interpolated[i];
-//		//cv::namedWindow(nameWindow.str(), 0);
-//		//cv::imshow(nameWindow.str(), result);
-//		nameWindow << ".jpg" ;
-//		cv::imwrite(nameWindow.str(),result);	
-//		//images[i] = result;
-//		images.push_back(result);
-//	}
+	
+	//Test of multiple interpolated images 
+	//multipleInterpolateTest(ori,templ,2);	
+	
 
-
+	//Test of reading files from folder and making video
 	//Read and write files from tmp
-	for(i=0;i<nb_inter;i++){
-		ostringstream nameWindow;
-		nameWindow << "temp/Interpolated Image_"<< i << ".jpg" ;
+	//for(i=0;i<nb_inter;i++){
+	//	ostringstream nameWindow;
+	//	nameWindow << "temp/Interpolated Image_"<< i << ".jpg" ;
 		//nameWindow << "Bottom/Bottom"<< i+1 << ".jpg" ;
-		Mat image = cv::imread(nameWindow.str(),1);
-		if(!image.data()){}
-		
-		else{
-			images.push_back(image);
-		}
-	}
-	string videoName = "temp/Interpolated Video" ;
-	imageListToVideo(images,videoName);
+	//	Mat image = cv::imread(nameWindow.str(),1);
+	//	if(!image.data){
+	//		cout << "Please verify image names" << endl;
+	//		break;
+	//	}
+	//	else{
+	//		images.push_back(image);
+	//	}
+	//}
+	//string videoName = "temp/Interpolated Video" ;
+	//imageListToVideo(images,videoName);
 //	sightFlat = EquiToSphere(result, 1,0,0,0);
 	
 	
 	
 	
+	//EquiTrans Test 
+	//EquitransTest(ori,90.,0.);
+
 	
-	//cv::waitKey(0);
-
-	//Test of Epipolar Lines
-	//cv::Mat temp = cv::imread("template3.jpg",1);
-//	//sightFlat = EquiToSphere(temp, radius,xc,yc,zc);
-	
-	
-//	if(temp.data){
-//		EpipolarLinesTest(allImages[0],temp); 	
-//	}
-//	//Test of Angles
-//	o.x = 0;
-//	o.y = 0;
-//	o.z = 0;
-
-//	u.x = 0.8*radius;
-//	u.y = 0;
-//	u.z = 0.5*radius;
-
-//	double angle = 10;
-//	double newAngle;
-	//	cout << "Closest direction with angle from origin: " << angle << " is : " 
-	//	<< closestImDirectionOrigin (angle*PI/180, alpha) << endl;
-	//	
-	//	cout << "Closest direction with angle from u:" << u << "with angle :" << angle << " is: " 
-	//	<< closestImDirection (u,angle,alpha,radius,newAngle) << endl;
-
-
-	////////////Test of circular slits///////////////////////////
-//	double t,p;
-//	cout << "Beginning slit recovery " << endl;
-//	for(int angle=0;angle<360;angle++){
-//		int num = closestImDirection (u,angle,alpha,radius,newAngle);
-//		//cout << "New Angle: " << newAngle << endl;
-//		if(num>=tempCount){
-//			//cout << num << "too big to find" << endl;
-//			//break;
-//		}
-//		else{
-//			cloud = allPtClouds[num];
-
-//			for (int m=0;m<cloud->size();m++){
-//				iPoint = cloud->points[m];
-//				cartesian2Spheric(iPoint,radius,t,p);
-//				// t in degrees
-//				p *= 180/PI;
-////				cout << "New Angle: " << newAngle ;
-////				cout << "   theta for iPoint: " << t << endl;
-//				if(newAngle <= p && p<= newAngle+1){
-//				
-//					//testing different colors for the points
-////					if(num%3==0){
-////						iPoint.r = 255;
-////					}
-////					if(num%3==1){
-////						iPoint.b = 255;
-////					}
-////					if(num%3==2){
-////						iPoint.g = 255;
-////					}
-//					
-//					sightFlat->points.push_back(iPoint);
-//				}
-//			}
-//			//cout << "Finished point cloud number: " << num <<endl;
-//		}
-//	}
-//	cout << "ended slit recovery" << endl;
-//	
-////	ori.setTo(cv::Scalar(0,0,0));
-//	cv::Mat sightMat(ori.rows,ori.cols,ori.type());
-//	sightMat.setTo(cv::Scalar(0,0,0));
-////	cout << "Original: " <<ori.rows << ori.cols << ori.type() << endl;
-////	cout << "sightMat: " <<sightMat.rows << sightMat.cols << sightMat.type() << endl;
-//	sphereToEqui(sightFlat,radius,rows,cols,sightMat);
-//	cv::imshow("SightMat",sightMat);
-//	cv::waitKey();
-
-	////////////Test of circular slits///////////////////////////
 	
 	//3D Keypoints Test
 //	PointCloud<PointWithScale>::Ptr sightFlat1;
@@ -564,33 +479,10 @@ int main(int argc, char** argv)
 //		sightFlat->points.push_back(pxy);
 //	}
 
+ 	twoDToThreeDkeypoints(ori);
+ 	testCloudObj(allPtClouds[0]);
+///////////////////////End of 3D keypoints test ////////////////////////////
 
-	////////////////////////////////////////Test of 3D affine transformations
-//	Vec9f t1, t2; cv::Mat affine_transform(4,4,CV_32FC1);
-//	
-//	t1[0] = 1;
-//	t1[1] = 1;
-//	t1[2] = 0;
-//	t1[3] = -1;
-//	t1[4] = 1;
-//	t1[5] = 1;
-//	t1[6] = 1;
-//	t1[7] = 0;
-//	t1[8] = 1;
-//	
-//	t2[0] = 1; 
-//	t2[1] = 1;
-//	t2[2] = 0;
-//	t2[3] = -1;
-//	t2[4] = 1;
-//	t2[5] = 1;
-//	t2[6] = 1;
-//	t2[7] = 0;
-//	t2[8] = 1;
-	
-	
-	//affine_transform = getAffine3D(t1,t2);
-	
 	
 	
 	/******************************************* End of Test Zone ***************************************************************/
@@ -603,7 +495,7 @@ int main(int argc, char** argv)
 	//	cViewer.showCloud (allPtClouds[0]);
 	//	cViewer.showCloud (sightFlat);
 	//cViewer.showCloud(sightFlat);
-	viewer.addPointCloud(sightFlat, "Sphere");
+	//viewer.addPointCloud(sightFlat, "Sphere");
 
 	//	viewer.addPointCloud(sight, "Sphere");
 	//viewer.addPointCloud(sight, "Sphere1");
@@ -615,28 +507,21 @@ int main(int argc, char** argv)
 	//imshow("Original",allImages[0]);
 
 	//viewer.addCoordinateSystem (radius*2);
-	viewer.setPointCloudRenderingProperties (visualization::PCL_VISUALIZER_POINT_SIZE, 1, "Sphere");
-	viewer.registerKeyboardCallback (keyboardEventOccurred, (void*)&viewer);
-	while (!viewer.wasStopped ()){
+	//viewer.setPointCloudRenderingProperties (visualization::PCL_VISUALIZER_POINT_SIZE, 1, "Sphere");
+	//viewer.registerKeyboardCallback (keyboardEventOccurred, (void*)&viewer);
+	//while (!viewer.wasStopped ()){
 		// This seems to cause trouble when having cloud viewer and viewr running
 		//cv::imshow("Keypoints 2D" , sightMat);
-		viewer.spinOnce (100);
+//		viewer.spinOnce (100);
 
 		//cv::waitKey(0);
-		boost::this_thread::sleep (boost::posix_time::microseconds (10000));
-	}
+//		boost::this_thread::sleep (boost::posix_time::microseconds (10000));
+//	}
 
 	//close viewer
 
 
-	//get keypoints on 2D image 
 
-	//vector<cv::KeyPoint> keypoints;
-	//keypoints = cv::get2DKeypoints(ori);
-
-	//cv::drawKeypoints( ori, keypoints, ori, Scalar::all(-1), DrawMatchesFlags::DEFAULT );
-	//cv::imshow("Keypoints 2D" , ori);
-	//cv::imshow("Keypoints 2D" , sightMat);
 	
 	//cv::waitKey(0);
 

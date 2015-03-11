@@ -428,6 +428,67 @@ cv::Mat getAffine3D(Vec9f t1, Vec9f t2){
 
 }
 
+
+/********************************************************
+* Compute 3D position of triangles from 2D triangles
+*********************************************************/
+vector<Vec9f> get3DTrianglesFrom2DTriangles(int rows, int cols, vector<cv::Vec6f> triangles){
+	vector<Vec9f> td_triangles;
+	
+	for(int i=0;i<triangles.size();i++){
+		cv::Vec6f triangle = triangles[i];
+		//Get the 3 points making the triangle
+		//cv::Point2f a,b,c; 
+		//a.x = triangle[0];
+		//a.y = triangle[1];
+		//b.x = triangle[2];
+		//b.y = triangle[3];
+		//c.x = triangle[4];
+		//c.y = triangle[5];	
+		
+		//Compute 3D positions
+		Vec9f triangle3D;
+		
+		//point coordinates
+		double x1,y1,z1,x2,y2,z2,x3,y3,z3;
+		//For the first point
+		sphereCoordinates(triangle[0], triangle[1], 
+		1, rows, cols, 
+		x1,y1,z1);
+		
+		triangle3D[0] = x1;
+		triangle3D[1] = x2;
+		triangle3D[2] = x3;
+		
+		//Second point
+		sphereCoordinates(triangle[2], triangle[3], 
+		1, rows, cols, 
+		x2,y2,z2);
+		
+		triangle3D[3] = x2;
+		triangle3D[4] = y2;
+		triangle3D[5] = z2;
+		
+		//Third point
+		sphereCoordinates(triangle[4], triangle[5], 
+		1, rows, cols,
+		x3,y3,z3);
+		 
+		triangle3D[6] = x3;
+		triangle3D[7] = y3;
+		triangle3D[8] = z3;
+		
+		//Add the new 3D triangle
+		td_triangles.push_back(triangle3D);
+	}
+
+	return td_triangles;
+}
+
+
+
+
+
 /**
 * Sample points in a triangle defined by it's 3 Points in 3D. The Sampling is done depending on the size of the biggest vertex of the triangle
 */
@@ -633,6 +694,50 @@ void sphereCoordinates(float i, float j, double r, int rows, int cols, double &x
 	x = r * sin(theta) * cos(phi);
 	y = r * sin(theta) * sin(phi);
 	z = r * cos(theta);
+}
+
+
+/*
+* Applying sphereCoordinates to an array of points and returns a list of 3D points
+*/
+vector<PointXYZRGB> sphereCoordinatesList(int rows, int cols, vector<cv::Point2f> points){
+	//Radius
+	double r = 1.;
+	
+	//list of 3D points
+	vector<PointXYZRGB> points3D;
+	
+	//3D point
+	
+	
+	
+	//Image point in 2D
+	cv::Point2f p;
+	int i,j;
+	
+	for(int k=0;k<points.size();k++){
+		cout << "Point number: " << k << endl;
+		double x,y,z;
+		PointXYZRGB np;
+		p = points[k];
+		i = p.y;
+		j = p.x;
+		
+		//cout << "Sphere Coordinates for: (i,j): (" << i << "," << j << ")" << endl; 
+		sphereCoordinates(i,j,r,rows,cols,x,y,z);
+		np.x = x;
+		np.y = y;
+		np.z = z;
+		
+		//np.b = img.at<cv::Vec3b>(i,j)[0];
+		//np.g = img.at<cv::Vec3b>(i,j)[1];
+		//np.r = img.at<cv::Vec3b>(i,j)[2];
+		
+		points3D.push_back(np);
+	}
+	
+	return points3D;
+
 }
 
 /**

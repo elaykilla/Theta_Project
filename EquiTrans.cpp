@@ -7,15 +7,33 @@
 using namespace std;
 
 EquiTrans::EquiTrans(){
-  film_width  = 36.0f;
-  film_height = 24.0f;
-  focal_length = 36.0f;
+  film_width  = 640;
+  film_height = 480;
+  focal_length = 640.0f;
+  hfov = -1.0f;
+  vfov = -1.0f;
 }
 
 EquiTrans::EquiTrans(double focal_val){
-  film_width  = 36.0f;
-  film_height = 24.0f;
+  film_width  = 640;
+  film_height = 480;
   focal_length = focal_val;
+}
+
+bool EquiTrans::setFOV(double hfov_deg, double vfov_deg){
+  bool ret = true;
+  if(hfov_deg < 0.0 || hfov_deg > 360.0 || vfov_deg < 0.0 || vfov_deg > 360.0){
+    ret = false;
+  }else{
+    hfov = hfov_deg;
+    vfov = vfov_deg;
+  }
+  return ret;
+}
+
+void EquiTrans::unsetFOV(){
+  hfov = -1.0f;
+  vfov = -1.0f;
 }
 
 /*
@@ -28,15 +46,13 @@ EquiTrans::EquiTrans(double focal_val){
  * cam_theta_deg: camera tilting in degrees (center origin, botom-top)
  *
  */
-Mat EquiTrans::toRegular(Mat src, double cam_phi_deg, double cam_theta_deg){
+Mat EquiTrans::toPerspective(Mat src, double cam_phi_deg, double cam_theta_deg){
   bool debug = false;
   
-  int wd = 640;
-  int ht = 480;
-  double focal_length = 640.0;
+
   double focal_square = focal_length * focal_length;
 
-  Mat dst = Mat::zeros(ht, wd, CV_8UC3);
+  Mat dst = Mat::zeros(film_height, film_width, CV_8UC3);
 
   double phi_range = 2.0 * atan(film_width/focal_length);
   double theta_range = 2.0 * atan(film_height/focal_length);
@@ -57,19 +73,21 @@ Mat EquiTrans::toRegular(Mat src, double cam_phi_deg, double cam_theta_deg){
     cout << "ncols = " << ncols << "\n";
   }
 
-  int half_ht = ht/2, half_wd = wd/2;
+  int half_ht = film_height/2, half_wd = film_width/2;
   double full_hor = 2.0 * M_PI;
+  double hfov_rad = hfov / 180.0 * M_PI, vfov_rad = vfov / 180.0 * M_PI;
 
   // i_c, j_c: center origin, left-right, top-down
   double min_theta = - 0.5 * M_PI, max_theta = 0.5 * M_PI;
   int i_c, j_c;
+
   
   // Rotation around Y (vertical-down) axis.
-  for(int j = 0;j < ht;j++){
+  for(int j = 0;j < film_height;j++){
     double y = (double)(j - half_ht);
     j_c = j - half_ht;
   
-    for(int i = 0;i < wd;i++){
+    for(int i = 0;i < film_width;i++){
       i_c = i - half_ht;
       double phi_c = atan((double)i_c/focal_length);
       double theta = atan(cos(phi_c) * (double)j_c/(double)focal_length);
@@ -79,13 +97,9 @@ Mat EquiTrans::toRegular(Mat src, double cam_phi_deg, double cam_theta_deg){
       if(debug)
 	cout  << "( " << phi << ", " << theta << " )\n";
 
-      //ec_i, ec_j: center origin, left-right, top-down
-      int ec_i = (int)(phi/(M_PI*2.0) * d_ncols);
-      int ec_j = (int)(theta/M_PI * d_nrows);
-
       // Convert to 3D
-      double R = sqrt((double)(ec_j * ec_j) + focal_square);
-      theta = atan(- (double)ec_j/focal_length); // bottom-top
+      double R = sqrt((double)(j_c * j_c) + focal_square);
+      theta = atan(- (double)j_c/focal_length); // bottom-top
       theta += (- cam_theta_pi);
 
       bool theta_flip = false;
@@ -93,7 +107,7 @@ Mat EquiTrans::toRegular(Mat src, double cam_phi_deg, double cam_theta_deg){
       
       double Z = sin(theta) * R; // vertical coordinate
       double X = cos(theta) * R; // depth
-      double Y = ec_i; // horizontal
+      double Y = i_c; // horizontal
       phi = atan(Y/X);
       double RYX = sqrt(Y*Y + X*X);
       theta = atan(Z/RYX);
@@ -116,9 +130,10 @@ Mat EquiTrans::toRegular(Mat src, double cam_phi_deg, double cam_theta_deg){
 	phi -= (2.0 * M_PI);
       }
 
-      //ec_i, ec_j: center origin, left-right, top-down
-      ec_i = (int)(phi/(M_PI*2.0) * d_ncols);
-      ec_j = (int)(-theta/M_PI * d_nrows);
+      // Convert to equirectangular coordinate system
+      // ec_i, ec_j: center origin, left-right, top-down
+      double ec_i = (int)(phi/(M_PI*2.0) * d_ncols);
+      double ec_j = (int)(-theta/M_PI * d_nrows);
 
  
       // Render warped image
@@ -140,3 +155,67 @@ Mat EquiTrans::toRegular(Mat src, double cam_phi_deg, double cam_theta_deg){
   return dst;
 }
 
+//
+// Get image size in pixels to the Field Of view
+//     assuming square image plane
+//
+void EquiTrans::getCubeCam(Mat src, int *width, int *height, double *focal_length)
+{
+  *width = (int)((double)src.cols * hfov/360.0);
+  *height = *width; 
+  double fov_rad = hfov *M_PI / 180.0;
+
+  *focal_length = (double)*width/(2.0 * tan(fov_rad/2.0));
+  
+  bool debug = true;
+  if(debug){
+    cout << "width = ";
+    cout << *width << endl;
+
+    cout << "focal length = ";
+    cout << *focal_length << endl;
+  }
+}
+
+/*
+ * make 6 cube face images from an image in equirectangular format.
+ *    Starting from panning of 0.0 degree: 
+ *    front, right, back, left, top-front, and bottom-front
+ */
+void EquiTrans::makeCubeFaces(Mat src, Mat faces[6]){
+  double cube_fov = 90.0;
+  double pan_deg = 0.0, tilt_deg = 0.0;
+  
+  setFOV(cube_fov, cube_fov);
+  int width, height;
+  double focal_val;
+  getCubeCam(src, &width, &height, &focal_val);
+  setCamera(width, height, focal_val);
+
+  Mat face;
+  // side
+  int i;
+  for(i = 0;i < 4;i++, pan_deg += 90.0){
+    face = toPerspective(src, pan_deg, tilt_deg);
+    faces[i] = face;
+  }
+  // top
+  pan_deg = 0.0, tilt_deg = 90.0;
+  face = toPerspective(src, pan_deg, tilt_deg);
+  faces[i++] = face;
+
+  // bottom
+  pan_deg = 0.0, tilt_deg = -90.0;
+  face = toPerspective(src, pan_deg, tilt_deg);
+  faces[i++] = face;
+}
+
+
+/*
+ * Set a camera (film size and focal length) to render
+ */
+void EquiTrans::setCamera(int width, int height, double focal_val){
+  film_width =  width;
+  film_height = height;
+  focal_length = focal_val;
+}

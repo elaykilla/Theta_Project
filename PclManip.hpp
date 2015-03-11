@@ -11,6 +11,7 @@
 #include"OcvManip.hpp"
 //#include "boost_headers.hpp"
 
+
 /***************************************************Image Manipulation PCL***********************************************/
 /**
 * This function computes the keypoints on a cloud of PointXYZRGB. 
@@ -85,4 +86,7 @@ cv::Mat imageFromPcPlane(PointCloud<PointXYZRGB>::Ptr cloud, cv::Mat ori, int he
 //	cout << "test function called" << endl;
 //	return;
 //}
+
+
+
 #endif

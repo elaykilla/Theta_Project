@@ -105,6 +105,14 @@ vector<PointXYZRGB> sampleTriangle(Vec9f triangle);
 * Compute the affine 3*4 matrix between 2 triangles given with the 3D coordinates of each point
 */
 cv::Mat getAffine3D(Vec9f t1, Vec9f t2);
+
+/** 
+* This function given a set of triangles, defined by pixel coordinates of the 3 points, in an 
+* equirectangular image, compues an array of the triangles in 3D defined by their 3D coordinates on the 
+* surface of a spehre
+*/
+vector<Vec9f> get3DTrianglesFrom2DTriangles(int rows, int cols, vector<cv::Vec6f> triangles);
+
 /** 
 Rotate a point by an angle theta around the X axis
 */
@@ -169,6 +177,14 @@ void spheric2Cartesian(double r, double theta, double phi, PointXYZRGB &p);
 * 	(x,y,z) are the cartesian coordinates of the point on the surface of the sphere
 */
 void sphereCoordinates(float i, float j, double r, int rows, int cols, double &x, double &y, double &z);
+
+
+/*
+* Applying sphereCoordinates to an array of points and returns a list of 3D points
+*/
+vector<PointXYZRGB> sphereCoordinatesList(int rows, int cols, vector<cv::Point2f> points);
+
+
 /**
 * This is the inverse of the previous functions. Given a point on the surface of the sphere, it gives its (i,j) pixel 
 * coordinates

@@ -7,7 +7,7 @@
 #include"MathCalcs.hpp"
 #include"OcvManip.hpp"
 #include"PclManip.hpp"
-
+#include"EquiTrans.hpp"
 
 //////////////////////////////////////Rotate Image Test /////////////////////////////////
 
@@ -26,6 +26,40 @@ void rotateImageTest(cv::Mat image, double y){
 
 
 ////////////////////////////////////// Project to Sphere test ///////////////////////////
+
+
+
+////////////////////////////////////////Test of 3D affine transformations
+void ThreeDAffineTransformTest(){
+//	Vec9f t1, t2; cv::Mat affine_transform(4,4,CV_32FC1);
+//	
+//	t1[0] = 1;
+//	t1[1] = 1;
+//	t1[2] = 0;
+//	t1[3] = -1;
+//	t1[4] = 1;
+//	t1[5] = 1;
+//	t1[6] = 1;
+//	t1[7] = 0;
+//	t1[8] = 1;
+//	
+//	t2[0] = 1; 
+//	t2[1] = 1;
+//	t2[2] = 0;
+//	t2[3] = -1;
+//	t2[4] = 1;
+//	t2[5] = 1;
+//	t2[6] = 1;
+//	t2[7] = 0;
+//	t2[8] = 1;
+	
+	
+	//affine_transform = getAffine3D(t1,t2);
+	
+
+}
+
+
 
 void projectToSphereTest(int nbPoints, double step, double radius, PointXYZRGB v,PointCloud<PointXYZRGB>::Ptr sight){
 	//	//hPointLine(u,v,linep);
@@ -477,6 +511,29 @@ void viewingAngleOriginTest(PointXYZRGB u, PointXYZRGB v, double radius, int row
 }
 /////////////////////////////// end Test of viewing angle origin //////////////////////////////////
 
+
+////////////////////////////////////Test of EquiTrans /////////////////////////////////////////////
+void EquitransTest(Mat img, double phi, double theta ){
+	
+	//double focal_length = 36.0;
+ 	EquiTrans equi;
+	Mat pers = equi.toPerspective(img, phi, theta );
+
+
+
+	imwrite("./temp/persp.jpg", pers);
+	
+	
+	cv::namedWindow("Omni Image", 0);
+	cv::namedWindow("Perspective image", 0);	
+	imshow("Omni Image", img);	  
+	imshow("Perspective image", pers);
+	waitKey(0);
+
+}
+////////////////////////////////////Test of EquiTrans /////////////////////////////////////////////
+
+
 ///////////////////////////////////////  Test point on ray ////////////////////////////////////////
 
 //void pointOnRayTest(){
@@ -527,6 +584,10 @@ void KeyPointAndMatchesTest(cv::Mat image1, cv::Mat image2){
 }
 
 
+
+
+
+//////////////////////////////////////  EpipolarLinesTest ////////////////////////////////////
 void EpipolarLinesTest(cv::Mat top, cv::Mat bottom){
 
 	//	int row = top.rows;
@@ -551,6 +612,63 @@ void EpipolarLinesTest(cv::Mat top, cv::Mat bottom){
 	cv::imshow("Second Image", bottom);
 	cv::waitKey(0);               
 }
+//////////////////////////////////////  End EpipolarLinesTest ////////////////////////////////////
+
+
+////////////Test of circular slits///////////////////////////
+
+void circulatSlitsTest(PointCloud<PointXYZRGB>::Ptr &cloud){
+//	double newAngle;
+//	double t,p;
+//	cout << "Beginning slit recovery " << endl;
+//	for(int angle=0;angle<360;angle++){
+//		int num = closestImDirection (u,angle,alpha,radius,newAngle);
+//		//cout << "New Angle: " << newAngle << endl;
+//		if(num>=tempCount){
+//			//cout << num << "too big to find" << endl;
+//			//break;
+//		}
+//		else{
+//			//cloud = allPtClouds[num];
+
+//			for (int m=0;m<cloud->size();m++){
+//				iPoint = cloud->points[m];
+//				cartesian2Spheric(iPoint,radius,t,p);
+//				// t in degrees
+//				p *= 180/PI;
+////				cout << "New Angle: " << newAngle ;
+////				cout << "   theta for iPoint: " << t << endl;
+//				if(newAngle <= p && p<= newAngle+1){
+//				
+//					//testing different colors for the points
+////					if(num%3==0){
+////						iPoint.r = 255;
+////					}
+////					if(num%3==1){
+////						iPoint.b = 255;
+////					}
+////					if(num%3==2){
+////						iPoint.g = 255;
+////					}
+//					
+//					sightFlat->points.push_back(iPoint);
+//				}
+//			}
+//			//cout << "Finished point cloud number: " << num <<endl;
+//		}
+//	}
+//	cout << "ended slit recovery" << endl;
+//	
+////	ori.setTo(cv::Scalar(0,0,0));
+//	cv::Mat sightMat(ori.rows,ori.cols,ori.type());
+//	sightMat.setTo(cv::Scalar(0,0,0));
+////	cout << "Original: " <<ori.rows << ori.cols << ori.type() << endl;
+////	cout << "sightMat: " <<sightMat.rows << sightMat.cols << sightMat.type() << endl;
+//	sphereToEqui(sightFlat,radius,rows,cols,sightMat);
+//	cv::imshow("SightMat",sightMat);
+//	cv::waitKey();
+}
+	////////////Test of circular slits///////////////////////////
 
 void interpolate2DTest(cv::Mat image1, cv::Mat image2, double dist, double pos){
 	cv::Mat interpolate = linearInterpolate(image1, image2, dist, pos);
@@ -1470,5 +1588,175 @@ void delaunayMatchedTrianglesBoundTest(cv::Mat img1, cv::Mat img2, PointCloud<Po
 	
 //} 
 
+////////////////////////////////////Test Multiple Interpolation /////////////////////////////////////
+void multipleInterpolateTest(Mat ori, Mat templ, int nb_inter){
+	cv::Mat result;
+	for(int i=0;i<nb_inter;i++){
+		ostringstream nameWindow;
+		nameWindow << "temp/Interpolated Image_"<< i ;
+		cout << nameWindow.str() << endl;
+		cv::Mat result = delaunayInterpolateSphere(ori,templ,1,i/(double)nb_inter);
+		//cv::Mat result = interpolated[i];
+		//cv::namedWindow(nameWindow.str(), 0);
+		//cv::imshow(nameWindow.str(), result);
+		nameWindow << ".jpg" ;
+		cv::imwrite(nameWindow.str(),result);	
+		//images[i] = result;
+		//images.push_back(result);
+	}
+	
+	
+	//Read and write files from tmp
+	//for(i=0;i<nb_inter;i++){
+	//	ostringstream nameWindow;
+	//	nameWindow << "temp/Interpolated Image_"<< i << ".jpg" ;
+		//nameWindow << "Bottom/Bottom"<< i+1 << ".jpg" ;
+	//	Mat image = cv::imread(nameWindow.str(),1);
+		//if(!image.data){
+		//	cout << "Please verify image names" << endl;
+	//		break;
+		//}
+	//	else{
+	//		images.push_back(image);
+	//	}
+	//}
+	//string videoName = "temp/Interpolated Video" ;
+	//imageListToVideo(images,videoName);
+}
 
+////////////////////////////////////End Test Multiple Interpolation ////////////////////////////////
+
+//////////////////////////////////// Test of Ply Writer ///////////////////////////////////
+void plyWriterTest(Mat img1, Mat img2){
+	//Vectors for keypoints
+	vector<cv::KeyPoint> keypoints1, keypoints2 ; 
+	vector<cv::Point2f> points1, points2;
+
+	//Vector of 3D points and cloud
+	vector<PointXYZRGB> points3D;
+	PointCloud<PointXYZRGB>::Ptr cloud;
+	
+	//Vector for matches
+	vector<cv::DMatch> matches;
+
+	//Retrive keypoints from each image, and match them
+	getKeypointsAndMatches(img1, img2, keypoints1, keypoints2,matches);
+
+	//For every point in Keypoints1 -- it's matched keypoint is in Keypoints2 at the same position
+	vector<vector<cv::KeyPoint> > matched = getMatchedKeypoints(keypoints1, keypoints2, matches);
+	vector<vector<cv::Point2f> > matchedPts = getMatchedPoints(keypoints1, keypoints2, matches);
+
+	//Matched keypoints only
+	keypoints1 = matched[0];
+	keypoints2 = matched[1];
+
+	//Extracted points from the Keypoints
+	points1 = matchedPts[0];
+	points2 = matchedPts[1];
+	
+	//points3D = sphereCoordinatesList(img1.rows,img1.cols,points);
+	//cloud->points = points3D;
+	
+}
+
+//////////////////////////////////// End Test of Ply Writer ///////////////////////////////////
+
+//////////////////////////////////// Test of 2D to 3D keypoints ///////////////////////////////////
+void twoDToThreeDkeypoints(Mat img){
+	cout << "Launched twoDToThreeDkeypoints" << endl; 
+	//Keypoints vector
+	vector<cv::KeyPoint> keypoints;
+	
+	//2D points
+	std::vector<cv::Point2f> points;
+	
+	//3D points
+	vector<PointXYZRGB> points3D;
+	
+	//PointCloud
+	PointCloud<PointXYZRGB>::Ptr cloud (new PointCloud<PointXYZRGB>);
+	
+	//Compute keypoints, extract just points and convert to 3D points
+	cout << "twoDToThreeDkeypoints: Extracting Keypoints" << endl;
+	keypoints = get2DKeypoints(img);
+	cout << "Extracted " << keypoints.size() << " keypoints" << endl;
+	
+	cout << "twoDToThreeDkeypoints: Converting to 2D points" << endl;
+	points = convertKeypoints(keypoints);
+	
+	cout << "twoDToThreeDkeypoints: Converting to 3D points" << endl;
+	points3D = sphereCoordinatesList(img.rows,img.cols,points);
+	
+	
+	cout << "twoDToThreeDkeypoints: Creating point cloud" << endl;
+	
+	//For writing to files
+	ofstream logFile;
+	
+	//Export 3D points
+	logFile.open("Keypoints.obj");
+	
+	
+	cv::Point2f p2d; 
+	PointXYZRGB p3d;
+	int r,g,b;
+	for(int i=0;i<points3D.size();i++){
+		p2d = points[i];
+		p3d = points3D[i];
+		
+		b = img.at<cv::Vec3b>(p2d)[0];
+		g = img.at<cv::Vec3b>(p2d)[1];
+		r = img.at<cv::Vec3b>(p2d)[2];
+		cloud->points.push_back(p3d);
+		logFile << "v"  << " " << p3d.x << " " << p3d.y << " " << p3d.z << " " << r/255. << " " << g/255. << " " << b/255. << endl;
+	
+	}
+	
+	logFile.close();
+	//cloud->points = points3D;
+	
+	//For visualizing
+	cout << "twoDToThreeDkeypoints: Creating Visualizer" << endl;
+	//visualization::PCLVisualizer viewer("3D viewer");
+	//viewer.setBackgroundColor (0, 0, 0);
+	
+	//viewer.addPointCloud(cloud, "keypoints");
+	//viewer.setPointCloudRenderingProperties (visualization::PCL_VISUALIZER_POINT_SIZE, 1, "keypoints");
+	
+	//while (!viewer.wasStopped ()){
+		// This seems to cause trouble when having cloud viewer and viewr running
+		//cv::imshow("Keypoints 2D" , sightMat);
+//		viewer.spinOnce (100);
+
+		//cv::waitKey(0);
+//		boost::this_thread::sleep (boost::posix_time::microseconds (10000));
+//	}
+}
+
+void testCloudObj(PointCloud<PointXYZRGB>::Ptr cloud){
+	//For writing to files
+	ofstream logFile;
+	
+	//Export 3D points
+	logFile.open("Full_Image.obg");
+	
+	PointXYZRGB p3d;
+	int b,g,r;
+	for(int i=0;i<cloud->points.size();i++){
+		
+		p3d = cloud->points[i];
+		
+		b = p3d.b;
+		g = p3d.g;
+		r = p3d.r;
+		//cloud->points.push_back(p3d);
+		logFile << "v"  << " " << p3d.x << " " << p3d.y << " " << p3d.z << " " << r/255. << " " << g/255. << " " << b/255. << endl;
+	
+	}
+	
+	logFile.close();
+}
+
+
+//////////////////////////////////// End Test of 2D to 3D keypoints ///////////////////////////////////
 

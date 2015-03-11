@@ -26,7 +26,9 @@ void showMat(Mat mat){
 }
 
 
-
+/**********************************************************
+* Make video out of images
+**********************************************************/
 void imageListToVideo(vector<cv::Mat> images , string fileName) {
 	if(images.size() == 0){
 		cout << "Please provide images" << endl;
@@ -44,7 +46,7 @@ void imageListToVideo(vector<cv::Mat> images , string fileName) {
 		name << fileName << ".mpeg";
 	
 		//Define framerate
-		double fps = 20;
+		double fps = 5;
 	
 		//Define frame size
 		Size fSize = img.size();
@@ -70,7 +72,49 @@ void imageListToVideo(vector<cv::Mat> images , string fileName) {
 	}
 
 } 
-/***************************************************Image Manipulation Cv***********************************************/
+
+
+
+
+/********************************************************
+* Get histogram
+*********************************************************/
+vector<Mat> getHistograms(Mat img){
+	//Vector for final histos
+	vector<Mat> histograms;
+	
+	//Vector for splitting channels
+	vector<Mat> bgr_planes;
+
+
+	 /// number of bins
+  	int histSize = 256;
+  	
+  	/// Set the ranges ( for B,G,R) )
+	float range[] = { 0, 256 } ;
+	const float* histRange = { range };
+
+	bool uniform = true; bool accumulate = false;
+	
+	Mat b_hist, g_hist, r_hist;
+	
+	calcHist( &bgr_planes[0], 1, 0, Mat(), b_hist, 1, &histSize, &histRange, uniform, accumulate );
+  	calcHist( &bgr_planes[1], 1, 0, Mat(), g_hist, 1, &histSize, &histRange, uniform, accumulate );
+  	calcHist( &bgr_planes[2], 1, 0, Mat(), r_hist, 1, &histSize, &histRange, uniform, accumulate );
+	
+	
+	histograms.push_back(b_hist);
+	histograms.push_back(g_hist);
+	histograms.push_back(r_hist);
+	
+	return histograms;
+}
+
+
+
+
+
+/***********************************Image Manipulation Cv********************************************/
 
 /**
  * This function takes the image prefix name, adds the position i and saves in a cv::Mat
@@ -1883,7 +1927,14 @@ cv::Mat delaunayInterpolateSphere(cv::Mat img1, cv::Mat img2, double dist, doubl
 						if(inTriangleArea(p2,triangle2)){
 							//Get interpolated pixel values
 							uchar b,g,r = 0;
-
+							if(!use_first & !use_second){
+								if(pos<dist/2){
+									use_second = true;
+								}
+								else{
+									use_first = true;
+								}
+							}
 							if(use_first){
 								b = img1.at<Vec3b>(y,x)[0];
 								g = img1.at<Vec3b>(y,x)[1];

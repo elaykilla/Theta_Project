@@ -33,7 +33,12 @@ void showMat(Mat mat);
 void imageListToVideo(vector<cv::Mat> images, string fileName) ; 
 
 
-////////////////////////// KeyPoints and Matching /////////////////////////////////////////////////////////
+/**
+* This function returns an array of the 3 color histograms of the given image
+*/
+vector<Mat> getHistograms(Mat img);
+
+////////////////////////// KeyPoints and Matching ////////////////////////////////////////////////////
 /**
 * This function takes the image prefix name, adds the position i and saves in a cv::Mat
 */
@@ -122,6 +127,11 @@ cv::Mat linearInterpolate(cv::Mat image1, cv::Mat image2, double dist, double po
 */
 cv::Mat delaunayInterpolate(cv::Mat image1, cv::Mat image2, double dist, double pos);
 
+
+/** 
+* Function to interpolate between 2 images using Delaunay triangulation using triangles on the surface of the sphere
+*/
+cv::Mat delaunayInterpolateSphere(cv::Mat img1, cv::Mat img2, double dist, double pos);
 /** 
 * Function to interpolate n times between 2 images using Delaunay triangulation
 */
