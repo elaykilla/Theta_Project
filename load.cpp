@@ -480,7 +480,7 @@ int main(int argc, char** argv)
 //	}
 
  	twoDToThreeDkeypoints(ori);
- 	testCloudObj(allPtClouds[0]);
+ 	//testCloudObj(allPtClouds[0]);
 ///////////////////////End of 3D keypoints test ////////////////////////////
 
 	

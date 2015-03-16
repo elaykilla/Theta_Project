@@ -469,6 +469,52 @@ cv::Mat imageFromPcPlane(PointCloud<PointXYZRGB>::Ptr cloud,cv::Mat ori, int row
 	
 
 }
+
+
+/** 
+* Given a set of 3D points, this functions creates a triangle mesh without any upsampling
+*/
+GreedyProjectionTriangulation<PointXYZRGBNormal> get3DTriangulation(PointCloud<PointXYZRGB>::Ptr cloud, PointCloud<Normal>::Ptr normals, double max_dist){
+
+	//First concatenate the points and the normals 
+ 	PointCloud<PointXYZRGBNormal>::Ptr cloud_with_normals (new PointCloud<PointXYZRGBNormal>);
+  	pcl::concatenateFields (*cloud, *normals, *cloud_with_normals);
+
+	 // Create search tree*
+  	pcl::search::KdTree<pcl::PointXYZRGBNormal>::Ptr tree2 (new pcl::search::KdTree<pcl::PointXYZRGBNormal>);
+  	tree2->setInputCloud (cloud_with_normals);
+  	
+  	// Initialize objects
+  	pcl::GreedyProjectionTriangulation<pcl::PointXYZRGBNormal> gp3;
+  	pcl::PolygonMesh triangles;
+  	
+  	// Set the maximum distance between connected points (maximum edge length)
+  	gp3.setSearchRadius (max_dist);
+  	
+  	 // Set typical values for the parameters
+  	gp3.setMu (2.5);
+  	gp3.setMaximumNearestNeighbors (100);
+  	gp3.setMaximumSurfaceAngle(M_PI/4); // 45 degrees
+  	gp3.setMinimumAngle(M_PI/18); // 10 degrees
+  	gp3.setMaximumAngle(2*M_PI/3); // 120 degrees
+  	gp3.setNormalConsistency(false);
+  	
+  	 // Get result
+  	gp3.setInputCloud (cloud_with_normals);
+  	gp3.setSearchMethod (tree2);
+  	gp3.reconstruct (triangles);
+  	
+  	
+  	//Return final result
+  	return gp3;
+
+}
+
+
+
+
+
+
 //void keyboardEventOccurred (const pcl::visualization::KeyboardEvent &event, void* viewer_void){
 //  boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer = *static_cast<boost::shared_ptr<pcl::visualization::PCLVisualizer> *> (viewer_void);
 //  if (event.getKeySym () == "n" && event.keyDown ())

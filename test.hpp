@@ -1712,25 +1712,38 @@ void twoDToThreeDkeypoints(Mat img){
 	
 	}
 	
+	//Add normals
+	for(int i=0;i<points3D.size();i++){
+		
+		p3d = points3D[i];
+		
+		//b = p3d.b;
+		//g = p3d.g;
+		//r = p3d.r;
+		//cloud->points.push_back(p3d);
+		logFile << "vn"  << " " << p3d.x << " " << p3d.y << " " << p3d.z << endl;
+	
+	}
+	
 	logFile.close();
 	//cloud->points = points3D;
 	
 	//For visualizing
 	cout << "twoDToThreeDkeypoints: Creating Visualizer" << endl;
-	//visualization::PCLVisualizer viewer("3D viewer");
-	//viewer.setBackgroundColor (0, 0, 0);
+	visualization::PCLVisualizer viewer("3D viewer");
+	viewer.setBackgroundColor (0, 0, 0);
 	
-	//viewer.addPointCloud(cloud, "keypoints");
-	//viewer.setPointCloudRenderingProperties (visualization::PCL_VISUALIZER_POINT_SIZE, 1, "keypoints");
+	viewer.addPointCloud(cloud, "keypoints");
+	viewer.setPointCloudRenderingProperties (visualization::PCL_VISUALIZER_POINT_SIZE, 1, "keypoints");
 	
-	//while (!viewer.wasStopped ()){
+	while (!viewer.wasStopped ()){
 		// This seems to cause trouble when having cloud viewer and viewr running
 		//cv::imshow("Keypoints 2D" , sightMat);
-//		viewer.spinOnce (100);
+		viewer.spinOnce (100);
 
 		//cv::waitKey(0);
 //		boost::this_thread::sleep (boost::posix_time::microseconds (10000));
-//	}
+	}
 }
 
 void testCloudObj(PointCloud<PointXYZRGB>::Ptr cloud){
@@ -1754,9 +1767,59 @@ void testCloudObj(PointCloud<PointXYZRGB>::Ptr cloud){
 	
 	}
 	
+	//Add normals
+	for(int i=0;i<cloud->points.size();i++){
+		
+		p3d = cloud->points[i];
+		
+		//b = p3d.b;
+		//g = p3d.g;
+		//r = p3d.r;
+		//cloud->points.push_back(p3d);
+		logFile << "vn"  << " " << p3d.x << " " << p3d.y << " " << p3d.z << endl;
+	
+	}
+	
+	
 	logFile.close();
+}
+//////////////////////////////////// End Test of 2D to 3D keypoints ///////////////////////////////////
+
+//////////////////////////////////// Test of 3D Triangulation ///////////////////////////////////
+void test3DTriangulation(PointCloud<PointXYZRGB>::Ptr cloud){
+
+
+	//Compute normals for each point
+	PointCloud<Normal>::Ptr normals; 
+	PointXYZRGB p; 
+	
+	
+	for(int i=0; i<cloud->points.size();i++){
+		p = cloud->points[i];
+		
+		Normal n(p.x,p.y,p.z);
+		//n.nx = p.x;
+		//n.ny = p.y;
+		//n.nz = p.z;
+		normals->points.push_back(n);
+	}
+	
+	//Compute triangles
+	GreedyProjectionTriangulation<PointXYZRGBNormal> gp3;
+	gp3 = get3DTriangulation(cloud,normals,1.);
+	
+	PolygonMesh triangles;
+	gp3.reconstruct(triangles);
+	
+	//saveVTKFile("temp/triangleMesh.vtk", triangles);
 }
 
 
-//////////////////////////////////// End Test of 2D to 3D keypoints ///////////////////////////////////
+
+//////////////////////////////////// End Test of 3D Triangulation ///////////////////////////////////
+
+
+
+
+
 

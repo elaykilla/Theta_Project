@@ -87,6 +87,10 @@ cv::Mat imageFromPcPlane(PointCloud<PointXYZRGB>::Ptr cloud, cv::Mat ori, int he
 //	return;
 //}
 
+/** 
+* Given a set of 3D points, this functions creates a triangle mesh without any upsampling
+*/
+GreedyProjectionTriangulation<PointXYZRGBNormal> get3DTriangulation(PointCloud<PointXYZRGB>::Ptr cloud, PointCloud<Normal>::Ptr normals, double max_dist);
 
 
 #endif
