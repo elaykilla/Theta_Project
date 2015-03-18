@@ -2,6 +2,7 @@
 #define PclMnip
 
 #include "cv_headers.hpp"
+#include "ViewDirection.hpp"
 
 using namespace cv;
 
@@ -27,7 +28,10 @@ public:
   void makeCubeFaces(Mat, Mat[6]);
   bool setFOV(double, double);
   Mat toPerspective(Mat, double, double);
+  Mat toPerspectiveCore(Mat, double, double);
   void unsetFOV();
+  Point2f toEquirectPoint(Mat src, ViewDirection dir, Point2f pers);
+  void toEquirectCore(double i_c, double j_c, double focal_length, ViewDirection vd, double d_rows, double d_ncols, double *ec_i, double *ec_j);
 };
 
 #endif

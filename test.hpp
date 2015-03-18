@@ -1595,7 +1595,8 @@ void multipleInterpolateTest(Mat ori, Mat templ, int nb_inter){
 		ostringstream nameWindow;
 		nameWindow << "temp/Interpolated Image_"<< i ;
 		cout << nameWindow.str() << endl;
-		cv::Mat result = delaunayInterpolateSphere(ori,templ,1,i/(double)nb_inter);
+		cv::Mat result = delaunayInterpolate(ori,templ,1,i/(double)nb_inter);
+		//cv::Mat result = delaunayInterpolateSphere(ori,templ,1,i/(double)nb_inter);
 		//cv::Mat result = interpolated[i];
 		//cv::namedWindow(nameWindow.str(), 0);
 		//cv::imshow(nameWindow.str(), result);
@@ -1661,6 +1662,82 @@ void plyWriterTest(Mat img1, Mat img2){
 
 //////////////////////////////////// End Test of Ply Writer ///////////////////////////////////
 
+
+
+void testCloudObj(PointCloud<PointXYZRGB>::Ptr cloud){
+	//For writing to files
+	ofstream logFile;
+	
+	//Export 3D points
+	logFile.open("Full_Image.obg");
+	
+	PointXYZRGB p3d;
+	int b,g,r;
+	for(int i=0;i<cloud->points.size();i++){
+		
+		p3d = cloud->points[i];
+		
+		b = p3d.b;
+		g = p3d.g;
+		r = p3d.r;
+		//cloud->points.push_back(p3d);
+		logFile << "v"  << " " << p3d.x << " " << p3d.y << " " << p3d.z << " " << r/255. << " " << g/255. << " " << b/255. << endl;
+	
+	}
+	
+	//Add normals
+	for(int i=0;i<cloud->points.size();i++){
+		
+		p3d = cloud->points[i];
+		
+		//b = p3d.b;
+		//g = p3d.g;
+		//r = p3d.r;
+		//cloud->points.push_back(p3d);
+		logFile << "vn"  << " " << p3d.x << " " << p3d.y << " " << p3d.z << endl;
+	
+	}
+	
+	
+	logFile.close();
+}
+//////////////////////////////////// End Test of 2D to 3D keypoints ///////////////////////////////////
+
+//////////////////////////////////// Test of 3D Triangulation ///////////////////////////////////
+void test3DTriangulation(PointCloud<PointXYZRGB>::Ptr cloud){
+
+	cout << "test3DTriangulation: Started with cloud: " << cloud->points.size() << " points" << endl;
+	//Compute normals for each point
+	PointCloud<Normal>::Ptr normals (new PointCloud<Normal>); 
+	PointXYZRGB p; 
+	//Normal n;
+	
+	cout << "test3DTriangulation: Creating Normals" << endl;
+	for(int i=0; i<cloud->points.size();i++){
+		Normal n;
+		p = cloud->points[i];
+		
+		//Normal n(p.x,p.y,p.z);
+		n.normal[0]= p.x;
+		n.normal[1] = p.y;
+		n.normal[2] = p.z;
+		normals->points.push_back(n);
+	}
+	
+	cout << "test3DTriangulation: Normals created" << endl;
+	
+	//Compute triangles
+	cout << "Computing Triangles unsing greedyProjection" << endl;
+	GreedyProjectionTriangulation<PointXYZRGBNormal> gp3 ;
+	gp3 = get3DTriangulation(cloud,normals,1.);
+	
+	PolygonMesh triangles;
+	gp3.reconstruct(triangles);
+	
+	io::saveVTKFile("temp/triangleMesh.vtk", triangles);
+}
+//////////////////////////////////// End Test of 3D Triangulation ///////////////////////////////////
+
 //////////////////////////////////// Test of 2D to 3D keypoints ///////////////////////////////////
 void twoDToThreeDkeypoints(Mat img){
 	cout << "Launched twoDToThreeDkeypoints" << endl; 
@@ -1712,6 +1789,8 @@ void twoDToThreeDkeypoints(Mat img){
 	
 	}
 	
+	
+	cout << "twoDToThreeDkeypoints: Created point cloud" << endl;
 	//Add normals
 	for(int i=0;i<points3D.size();i++){
 		
@@ -1724,6 +1803,9 @@ void twoDToThreeDkeypoints(Mat img){
 		logFile << "vn"  << " " << p3d.x << " " << p3d.y << " " << p3d.z << endl;
 	
 	}
+	
+	//Create mesh for keypoints
+	test3DTriangulation(cloud);
 	
 	logFile.close();
 	//cloud->points = points3D;
@@ -1745,78 +1827,7 @@ void twoDToThreeDkeypoints(Mat img){
 //		boost::this_thread::sleep (boost::posix_time::microseconds (10000));
 	}
 }
-
-void testCloudObj(PointCloud<PointXYZRGB>::Ptr cloud){
-	//For writing to files
-	ofstream logFile;
-	
-	//Export 3D points
-	logFile.open("Full_Image.obg");
-	
-	PointXYZRGB p3d;
-	int b,g,r;
-	for(int i=0;i<cloud->points.size();i++){
-		
-		p3d = cloud->points[i];
-		
-		b = p3d.b;
-		g = p3d.g;
-		r = p3d.r;
-		//cloud->points.push_back(p3d);
-		logFile << "v"  << " " << p3d.x << " " << p3d.y << " " << p3d.z << " " << r/255. << " " << g/255. << " " << b/255. << endl;
-	
-	}
-	
-	//Add normals
-	for(int i=0;i<cloud->points.size();i++){
-		
-		p3d = cloud->points[i];
-		
-		//b = p3d.b;
-		//g = p3d.g;
-		//r = p3d.r;
-		//cloud->points.push_back(p3d);
-		logFile << "vn"  << " " << p3d.x << " " << p3d.y << " " << p3d.z << endl;
-	
-	}
-	
-	
-	logFile.close();
-}
-//////////////////////////////////// End Test of 2D to 3D keypoints ///////////////////////////////////
-
-//////////////////////////////////// Test of 3D Triangulation ///////////////////////////////////
-void test3DTriangulation(PointCloud<PointXYZRGB>::Ptr cloud){
-
-
-	//Compute normals for each point
-	PointCloud<Normal>::Ptr normals; 
-	PointXYZRGB p; 
-	
-	
-	for(int i=0; i<cloud->points.size();i++){
-		p = cloud->points[i];
-		
-		Normal n(p.x,p.y,p.z);
-		//n.nx = p.x;
-		//n.ny = p.y;
-		//n.nz = p.z;
-		normals->points.push_back(n);
-	}
-	
-	//Compute triangles
-	GreedyProjectionTriangulation<PointXYZRGBNormal> gp3;
-	gp3 = get3DTriangulation(cloud,normals,1.);
-	
-	PolygonMesh triangles;
-	gp3.reconstruct(triangles);
-	
-	//saveVTKFile("temp/triangleMesh.vtk", triangles);
-}
-
-
-
-//////////////////////////////////// End Test of 3D Triangulation ///////////////////////////////////
+//////////////////////////////////// end of Test of 2D to 3D keypoints ///////////////////////////////////
 
 
 

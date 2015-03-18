@@ -46,7 +46,7 @@ void imageListToVideo(vector<cv::Mat> images , string fileName) {
 		name << fileName << ".mpeg";
 	
 		//Define framerate
-		double fps = 5;
+		double fps = 20;
 	
 		//Define frame size
 		Size fSize = img.size();
@@ -1343,8 +1343,8 @@ cv::Mat delaunayInterpolate(cv::Mat img1, cv::Mat img2, double dist, double pos)
 								}
 							}
 							if(use_first){
-								//b = img1.at<Vec3b>(p)[0];
-								b = 255;
+								b = img1.at<Vec3b>(p)[0];
+								//b = 255;
 								g = img1.at<Vec3b>(p)[1];
 								r = img1.at<Vec3b>(p)[2];
 //								
@@ -1357,8 +1357,8 @@ cv::Mat delaunayInterpolate(cv::Mat img1, cv::Mat img2, double dist, double pos)
 							else if(use_second){
 								b = img2.at<Vec3b>(p2)[0];
 								g = img2.at<Vec3b>(p2)[1];
-								//r = img2.at<Vec3b>(p2)[2];
-								r = 255;
+								r = img2.at<Vec3b>(p2)[2];
+								//r = 255;
 							
 //								result.at<Vec3b>(yinter,xinter)[0] = b;
 //								result.at<Vec3b>(yinter,xinter)[1] = g;
@@ -1370,9 +1370,9 @@ cv::Mat delaunayInterpolate(cv::Mat img1, cv::Mat img2, double dist, double pos)
 ////								g = 255;
 ////								r = 255;
 //								
-								//b = (img2.at<Vec3b>(p2)[0]*pos + img1.at<Vec3b>(p)[0]*(dist-pos))/dist;
-								//g = (img2.at<Vec3b>(p2)[1]*pos + img1.at<Vec3b>(p)[1]*(dist-pos))/dist;
-								//r = (img2.at<Vec3b>(p2)[2]*pos + img1.at<Vec3b>(p)[2]*(dist-pos))/dist;
+								b = (img2.at<Vec3b>(p2)[0]*pos + img1.at<Vec3b>(p)[0]*(dist-pos))/dist;
+								g = (img2.at<Vec3b>(p2)[1]*pos + img1.at<Vec3b>(p)[1]*(dist-pos))/dist;
+								r = (img2.at<Vec3b>(p2)[2]*pos + img1.at<Vec3b>(p)[2]*(dist-pos))/dist;
 //								result.at<Vec3b>(yinter,xinter)[0] = b;
 //								result.at<Vec3b>(yinter,xinter)[1] = g;
 //								result.at<Vec3b>(yinter,xinter)[2] = r;

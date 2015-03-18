@@ -11,7 +11,7 @@ int get_angles(int argc, char** argv, double *pan_deg, double *tilt_deg);
 
 int main(int argc, char** argv){
   string file1 = "../images/R0010103.JPG";
-  double pan_deg = 0.0, tilt_deg = 0.0;
+  double pan_deg = 0.0, tilt_deg = 90.0;
 
 
   Mat image1 = imread(file1);
@@ -33,7 +33,7 @@ int main(int argc, char** argv){
     get_angles(argc, argv, &pan_deg, &tilt_deg); 
     printf("Pan: %lf\n", pan_deg);
     printf("Tilt: %lf\n", tilt_deg);
-    EquiTrans equi(focal_length);
+    EquiTrans equi;
     equi.setFOV(90.0, 90.0);
     Mat cam = equi.toPerspective(image1, pan_deg, tilt_deg);
     imwrite("../images/room_regular.png", cam);

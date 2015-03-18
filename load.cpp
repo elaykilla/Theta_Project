@@ -381,11 +381,11 @@ int main(int argc, char** argv)
 	//KeyPointAndMatchesTest(allImages[0], allImages[1]);
 	
 	//Test of image interpolation
-	//ori = cv::imread("test3.JPG",1);
-	ori = allImages[0];
+	ori = cv::imread("test3.JPG",1);
+	//ori = allImages[0];
 	
-	//cv::Mat templ = cv::imread("test4.JPG",1);
-	cv::Mat templ = allImages[1];
+	cv::Mat templ = cv::imread("test4.JPG",1);
+	//cv::Mat templ = allImages[1];
 //	interpolate2DTest(allImages[0], allImages[1], 8, 4);
 	
 	//Test of sphereInterpolate
@@ -426,7 +426,7 @@ int main(int argc, char** argv)
 	//delaunayMatchedTrianglesBoundTest(ori, templ,sightFlat);
 	
 	//Test delaunay interpolation
-	double nb_inter = 10;
+	double nb_inter = 50;
 	int i=0;
 	//vector<cv::Mat> interpolated = delaunayInterpolateMultiple(ori,templ,1,nb_inter);
 	
@@ -435,26 +435,26 @@ int main(int argc, char** argv)
 	vector<cv::Mat> images;
 	
 	//Test of multiple interpolated images 
-	//multipleInterpolateTest(ori,templ,2);	
+	//multipleInterpolateTest(ori,templ,nb_inter);	
 	
 
 	//Test of reading files from folder and making video
 	//Read and write files from tmp
-	//for(i=0;i<nb_inter;i++){
-	//	ostringstream nameWindow;
-	//	nameWindow << "temp/Interpolated Image_"<< i << ".jpg" ;
+	for(i=0;i<nb_inter;i++){
+		ostringstream nameWindow;
+		nameWindow << "temp/Interpolated Image_"<< i << ".jpg" ;
 		//nameWindow << "Bottom/Bottom"<< i+1 << ".jpg" ;
-	//	Mat image = cv::imread(nameWindow.str(),1);
-	//	if(!image.data){
-	//		cout << "Please verify image names" << endl;
-	//		break;
-	//	}
-	//	else{
-	//		images.push_back(image);
-	//	}
-	//}
-	//string videoName = "temp/Interpolated Video" ;
-	//imageListToVideo(images,videoName);
+		Mat image = cv::imread(nameWindow.str(),1);
+		if(!image.data){
+			cout << "Please verify image names" << endl;
+			break;
+		}
+		else{
+			images.push_back(image);
+		}
+	}
+	string videoName = "temp/Interpolated Video" ;
+	imageListToVideo(images,videoName);
 //	sightFlat = EquiToSphere(result, 1,0,0,0);
 	
 	
@@ -479,8 +479,10 @@ int main(int argc, char** argv)
 //		sightFlat->points.push_back(pxy);
 //	}
 
- 	twoDToThreeDkeypoints(ori);
+ 	//twoDToThreeDkeypoints(ori);
  	//testCloudObj(allPtClouds[0]);
+ 	
+ 	//test3DTriangulation(allPtClouds[0]);
 ///////////////////////End of 3D keypoints test ////////////////////////////
 
 	

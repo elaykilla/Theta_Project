@@ -48,22 +48,13 @@ void EquiTrans::unsetFOV(){
  */
 Mat EquiTrans::toPerspective(Mat src, double cam_phi_deg, double cam_theta_deg){
   bool debug = false;
-  
 
-  double focal_square = focal_length * focal_length;
+  ViewDirection vd; // camera viewing direction
+  vd.pan = cam_phi_deg/180.0*M_PI;
+  vd.tilt = cam_theta_deg/180.0*M_PI;
 
   Mat dst = Mat::zeros(film_height, film_width, CV_8UC3);
 
-  double phi_range = 2.0 * atan(film_width/focal_length);
-  double theta_range = 2.0 * atan(film_height/focal_length);
-
-  double cam_phi_pi = cam_phi_deg/180.0*M_PI;
-  double cam_theta_pi = - cam_theta_deg/180.0*M_PI;
-
-  if(debug){
-    cout << "phi_range" << phi_range;
-    cout << "theta_range" << theta_range;
-  }
 
   int nrows = src.rows, ncols = src.cols;
   double d_nrows = (double)nrows, d_ncols = (double)ncols;
@@ -80,7 +71,7 @@ Mat EquiTrans::toPerspective(Mat src, double cam_phi_deg, double cam_theta_deg){
   // i_c, j_c: center origin, left-right, top-down
   double min_theta = - 0.5 * M_PI, max_theta = 0.5 * M_PI;
   int i_c, j_c;
-
+  double ec_i, ec_j; // image coordinates in equirectangular format.
   
   // Rotation around Y (vertical-down) axis.
   for(int j = 0;j < film_height;j++){
@@ -89,56 +80,12 @@ Mat EquiTrans::toPerspective(Mat src, double cam_phi_deg, double cam_theta_deg){
   
     for(int i = 0;i < film_width;i++){
       i_c = i - half_ht;
-      double phi_c = atan((double)i_c/focal_length);
-      double theta = atan(cos(phi_c) * (double)j_c/(double)focal_length);
 
-      double phi = phi_c;
-      
-      if(debug)
-	cout  << "( " << phi << ", " << theta << " )\n";
-
-      // Convert to 3D
-      double R = sqrt((double)(j_c * j_c) + focal_square);
-      theta = atan(- (double)j_c/focal_length); // bottom-top
-      theta += (- cam_theta_pi);
-
-      bool theta_flip = false;
-      if(abs(theta) > M_PI/2.0) theta_flip = true;
-      
-      double Z = sin(theta) * R; // vertical coordinate
-      double X = cos(theta) * R; // depth
-      double Y = i_c; // horizontal
-      phi = atan(Y/X);
-      double RYX = sqrt(Y*Y + X*X);
-      theta = atan(Z/RYX);
-
-      // case for overflow of tilting
-      if(theta_flip){
-	phi += M_PI;
-      }
-      phi += cam_phi_pi;
-
-      // case for underflow of tilting
-      if(theta < -M_PI/2.0){
-	theta = - M_PI - theta;
-	phi += M_PI; 
-      } 
-      if(phi <= -M_PI){
-	phi += (2.0 * M_PI);
-      }
-      if(phi > M_PI){
-	phi -= (2.0 * M_PI);
-      }
-
-      // Convert to equirectangular coordinate system
-      // ec_i, ec_j: center origin, left-right, top-down
-      double ec_i = (int)(phi/(M_PI*2.0) * d_ncols);
-      double ec_j = (int)(-theta/M_PI * d_nrows);
-
+      toEquirectCore((double)i_c, (double)j_c, focal_length, vd, d_nrows, d_ncols, &ec_i, &ec_j);
  
       // Render warped image
-      int e_i = ec_i + ncols/2;   // image coordinates in Equirectangular format
-      int e_j = ec_j + nrows/2;   // top-left origin, left-right, top-bottom.
+      int e_i = (int)ec_i + ncols/2;   // image coordinates in Equirectangular format
+      int e_j = (int)ec_j + nrows/2;   // top-left origin, left-right, top-bottom.
 
      if(debug)
 	cout  << "( " << ec_i << ", " << ec_j << " )\n";
@@ -218,4 +165,78 @@ void EquiTrans::setCamera(int width, int height, double focal_val){
   film_width =  width;
   film_height = height;
   focal_length = focal_val;
+}
+
+/*
+ * Convert a point in Perspective camera coodinate system to that in Equirectangular image
+ *
+ *   src: source equirectangular image
+ *   dir: Viewing direction (center of perspecive camera)
+ *   pers: Image coordinates on the perspective camera (origin: top-left)
+ *   return: Image coordinates in equirectanguler format (origin: top-left)
+ *   
+ *   assuming that FOV in hor and ver are already set.
+ */
+Point2f EquiTrans::toEquirectPoint(Mat src, ViewDirection dir, Point2f pers){
+
+}
+
+/*
+ * Convert a point coordinates  in perspective to those in equirectangular
+ *    Both origins are at the centers.
+ *
+ *    Notation is the same with Leonard Koller Sach' MS thesis.
+ *
+ *    i_c, i_j; input point coordinates in the perpective camera (origin at the center)
+ *    focal_length: in pixel
+ *    vd: camera viewing direction (pan (left-right) and tilt (bottom-top))
+ *    d_nrows, d_ncols: equirenctangular image size in double
+ *    ec_i, ec_j: outpuot point coordinates in the equirectangular image
+ *
+ */
+void EquiTrans::toEquirectCore(double i_c, double j_c, double focal_length, ViewDirection vd, double d_nrows, double d_ncols, double *ec_i, double *ec_j){
+
+  double lambda = atan(i_c/focal_length); // panning
+  // Convert to 3D
+  double R = sqrt(j_c*j_c + focal_length*focal_length);
+
+
+ // bottom-top along vertical axis
+  double phi = atan(- j_c/focal_length);
+  phi += vd.tilt;
+
+  bool tilt_flip = false;
+  if(abs(phi) > M_PI/2.0) tilt_flip = true;
+      
+  double Z = sin(phi) * R; // vertical coordinate in 3D
+  double X = cos(phi) * R; // depth
+  double Y = i_c; // horizontal coordinate in 3D
+  lambda = atan(Y/X);
+  double RYX = sqrt(Y*Y + X*X);
+  phi = atan(Z/RYX); // tilting angle for each pixel
+
+  // case for overflow of panning
+  if(tilt_flip){
+    lambda += M_PI;
+  }
+  lambda += vd.pan;
+
+  // case for underflow of tilting
+  if(phi < -M_PI/2.0){
+    phi = - M_PI - phi;
+    lambda += M_PI; 
+  } 
+  if(lambda <= -M_PI){
+    lambda += (2.0 * M_PI);
+  }
+
+  // case for overflow of panning
+  if(lambda > M_PI){
+    lambda -= (2.0 * M_PI);
+  }
+
+  // Convert to equirectangular coordinate system
+  // ec_i, ec_j: center origin, left-right, top-down
+  *ec_i = lambda/(M_PI*2.0) * d_ncols;
+  *ec_j = -phi/M_PI * d_nrows;
 }

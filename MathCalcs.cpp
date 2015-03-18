@@ -716,7 +716,7 @@ vector<PointXYZRGB> sphereCoordinatesList(int rows, int cols, vector<cv::Point2f
 	int i,j;
 	
 	for(int k=0;k<points.size();k++){
-		cout << "Point number: " << k << endl;
+		//cout << "Point number: " << k << endl;
 		double x,y,z;
 		PointXYZRGB np;
 		p = points[k];
