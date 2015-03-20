@@ -1,8 +1,9 @@
-#ifndef PclManip
-#define PclMnip
+#ifndef EquiTrans_H
+#define EquiTrans_H
 
 #include "cv_headers.hpp"
 #include "ViewDirection.hpp"
+#include "WarpImage.hpp"
 
 using namespace cv;
 
@@ -26,6 +27,7 @@ public:
   EquiTrans(double);
 
   void makeCubeFaces(Mat, Mat[6]);
+  void getCubeFaceViewingDirections(ViewDirection[6]);
   bool setFOV(double, double);
   Mat toPerspective(Mat, double, double);
   Mat toPerspectiveCore(Mat, double, double);

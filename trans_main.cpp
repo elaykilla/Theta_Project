@@ -4,23 +4,23 @@
 #include "cv_headers.hpp"
 #include "EquiTrans.hpp"
 
-using namespace cv;
+//using namespace cv;
 using namespace std;
 
 int get_angles(int argc, char** argv, double *pan_deg, double *tilt_deg);
 
 int main(int argc, char** argv){
-  string file1 = "../images/R0010103.JPG";
+  string file1 = "../walkthrough_20140829/OmniImage1.jpg";
   double pan_deg = 0.0, tilt_deg = 90.0;
 
 
-  Mat image1 = imread(file1);
+  cv::Mat image1 = cv::imread(file1);
   double focal_length = 36.0;
 
   bool cube_flag = true;
 
   if(cube_flag){
-    Mat cube_faces[6];
+    cv::Mat cube_faces[6];
 
     EquiTrans equi;
     equi.setFOV(90.0, 90.0);
@@ -35,7 +35,7 @@ int main(int argc, char** argv){
     printf("Tilt: %lf\n", tilt_deg);
     EquiTrans equi;
     equi.setFOV(90.0, 90.0);
-    Mat cam = equi.toPerspective(image1, pan_deg, tilt_deg);
+    cv::Mat cam = equi.toPerspective(image1, pan_deg, tilt_deg);
     imwrite("../images/room_regular.png", cam);
     imshow("Perspective image", cam);
     waitKey(0);

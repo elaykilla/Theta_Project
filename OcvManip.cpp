@@ -179,6 +179,57 @@ vector<cv::KeyPoint> getSiftKeypoints(cv::Mat image){
 	
 	return keypoints;
 }
+
+
+/**
+* This function extracts keypoints from a cube of 6 images. 
+* These keypoints are normalized to an equirectangular image which was at the origin of the 6 cube faces.
+* - this function assumes that the cube was obtained using the makeCubeFaces function
+*/
+//vector<cv::KeyPoint> getCubeKeypoints(cv::Mat origin, Cube cube_mat, vector<ViewDirection> v_directions){
+	//Begin by extracting keypoints from each of the faces
+//	vector<vector<cv::KeyPoint> > keypointsList;
+//	vector<cv::KeyPoint> keypoints;
+//	vector<cv::KeyPoint> final_keypoints;
+//	cv::KeyPoint keypoint;
+//	cv::Point point;
+	
+//	ViewDirection[6] vds;
+//	ViewDirection vd;
+	
+	
+	
+	//EquiTrans equi;
+	//equi.getCubeFaceViewingDirections(vds);
+	
+//	for(int i=0;i<6;i++){
+//		keypoints = get2DKeypoints(cube_mat[i]);
+		//kepointsList.push_back(keypoints);
+		
+		// In order to match the keypoints and keep track of the actually point positions,
+		// Convert each keypoint to the Equirectangular initial position 
+		// And generate a single keypoints vector
+		
+//		for(int j=0;j<keypoints.size();j++){
+//			vd = vds[i];
+//			keypoint = keypoints[j];
+//			point = keypoint.pt;
+			//Convert point to Equi coordinates
+			//equi.toEquirectCore(double i_c, double j_c, double focal_length, ViewDirection vd, double d_nrows, double d_ncols, double *ec_i, double *ec_j)
+			
+			//Set new Keypoint coordinates
+//			final_keypoints.push_back(keypoint);
+//		}
+//	}
+	
+//	return final_keypoints;
+
+	
+
+//}
+
+
+
 int ratioTest(std::vector<std::vector<cv::DMatch> >& matches, float ratio) {
 
 	int removed=0;
@@ -921,6 +972,55 @@ void makeCorrespondingDelaunayTriangles(vector<cv::Point2f> points1, vector<cv::
 }
 
 
+/**
+*
+*/
+void getMatchingTrianglesFromImages(Mat image1, Mat image2, vector<Vec6f> &triangles1, vector<Vec6f> &triangles2){
+	//Vectors for keypoints
+	vector<cv::KeyPoint> keypoints1, keypoints2 ; 
+	vector<cv::Point2f> points1, points2;
+
+
+
+	//Vector for matches
+	vector<cv::DMatch> matches;
+
+	//Retrive keypoints from each image, and match them
+	getKeypointsAndMatches(image1, image2, keypoints1, keypoints2,matches);
+	//Using Sift
+	//getSiftKeypointsAndMatches(image1, image2, keypoints1, keypoints2,matches);
+	
+	
+	//For every point in Keypoints1 -- it's matched keypoint is in Keypoints2 at the same position
+	vector<vector<cv::KeyPoint> > matched = getMatchedKeypoints(keypoints1, keypoints2, matches);
+	vector<vector<cv::Point2f> > matchedPts = getMatchedPoints(keypoints1, keypoints2, matches);
+
+	//Matched keypoints only
+	keypoints1 = matched[0];
+	keypoints2 = matched[1];
+
+	//Extracted points from the Keypoints
+	points1 = matchedPts[0];
+	points2 = matchedPts[1];
+
+	//Subdivision into delaunay
+	cv::Subdiv2D subdiv1;
+	
+	//Create Delaunay triangulation of the first image
+	subdiv1 = getDelaunayTriangles(matched[0], image1.rows, image1.cols);
+	
+	//Vectors for the triangles
+	//vector<Vec6f> triangles1, triangles2;
+
+	//Retrive the triangles from Image1
+	subdiv1.getTriangleList(triangles1);
+
+	//Make matched triangles in image 2
+	makeCorrespondingDelaunayTriangles(points1, points2, triangles1,triangles2);
+
+}
+
+
 int locateTriangleIndex(Subdiv2D subdiv , vector<Vec6f> triangles, cv::Point2f p ){
 
 	//cout<< "Locating triangle for point: " << p << endl;
@@ -1060,6 +1160,54 @@ vector<cv::Mat> getAffineTriangleTransforms (vector<Vec6f> triangles1, vector<Ve
 
 	return transforms;
 }
+
+/**
+* This function determines wether a point is on a given faces
+* - Point defined by it's (i,j) coordinates on equirectangular image1
+* - a face is determined by the theta and phi angles of it's center point
+*/
+bool isOnFaceRaw(int rows, int cols, int i, int j, double theta,double phi){
+	//Get the theta and phi angles of the given point
+	double new_theta, new_phi;
+	SphericFromPixelCoordinates(i,j,cols,rows,new_theta,new_phi);
+	
+	
+	//Have to verify the different cases distinguishing top, bottom from the others
+	
+	//Case top
+	if(theta > 3*PI/4){
+	
+	}
+	
+	else if(theta < PI/4){
+	
+	}
+	
+	else if(phi<PI/4 || phi>7*PI/4){
+	
+	}
+	//Cases of front side, left, right sides
+	else{
+		double lower_bound = phi - PI/4;
+		double higher_bound = phi + PI/4;
+		
+		return inInterval(new_phi,lower_bound,higher_bound);
+	
+	}
+	//Verify if point angles are in [] x 
+}
+
+/**
+* This function determines wether 2 points given in equirectangular coordinates are in the same cubic faces
+*/
+bool onSameCubicFaceRaw(int width, int height, int i1, int j1, int i2, int j2){
+
+	//Get the theta and phi angles of the given points
+	
+	
+}
+
+
 
 
 cv::Mat delaunayInterpolate(cv::Mat img1, cv::Mat img2, double dist, double pos){

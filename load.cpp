@@ -266,7 +266,7 @@ int main(int argc, char** argv)
 	//t1 = clock() - t;
 	//cout << "Time to execute firs part before Kmean: " << (float)t1/CLOCKS_PER_SEC <<endl;
 
-	/******************************************* Test Zone **********************************************************************/
+	/******************************* Test Zone ******************************************************/
 	//=====================Testing space variables==================================//
 	cloud = allPtClouds[0];
 	ori = allImages[0];
@@ -409,12 +409,12 @@ int main(int argc, char** argv)
 	cv::Mat inter = cv::Mat::ones(ori.rows/1, ori.cols/1, ori.type());
 	cv::resize(ori,inter,inter.size(),0,0,INTER_CUBIC);
 	//cv::pyrDown(ori,inter,Size(ori.cols/2,ori.rows/2));
-	ori = inter;
+	//ori = inter;
 	
 	//cv::pyrDown(templ,inter,Size(ori.cols/2,ori.rows/2));
 	cv::Mat inter2 = cv::Mat::ones(ori.rows/1, ori.cols/1, ori.type());
 	cv::resize(templ,inter2,inter.size(),0,0,INTER_CUBIC);
-	templ = inter2;
+	//templ = inter2;
 	
 	//Test of Delaunay Triangles
 	//delaunayTriangleTest(ori, "T1");
@@ -440,21 +440,21 @@ int main(int argc, char** argv)
 
 	//Test of reading files from folder and making video
 	//Read and write files from tmp
-	for(i=0;i<nb_inter;i++){
-		ostringstream nameWindow;
-		nameWindow << "temp/Interpolated Image_"<< i << ".jpg" ;
+	//for(i=0;i<nb_inter;i++){
+	//	ostringstream nameWindow;
+	//	nameWindow << "temp/Interpolated Image_"<< i << ".jpg" ;
 		//nameWindow << "Bottom/Bottom"<< i+1 << ".jpg" ;
-		Mat image = cv::imread(nameWindow.str(),1);
-		if(!image.data){
-			cout << "Please verify image names" << endl;
-			break;
-		}
-		else{
-			images.push_back(image);
-		}
-	}
-	string videoName = "temp/Interpolated Video" ;
-	imageListToVideo(images,videoName);
+	//	Mat image = cv::imread(nameWindow.str(),1);
+	//	if(!image.data){
+	//		cout << "Please verify image names" << endl;
+	//		break;
+	//	}
+	//	else{
+	//		images.push_back(image);
+	//	}
+	//}
+	//string videoName = "temp/Interpolated Video" ;
+	//imageListToVideo(images,videoName);
 //	sightFlat = EquiToSphere(result, 1,0,0,0);
 	
 	
@@ -463,7 +463,6 @@ int main(int argc, char** argv)
 	//EquiTrans Test 
 	//EquitransTest(ori,90.,0.);
 
-	
 	
 	//3D Keypoints Test
 //	PointCloud<PointWithScale>::Ptr sightFlat1;
@@ -486,6 +485,7 @@ int main(int argc, char** argv)
 ///////////////////////End of 3D keypoints test ////////////////////////////
 
 	
+	//Test of 3D affine
 	
 	/******************************************* End of Test Zone ***************************************************************/
 

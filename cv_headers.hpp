@@ -22,6 +22,8 @@
 //using namespace cv;
 typedef cv::Vec<float, 9> Vec9f;
 
+
+typedef cv::Vec<cv::Mat, 6> Cube;
 #endif
   
   

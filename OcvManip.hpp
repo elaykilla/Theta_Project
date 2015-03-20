@@ -11,6 +11,8 @@
 
 #include"MathCalcs.hpp"
 #include "matcher.h"
+//#include "ViewDirection.hpp"
+//#include "EquiTrans.hpp"
 //#include "boost_headers.hpp"
 
 
@@ -62,6 +64,13 @@ vector<cv::KeyPoint> get2DKeypoints(cv::Mat image);
 * This function returns a cv::vector containing the Keypoints from the input image using SIFT
 */
 vector<cv::KeyPoint> getSiftKeypoints(cv::Mat image);
+
+
+/**
+* This function extracts keypoints from a cube of 6 images. 
+* These keypoints are normalized to an equirectangular image which was at the origin of the 6 cube faces
+*/
+//vector<cv::KeyPoint> getCubeKeypoints(cv::Mat origin, Cube cube_mat);
 
 
 /**
@@ -161,7 +170,12 @@ void getCorrespondingDelaunayTriangles(vector<cv::KeyPoint> keypoints1, vector<c
 //Given a list of triangles using keypoints 1, this function calculates the relating triangles obtained using keypoint matches
 void makeCorrespondingDelaunayTriangles(vector<cv::Point2f> points1, vector<cv::Point2f> points2, vector<cv::Vec6f> &trianglesList1, vector<cv::Vec6f> &trianglesList2);
 
-
+/**
+* Given 2 images this function:
+* - Extracts and matches keypoints 
+* - Computes triangles in first image and gets matching triangles in 2nd image
+*/
+void getMatchingTrianglesFromImages(Mat image1, Mat image2, vector<Vec6f> &triangles1, vector<Vec6f> &triangles2);
 /**
 * This function calculates the corresponding vertices of a triangle list from 2D (i,j) to 3D (x,y,z) using * the warping of the 2D image onto a Sphere 
 */
@@ -186,6 +200,21 @@ int locateTriangleIndex(cv::Subdiv2D subdiv , vector<cv::Vec6f> triangles, cv::P
 * This function, given 2 lists of matching triangles, computes the affine transformation between each of the triangles
 */
 vector<cv::Mat> getAffineTriangleTransforms (vector<Vec6f> triangles1, vector<Vec6f> triangles2);
+
+
+
+/**
+* This function determines wether a point is on a given faces
+* - Point defined by it's (i,j) coordinates on equirectangular image1
+* - a face is determined by the theta and phi angles of it's center point
+*/
+bool isOnFaceRaw(int rows, int cols, int i1, int j1, double theta,double phi);
+
+
+/**
+* This function determines wether 2 points given in equirectangular coordinates are in the same cubic faces
+*/
+bool onSameCubicFaceRaw(int rows, int cols, int i1, int j1, int i2, int j2);
 
 ////////////////////////////////////////////Image Classification /////////////////////////////////////////
 

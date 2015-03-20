@@ -514,22 +514,56 @@ void viewingAngleOriginTest(PointXYZRGB u, PointXYZRGB v, double radius, int row
 
 ////////////////////////////////////Test of EquiTrans /////////////////////////////////////////////
 void EquitransTest(Mat img, double phi, double theta ){
-	
+	//img = cv::imread("test3.JPG",1);
+	if(!img.data){
+		cout << "EquitransTest: Please provide valid image as input" << endl;
+		return;
+	}
 	//double focal_length = 36.0;
+	double focal_length; 
+	int width,height;
  	EquiTrans equi;
-	Mat pers = equi.toPerspective(img, phi, theta );
+	//Mat pers = equi.toPerspective(img, phi, theta );
 
 
 
-	imwrite("./temp/persp.jpg", pers);
+	//imwrite("./temp/persp.jpg", pers);
 	
 	
-	cv::namedWindow("Omni Image", 0);
-	cv::namedWindow("Perspective image", 0);	
-	imshow("Omni Image", img);	  
-	imshow("Perspective image", pers);
+	//cv::namedWindow("Omni Image", 0);
+	//cv::namedWindow("Perspective image", 0);	
+	//imshow("Omni Image", img);	  
+	//imshow("Perspective image", pers);
+	//waitKey(0);
+	
+	//Testing Cube Faces
+	//Get Params
+	//equi.getCubeCam(img,width,height,focal_length);
+	
+	//Make faces
+	Mat faces[6];
+	equi.setFOV(90.0, 90.0);
+	equi.makeCubeFaces(img,faces);
+	
+	//Display 6 faces
+	cv::namedWindow("Image", 0);
+	cv::namedWindow("Front", 0);
+	cv::namedWindow("Back", 0);
+	cv::namedWindow("Left", 0);
+	cv::namedWindow("Right", 0);
+	cv::namedWindow("Up", 0);
+	cv::namedWindow("Down", 0);
+	
+	imshow("Image", img);
+	imshow("Front", faces[0]);
+	imshow("Back", faces[2]);
+	imshow("Left", faces[3]);
+	imshow("Right", faces[1]);
+	imshow("Up", faces[4]);
+	imshow("Down", faces[5]);	
+	
 	waitKey(0);
-
+	
 }
 ////////////////////////////////////Test of EquiTrans /////////////////////////////////////////////
 

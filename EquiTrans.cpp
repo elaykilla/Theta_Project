@@ -54,8 +54,6 @@ Mat EquiTrans::toPerspective(Mat src, double cam_phi_deg, double cam_theta_deg){
   vd.tilt = cam_theta_deg/180.0*M_PI;
 
   Mat dst = Mat::zeros(film_height, film_width, CV_8UC3);
-
-
   int nrows = src.rows, ncols = src.cols;
   double d_nrows = (double)nrows, d_ncols = (double)ncols;
 
@@ -64,40 +62,58 @@ Mat EquiTrans::toPerspective(Mat src, double cam_phi_deg, double cam_theta_deg){
     cout << "ncols = " << ncols << "\n";
   }
 
+  // warping vectors
+  Mat warpI = Mat::zeros(film_height, film_width, CV_32F);
+  Mat warpJ = Mat::zeros(film_height, film_width, CV_32F);
+
   int half_ht = film_height/2, half_wd = film_width/2;
-  double full_hor = 2.0 * M_PI;
-  double hfov_rad = hfov / 180.0 * M_PI, vfov_rad = vfov / 180.0 * M_PI;
 
   // i_c, j_c: center origin, left-right, top-down
-  double min_theta = - 0.5 * M_PI, max_theta = 0.5 * M_PI;
-  int i_c, j_c;
+  double i_c, j_c;
   double ec_i, ec_j; // image coordinates in equirectangular format.
+  double half_equi_ht = (double)(nrows/2);
+  double half_equi_wd = (double)(ncols/2);
   
   // Rotation around Y (vertical-down) axis.
   for(int j = 0;j < film_height;j++){
-    double y = (double)(j - half_ht);
-    j_c = j - half_ht;
+    j_c = (double)j - half_ht + 0.5;
   
     for(int i = 0;i < film_width;i++){
-      i_c = i - half_ht;
+      i_c = (double)(i - half_wd) + 0.5;
 
-      toEquirectCore((double)i_c, (double)j_c, focal_length, vd, d_nrows, d_ncols, &ec_i, &ec_j);
+      toEquirectCore(i_c, j_c, focal_length, vd, d_nrows, d_ncols, &ec_i, &ec_j);
  
       // Render warped image
+      ec_i += (half_equi_wd - 0.5);
+      ec_j += (half_equi_ht - 0.5);
+
       int e_i = (int)ec_i + ncols/2;   // image coordinates in Equirectangular format
-      int e_j = (int)ec_j + nrows/2;   // top-left origin, left-right, top-bottom.
+      int e_j = (int)ec_j + nrows/2;   // top-left origin, left-right, top-bottom
+
+      warpI.at<float>(j, i) =  ec_i;
+      warpJ.at<float>(j, i) =  ec_j;
 
      if(debug)
 	cout  << "( " << ec_i << ", " << ec_j << " )\n";
 
-      if(debug)
-	cout  << "( " << e_i << ", " << e_j << " )\n";
+     if(debug)
+       cout  << "( " << e_i << ", " << e_j << " )\n";
 
+     /*
       Vec3b intensity;
       intensity = src.at<Vec3b>(e_j, e_i);     
       dst.at<Vec3b>(j, i) = intensity;
+     */
     }
   }
+  
+  WarpImage wi;
+
+  wi.setLinear();
+  wi.warp(src, warpI, warpJ, dst);
+
+  warpI.release();
+  warpJ.release();
 
   return dst;
 }
@@ -155,6 +171,28 @@ void EquiTrans::makeCubeFaces(Mat src, Mat faces[6]){
   pan_deg = 0.0, tilt_deg = -90.0;
   face = toPerspective(src, pan_deg, tilt_deg);
   faces[i++] = face;
+}
+
+  /*
+* Get the viewing directions for each of the 6 cubic faces
+*/
+void getCubeFaceViewingDirections(ViewDirection v_directions[6]){
+	double pan_deg = 0.0, tilt_deg = 0.0;
+	ViewDirection vd;
+	int i =0;
+	for(i = 0;i < 4;i++, pan_deg += 90.0){
+		
+   		vd.pan = pan_deg;
+   		vd.tilt = tilt_deg;
+  		v_directions[i] = vd;
+  	}
+	// top
+  	vd.pan = 0.0, vd.tilt = 90.0;
+	v_directions[i++] = vd;
+	
+	// bottom
+  	vd.pan = 0.0, vd.tilt = -90.0;
+  	v_directions[i++] = vd;
 }
 
 

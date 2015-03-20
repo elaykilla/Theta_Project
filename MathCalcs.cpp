@@ -623,6 +623,26 @@ PointXYZRGB meanPoint(vector<PointXYZRGB> points){
 	}
 }
 
+
+/**
+* This function converts a pixel point (i,j) given in top left coordinates, to (i',j') center image coordinates 
+*/
+void toImageCenterCoordinate(double i, double j, int width, int height, double &ip, double &jp){
+	ip = i - height/2.;
+	jp = j - width/2.;
+
+}
+
+/**
+* This function converts a pixel point (i,j) given in center image coordinates , to (i',j') center image coordinates top left coordinates
+*/
+void toImageTopLeftCoordinate(double i, double j, int width, int height, double &ip, double &jp){
+	ip  =i + height/2;
+	jp = j + width/2.;
+}
+
+
+
 /**
  * This function given a point u (x,y,z) returns the (x,y) coordinates of the projection onto the XY plane of u
  */
@@ -696,6 +716,15 @@ void sphereCoordinates(float i, float j, double r, int rows, int cols, double &x
 	z = r * cos(theta);
 }
 
+/**
+* Get theta and phi angles from pixel coordinates
+*/
+void SphericFromPixelCoordinates(float i, float j, int rows, int cols, double &theta, double &phi){
+	//Convert from (i,j) pixel values to (theta,phi) angle values 
+	//double theta,phi;
+	theta = i * PI/rows ;
+	phi = j * 2*PI/cols;
+}
 
 /*
 * Applying sphereCoordinates to an array of points and returns a list of 3D points
