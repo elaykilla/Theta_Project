@@ -1,10 +1,9 @@
-#ifndef ViewDirection_H
-#define ViewDirection_H
-
 /*
  * To hold viewing angles in equirectanguler format
  *     center origin                            
  */
+#ifndef _VIEW_DIRECTION_HPP
+#define _VIEW_DIRECTION_HPP
 #include "cv_headers.hpp"
 
 using namespace cv;

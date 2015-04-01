@@ -7,7 +7,12 @@
 #include"MathCalcs.hpp"
 #include"OcvManip.hpp"
 #include"PclManip.hpp"
+
+#include"PointFeature.hpp"
+#include"PersCamera.hpp"
 #include"EquiTrans.hpp"
+//#include"Triangle.hpp"
+
 
 //////////////////////////////////////Rotate Image Test /////////////////////////////////
 
@@ -1863,8 +1868,105 @@ void twoDToThreeDkeypoints(Mat img){
 }
 //////////////////////////////////// end of Test of 2D to 3D keypoints ///////////////////////////////////
 
+//////////////////////// Test of 3D triangle reading and writting ///////////////////////////////////
+void testTriangleWrite(cv::Mat img1, cv::Mat img2){
+	
+	img1 = cv::imread("test3.JPG",1);
+	//ori = allImages[0];
+	
+	img2 = cv::imread("test4.JPG",1);//Final Output image
+	
+	
+	cv::Mat result;
+	
+	//Convert images to Cubes 
+	EquiTrans equi;
+	Cube cube1, cube2;
+	Mat faces1[6] ,faces2[6];
+	ViewDirection vds[6];
+	vector<vector<cv::KeyPoint> > matched_keypoints;
+	vector<cv::KeyPoint> keypoints1, keypoints2;
+	vector<cv::Point2f> points1, points2;
+	vector<PointXYZRGB> points3D1, points3D2;
+	//vector<cv::Point3d> points3D1c, points3D2c;
+	vector<cv::DMatch> matches;
+	
+	equi.setFOV(90.0, 90.0);
+	cout << "testTriangleReadAndWrite: Making Cube Faces" << endl;
+	equi.makeCubeFaces(img1,cube1);
+	equi.makeCubeFaces(img2,cube2);
+	
+	
+	//Extract Keypoints on Perspective images, and match them on Omnidirectional Images
+	cout << "testTriangleReadAndWrite: Extracting Keypoints1" << endl;
+	keypoints1 =  getCubeKeypoints(img1,cube1,vds);
+	cout << "testTriangleReadAndWrite: Extracting Keypoints2" << endl;
+	keypoints2 =  getCubeKeypoints(img2,cube2,vds);
+	
+	
+	//Making Matches
+	cout << "testTriangleReadAndWrite: Making Macthes" << endl;
+	matches = getFlannMatches(img1, img2, keypoints1 ,keypoints2);
+	//matched_keypoints = getMatchedKeypoints(keypoints1, keypoints2, matches);
+	
+	//Matched Keypoints on OmniDirectional Images
+	
+	ofstream logFile;
+	//keypoints1 = matched_keypoints[0];
+	//keypoints1 = matched_keypoints[1];
+	//Write Keypoints in file
+	
+	
+	//Convert Keypoints from Omni to 3D euclidien based on Chiba's Function
+	PointFeature feat;
+	vector<cv::Point3d> points3D1c(keypoints1.size()), points3D2c(keypoints2.size());
+	feat.toSpherePoints(img1,keypoints1,points3D1c);
+	feat.toSpherePoints(img2,keypoints2,points3D2c);
+	
+	
+	//points3D1c = fromxyzrgbtoPoint3D(points3D1);
+	//points3D2c = fromxyzrgbtoPoint3D(points3D2);
+	//Save to file 
+	feat.writePoints3d(points3D1c, "Txt_files/pointsList3D1.txt");
+	feat.writePoints3d(points3D2c, "Txt_files/pointsList3D2.txt");
+
+}
 
 
+void testTriangleRead(string filename){
+	//vector<Vec9f > triangles = readTriangles3D(filename) ;
+	
+	 
+}
+//////////////////////// End Test of 3D triangle reading and writting ///////////////////////////////////
 
+//////////////////////// Test of single triangle perspective ///////////////////////////////////
+void testTrianglePerspective(Mat image1){
+	//string file1 = "../images/R0010103_small.JPG";
+  bool extract_flag = false;
+
+  //Mat image1 = imread(file1);
+
+  cv::Vec6f vec(389.0, 219.0, 538.0, 329.0, 553.0, 197.0);
+  cv::Vec6f vec2(380.0, 216.0, 530.0, 320.0, 540.0, 190.0);
+ // if(extract_flag){
+  //  vector<Vec6f> vec_list = extract_points(image1);
+  //  vec = vec_list[0];
+  //}
+  // convert the first triangle to a perspective image
+  Triangle tr;
+
+  Mat per_image = tr.convToPersRectImage(image1, vec);
+  Mat per_image2 = tr.convToPersRectImage(image1, vec2);
+  Mat per_mix = tr.convToPersRectImageTwo(image1, vec,vec2);
+	
+  //tr.getPersCamParamsTwo(image1,vec);
+  imshow("Perspective image1", per_image);
+  imshow("Perspective image2", per_image2);
+  imshow("Perspective image both", per_mix);
+  waitKey(0);
+
+}
+//////////////////////// End of Test of single triangle perspective ///////////////////////////////////
 
 

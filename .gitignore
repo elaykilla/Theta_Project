@@ -15,3 +15,15 @@ DownSampled*
 Just* 
 *.jpg
 *.png
+*.JPG
+
+#Text and object files
+*.obj
+
+#Compressed Files
+*.gz
+*.tar
+*.zip
+
+#bash files
+*.sh

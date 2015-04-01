@@ -111,26 +111,12 @@ load/fast:
 	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/build
 .PHONY : load/fast
 
-#=============================================================================
-# Target rules for targets named trans
-
-# Build rule for target.
-trans: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 trans
-.PHONY : trans
-
-# fast build rule for target.
-trans/fast:
-	$(MAKE) -f CMakeFiles/trans.dir/build.make CMakeFiles/trans.dir/build
-.PHONY : trans/fast
-
 EquiTrans.o: EquiTrans.cpp.o
 .PHONY : EquiTrans.o
 
 # target to build an object file
 EquiTrans.cpp.o:
 	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/EquiTrans.cpp.o
-	$(MAKE) -f CMakeFiles/trans.dir/build.make CMakeFiles/trans.dir/EquiTrans.cpp.o
 .PHONY : EquiTrans.cpp.o
 
 EquiTrans.i: EquiTrans.cpp.i
@@ -139,7 +125,6 @@ EquiTrans.i: EquiTrans.cpp.i
 # target to preprocess a source file
 EquiTrans.cpp.i:
 	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/EquiTrans.cpp.i
-	$(MAKE) -f CMakeFiles/trans.dir/build.make CMakeFiles/trans.dir/EquiTrans.cpp.i
 .PHONY : EquiTrans.cpp.i
 
 EquiTrans.s: EquiTrans.cpp.s
@@ -148,7 +133,6 @@ EquiTrans.s: EquiTrans.cpp.s
 # target to generate assembly for a file
 EquiTrans.cpp.s:
 	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/EquiTrans.cpp.s
-	$(MAKE) -f CMakeFiles/trans.dir/build.make CMakeFiles/trans.dir/EquiTrans.cpp.s
 .PHONY : EquiTrans.cpp.s
 
 MathCalcs.o: MathCalcs.cpp.o
@@ -157,7 +141,6 @@ MathCalcs.o: MathCalcs.cpp.o
 # target to build an object file
 MathCalcs.cpp.o:
 	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/MathCalcs.cpp.o
-	$(MAKE) -f CMakeFiles/trans.dir/build.make CMakeFiles/trans.dir/MathCalcs.cpp.o
 .PHONY : MathCalcs.cpp.o
 
 MathCalcs.i: MathCalcs.cpp.i
@@ -166,7 +149,6 @@ MathCalcs.i: MathCalcs.cpp.i
 # target to preprocess a source file
 MathCalcs.cpp.i:
 	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/MathCalcs.cpp.i
-	$(MAKE) -f CMakeFiles/trans.dir/build.make CMakeFiles/trans.dir/MathCalcs.cpp.i
 .PHONY : MathCalcs.cpp.i
 
 MathCalcs.s: MathCalcs.cpp.s
@@ -175,7 +157,6 @@ MathCalcs.s: MathCalcs.cpp.s
 # target to generate assembly for a file
 MathCalcs.cpp.s:
 	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/MathCalcs.cpp.s
-	$(MAKE) -f CMakeFiles/trans.dir/build.make CMakeFiles/trans.dir/MathCalcs.cpp.s
 .PHONY : MathCalcs.cpp.s
 
 OcvManip.o: OcvManip.cpp.o
@@ -184,7 +165,6 @@ OcvManip.o: OcvManip.cpp.o
 # target to build an object file
 OcvManip.cpp.o:
 	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/OcvManip.cpp.o
-	$(MAKE) -f CMakeFiles/trans.dir/build.make CMakeFiles/trans.dir/OcvManip.cpp.o
 .PHONY : OcvManip.cpp.o
 
 OcvManip.i: OcvManip.cpp.i
@@ -193,7 +173,6 @@ OcvManip.i: OcvManip.cpp.i
 # target to preprocess a source file
 OcvManip.cpp.i:
 	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/OcvManip.cpp.i
-	$(MAKE) -f CMakeFiles/trans.dir/build.make CMakeFiles/trans.dir/OcvManip.cpp.i
 .PHONY : OcvManip.cpp.i
 
 OcvManip.s: OcvManip.cpp.s
@@ -202,7 +181,6 @@ OcvManip.s: OcvManip.cpp.s
 # target to generate assembly for a file
 OcvManip.cpp.s:
 	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/OcvManip.cpp.s
-	$(MAKE) -f CMakeFiles/trans.dir/build.make CMakeFiles/trans.dir/OcvManip.cpp.s
 .PHONY : OcvManip.cpp.s
 
 PclManip.o: PclManip.cpp.o
@@ -211,7 +189,6 @@ PclManip.o: PclManip.cpp.o
 # target to build an object file
 PclManip.cpp.o:
 	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/PclManip.cpp.o
-	$(MAKE) -f CMakeFiles/trans.dir/build.make CMakeFiles/trans.dir/PclManip.cpp.o
 .PHONY : PclManip.cpp.o
 
 PclManip.i: PclManip.cpp.i
@@ -220,7 +197,6 @@ PclManip.i: PclManip.cpp.i
 # target to preprocess a source file
 PclManip.cpp.i:
 	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/PclManip.cpp.i
-	$(MAKE) -f CMakeFiles/trans.dir/build.make CMakeFiles/trans.dir/PclManip.cpp.i
 .PHONY : PclManip.cpp.i
 
 PclManip.s: PclManip.cpp.s
@@ -229,8 +205,103 @@ PclManip.s: PclManip.cpp.s
 # target to generate assembly for a file
 PclManip.cpp.s:
 	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/PclManip.cpp.s
-	$(MAKE) -f CMakeFiles/trans.dir/build.make CMakeFiles/trans.dir/PclManip.cpp.s
 .PHONY : PclManip.cpp.s
+
+PersCamera.o: PersCamera.cpp.o
+.PHONY : PersCamera.o
+
+# target to build an object file
+PersCamera.cpp.o:
+	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/PersCamera.cpp.o
+.PHONY : PersCamera.cpp.o
+
+PersCamera.i: PersCamera.cpp.i
+.PHONY : PersCamera.i
+
+# target to preprocess a source file
+PersCamera.cpp.i:
+	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/PersCamera.cpp.i
+.PHONY : PersCamera.cpp.i
+
+PersCamera.s: PersCamera.cpp.s
+.PHONY : PersCamera.s
+
+# target to generate assembly for a file
+PersCamera.cpp.s:
+	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/PersCamera.cpp.s
+.PHONY : PersCamera.cpp.s
+
+PointFeature.o: PointFeature.cpp.o
+.PHONY : PointFeature.o
+
+# target to build an object file
+PointFeature.cpp.o:
+	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/PointFeature.cpp.o
+.PHONY : PointFeature.cpp.o
+
+PointFeature.i: PointFeature.cpp.i
+.PHONY : PointFeature.i
+
+# target to preprocess a source file
+PointFeature.cpp.i:
+	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/PointFeature.cpp.i
+.PHONY : PointFeature.cpp.i
+
+PointFeature.s: PointFeature.cpp.s
+.PHONY : PointFeature.s
+
+# target to generate assembly for a file
+PointFeature.cpp.s:
+	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/PointFeature.cpp.s
+.PHONY : PointFeature.cpp.s
+
+Triangle.o: Triangle.cpp.o
+.PHONY : Triangle.o
+
+# target to build an object file
+Triangle.cpp.o:
+	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/Triangle.cpp.o
+.PHONY : Triangle.cpp.o
+
+Triangle.i: Triangle.cpp.i
+.PHONY : Triangle.i
+
+# target to preprocess a source file
+Triangle.cpp.i:
+	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/Triangle.cpp.i
+.PHONY : Triangle.cpp.i
+
+Triangle.s: Triangle.cpp.s
+.PHONY : Triangle.s
+
+# target to generate assembly for a file
+Triangle.cpp.s:
+	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/Triangle.cpp.s
+.PHONY : Triangle.cpp.s
+
+WarpImage.o: WarpImage.cpp.o
+.PHONY : WarpImage.o
+
+# target to build an object file
+WarpImage.cpp.o:
+	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/WarpImage.cpp.o
+.PHONY : WarpImage.cpp.o
+
+WarpImage.i: WarpImage.cpp.i
+.PHONY : WarpImage.i
+
+# target to preprocess a source file
+WarpImage.cpp.i:
+	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/WarpImage.cpp.i
+.PHONY : WarpImage.cpp.i
+
+WarpImage.s: WarpImage.cpp.s
+.PHONY : WarpImage.s
+
+# target to generate assembly for a file
+WarpImage.cpp.s:
+	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/WarpImage.cpp.s
+.PHONY : WarpImage.cpp.s
 
 load.o: load.cpp.o
 .PHONY : load.o
@@ -256,30 +327,6 @@ load.cpp.s:
 	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/load.cpp.s
 .PHONY : load.cpp.s
 
-trans_main.o: trans_main.cpp.o
-.PHONY : trans_main.o
-
-# target to build an object file
-trans_main.cpp.o:
-	$(MAKE) -f CMakeFiles/trans.dir/build.make CMakeFiles/trans.dir/trans_main.cpp.o
-.PHONY : trans_main.cpp.o
-
-trans_main.i: trans_main.cpp.i
-.PHONY : trans_main.i
-
-# target to preprocess a source file
-trans_main.cpp.i:
-	$(MAKE) -f CMakeFiles/trans.dir/build.make CMakeFiles/trans.dir/trans_main.cpp.i
-.PHONY : trans_main.cpp.i
-
-trans_main.s: trans_main.cpp.s
-.PHONY : trans_main.s
-
-# target to generate assembly for a file
-trans_main.cpp.s:
-	$(MAKE) -f CMakeFiles/trans.dir/build.make CMakeFiles/trans.dir/trans_main.cpp.s
-.PHONY : trans_main.cpp.s
-
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -289,7 +336,6 @@ help:
 	@echo "... edit_cache"
 	@echo "... load"
 	@echo "... rebuild_cache"
-	@echo "... trans"
 	@echo "... EquiTrans.o"
 	@echo "... EquiTrans.i"
 	@echo "... EquiTrans.s"
@@ -302,12 +348,21 @@ help:
 	@echo "... PclManip.o"
 	@echo "... PclManip.i"
 	@echo "... PclManip.s"
+	@echo "... PersCamera.o"
+	@echo "... PersCamera.i"
+	@echo "... PersCamera.s"
+	@echo "... PointFeature.o"
+	@echo "... PointFeature.i"
+	@echo "... PointFeature.s"
+	@echo "... Triangle.o"
+	@echo "... Triangle.i"
+	@echo "... Triangle.s"
+	@echo "... WarpImage.o"
+	@echo "... WarpImage.i"
+	@echo "... WarpImage.s"
 	@echo "... load.o"
 	@echo "... load.i"
 	@echo "... load.s"
-	@echo "... trans_main.o"
-	@echo "... trans_main.i"
-	@echo "... trans_main.s"
 .PHONY : help
 
 

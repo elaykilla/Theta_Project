@@ -11,6 +11,18 @@
 #include"OcvManip.hpp"
 //#include "boost_headers.hpp"
 
+/***************************************************Simple Functions **************************************/
+//Function returns the index of a given point in an array, if not found it gives the size of the 
+//Vector
+int findPointInVector(PointXYZRGB p, vector<PointXYZRGB> points);
+
+/**
+* Simple function to convert a list of PointXYZRGB to a list of Point3D
+*/
+vector<cv::Point3d> fromxyzrgbtoPoint3D(vector<PointXYZRGB> points);
+
+
+/***************************************************End Simple Functions **************************************/
 
 /***************************************************Image Manipulation PCL***********************************************/
 /**
@@ -19,6 +31,7 @@
 */
 
 void get3DKepoints(PointCloud<PointXYZRGB>::Ptr &points, float min_scale, int nr_octaves, int nr_scales_per_octave, float min_contrast, PointCloud<PointWithScale>::Ptr &keypoints_out);
+
 
 
 /**
@@ -88,9 +101,14 @@ cv::Mat imageFromPcPlane(PointCloud<PointXYZRGB>::Ptr cloud, cv::Mat ori, int he
 //}
 
 /** 
-* Given a set of 3D points, this functions creates a triangle mesh without any upsampling
+* Given a set of 3D points, this functions creates a triangle mesh without any upsampling. 
+* However the sphere is not closed and this uses the ball pivoting algorithm
 */
 GreedyProjectionTriangulation<PointXYZRGBNormal> get3DTriangulation(PointCloud<PointXYZRGB>::Ptr cloud, PointCloud<Normal>::Ptr normals, double max_dist);
 
+/**
+* Using triangles from first sphere, and matched points, make corresponding triangels on second image
+*/
+void makeCorrespondingDelaunayTriangles3D(vector<PointXYZRGB> points3D1, vector<PointXYZRGB> points3D2, vector<Vec9f> &triangles3D1, vector<Vec9f> &triangles3D2); 
 
 #endif

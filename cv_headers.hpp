@@ -19,11 +19,28 @@
 #include <opencv2/legacy/legacy.hpp>
 
 #include "opencv2/video/tracking.hpp"
+#include "standard_headers.hpp"
 //using namespace cv;
 typedef cv::Vec<float, 9> Vec9f;
 
+struct PointWithColor {
+  double x;
+  double y;
+  cv::Scalar color; 
+} ;
 
-typedef cv::Vec<cv::Mat, 6> Cube;
+
+/**Structure to define a triangle by:
+* - It's 3 Vertices given in pixel coordinates
+* - The list of points inside the triangle with their color
+*/
+struct Triangle2D {
+	cv::Vec6f points;
+	std::vector<PointWithColor> content;
+};
+
+
+typedef cv::Mat Cube[6];
 #endif
   
   

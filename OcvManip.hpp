@@ -13,14 +13,16 @@
 #include "matcher.h"
 //#include "ViewDirection.hpp"
 //#include "EquiTrans.hpp"
-//#include "boost_headers.hpp"
+#include "Triangle.hpp"
+#include "PointFeature.hpp"
+#include "boost_headers.hpp"
 
 
 
 using namespace cv;
 
 //Define new types 
-typedef Vec<float, 9> Vec9f;
+//typedef Vec<float, 9> Vec9f;
 /***********************************Image Manipulation Cv***********************************************/
 
 /**
@@ -70,7 +72,7 @@ vector<cv::KeyPoint> getSiftKeypoints(cv::Mat image);
 * This function extracts keypoints from a cube of 6 images. 
 * These keypoints are normalized to an equirectangular image which was at the origin of the 6 cube faces
 */
-//vector<cv::KeyPoint> getCubeKeypoints(cv::Mat origin, Cube cube_mat);
+vector<cv::KeyPoint> getCubeKeypoints(cv::Mat origin, Cube cube_mat, ViewDirection vds[6]);
 
 
 /**
@@ -132,9 +134,32 @@ cv::Mat detectEdges(cv::Mat img);
 cv::Mat linearInterpolate(cv::Mat image1, cv::Mat image2, double dist, double pos);
 
 /** 
-* Function to interpolate between 2 images using Delaunay triangulation
+* Function to interpolate between 2 images using Delaunay triangulation.
+* Full function...
+*	- First extracts and matches keypoints
+*	- Compute affine transformations
+*	- Generate interpolated image by interpolating individual trianges
+*
 */
 cv::Mat delaunayInterpolate(cv::Mat image1, cv::Mat image2, double dist, double pos);
+
+
+/**
+* Function to retrieve only interpolated content
+*/
+cv::Mat getInterpolatedTriangleContent(cv::Mat image1, cv::Mat image2, cv::Vec6f triangle1, cv::Vec6f triangle2, cv::Vec6f &trianglesInter, vector<PointWithColor> &content, double dist, double pos);
+
+
+/**
+* Function to interpolate between 2 images having already extracted keypoints and matched them and computed
+* triangulation
+* Inputs:
+*	- Img1, Img2 
+*	- Triangles1, Triangles2: matched triangles
+* Outputs:
+*	- Interpolated image
+*/
+cv::Mat interpolateWithGivenTriangles(cv::Mat image1, cv::Mat image2, vector<cv::Vec6f> triangles1, vector<cv::Vec6f> triangles2, vector<cv::Vec6f> &trianglesInter, double dist, double pos);
 
 
 /** 
@@ -146,8 +171,16 @@ cv::Mat delaunayInterpolateSphere(cv::Mat img1, cv::Mat img2, double dist, doubl
 */
 vector<cv::Mat> delaunayInterpolateMultiple(cv::Mat image1, cv::Mat image2, double dist, int n);
 
+/** 
+* Function to interpolate between 2 images using Delaunay triangulation using triangles on the surface of the sphere and cube faces
+*/
+void delaunayInterpolateCubeMakeTriangles(cv::Mat img1, cv::Mat img2, double dist, double pos);
 
 
+/** 
+* Function to interpolate between 2 images using Delaunay triangulation using triangles on the surface of the sphere and cube faces. This is the 2nd part of the previous function. Supposes the 3D triangles have been interpolated
+*/
+cv::Mat delaunayInterpolateCubeFromTriangles(cv::Mat img1, cv::Mat img2, double dist, double pos, string triangles_file, vector<cv::Point2f> points1c, vector<cv::Point2f> points2c);
 /**
 * Function calculates the optical flow map between 2 images
 */

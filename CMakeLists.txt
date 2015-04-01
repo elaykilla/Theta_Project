@@ -18,9 +18,9 @@ link_directories(${Boost_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS} )
 
 
-add_executable( load load.cpp MathCalcs.cpp OcvManip.cpp PclManip.cpp EquiTrans.cpp )
-add_executable (trans trans_main.cpp EquiTrans.cpp OcvManip.cpp PclManip.cpp MathCalcs.cpp)
+add_executable( load load.cpp MathCalcs.cpp OcvManip.cpp PclManip.cpp WarpImage.cpp EquiTrans.cpp PointFeature.cpp PersCamera.cpp Triangle.cpp  )
+#add_executable (trans trans_main.cpp EquiTrans.cpp WarpImage.cpp OcvManip.cpp PclManip.cpp MathCalcs.cpp)
 #add_executable( test test.cpp )
 target_link_libraries( load -lpthread ${PCL_LIBRARIES} ${OpenCV_LIBS} ${Boost_LIBRARIES})
-target_link_libraries( trans -lpthread ${PCL_LIBRARIES} ${OpenCV_LIBS} ${Boost_LIBRARIES})
+#target_link_libraries( trans -lpthread ${PCL_LIBRARIES} ${OpenCV_LIBS} ${Boost_LIBRARIES})
 #target_link_libraries( test ${PCL_LIBRARIES} ${OpenCV_LIBS} )

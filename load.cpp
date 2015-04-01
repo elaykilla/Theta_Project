@@ -406,14 +406,14 @@ int main(int argc, char** argv)
 //	cv::imshow("edges2", result2);
 	
 	
-	cv::Mat inter = cv::Mat::ones(ori.rows/1, ori.cols/1, ori.type());
-	cv::resize(ori,inter,inter.size(),0,0,INTER_CUBIC);
+	//cv::Mat inter = cv::Mat::ones(ori.rows/1, ori.cols/1, ori.type());
+	//cv::resize(ori,inter,inter.size(),0,0,INTER_CUBIC);
 	//cv::pyrDown(ori,inter,Size(ori.cols/2,ori.rows/2));
 	//ori = inter;
 	
 	//cv::pyrDown(templ,inter,Size(ori.cols/2,ori.rows/2));
-	cv::Mat inter2 = cv::Mat::ones(ori.rows/1, ori.cols/1, ori.type());
-	cv::resize(templ,inter2,inter.size(),0,0,INTER_CUBIC);
+	//cv::Mat inter2 = cv::Mat::ones(ori.rows/1, ori.cols/1, ori.type());
+	//cv::resize(templ,inter2,inter.size(),0,0,INTER_CUBIC);
 	//templ = inter2;
 	
 	//Test of Delaunay Triangles
@@ -482,6 +482,13 @@ int main(int argc, char** argv)
  	//testCloudObj(allPtClouds[0]);
  	
  	//test3DTriangulation(allPtClouds[0]);
+ 	
+ 	//Test writting 3D points
+ 	testTriangleWrite(ori,templ);
+ 	//Testing reading
+ 	//testTriangleRead();
+ 	
+ 	testTrianglePerspective(templ);
 ///////////////////////End of 3D keypoints test ////////////////////////////
 
 	

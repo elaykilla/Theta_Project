@@ -9,7 +9,40 @@
 #include"PclManip.hpp"
 //#include "boost_headers.hpp"
 
+/***************************************************Simple Functions **************************************/
+//Function returns the index of a given point in an array, if not found it gives the size of the 
+//Vector
+int findPointInVector(PointXYZRGB p, vector<PointXYZRGB> points){
+
+	int pos = 0;
+	while(pos<points.size() && 
+	((points[pos].x != p.x) ||(points[pos].y != p.y) || (points[pos].z != p.z))){
+		pos++;
+	} 
+	
+	return pos;
+
+
+
+}
+
+
+/**
+* Simple function to convert a list of PointXYZRGB to a list of Point3D
+*/
+vector<cv::Point3d> fromxyzrgbtoPoint3D(vector<PointXYZRGB> points){
+	vector<cv::Point3d> points3D;
+	
+	for(int i=0;i<points.size();i++){
+		Point3d p (points[i].x,points[i].y,points[i].z);
+		points3D.push_back(p);
+	}
+
+	return points3D;
+}
 /***************************************************Image Manipulation PCL***********************************************/
+
+
 /**
 * This function computes the keypoints on a cloud of PointXYZRGB. 
 *******************FLANN compatibility problem between OpenCv and PCL ***************************
@@ -535,3 +568,55 @@ GreedyProjectionTriangulation<PointXYZRGBNormal> get3DTriangulation(PointCloud<P
 //	cout << "test function called" << endl;
 //	return;
 //}
+
+void makeCorrespondingDelaunayTriangles3D(vector<PointXYZRGB> points3D1, vector<PointXYZRGB> points3D2, vector<Vec9f> &triangles3D1, vector<Vec9f> &triangles3D2){
+	
+	vector<Vec9f> newtriangles3D1,newtriangles3D2;
+	Vec9f t,t2;
+	//logFile.open("TrianglePoints.txt");
+	PointXYZRGB p1,p2,p3,pp1,pp2,pp3;
+	for(int i=0;i<triangles3D1.size();i++){
+		t = triangles3D1[i];
+		p1 = PointXYZRGB(t[0], t[1], t[2]);
+		p2 = PointXYZRGB(t[3], t[4], t[5]);
+		p3 = PointXYZRGB(t[6], t[7], t[8]);
+
+		//logFile << p1 << "||" << p2 << "||" << p3 << endl;
+		//For each point in triangle 1 we search for the corresponding point in triangle 2
+		int ptPos1 = findPointInVector(p1, points3D1) ; 
+		int ptPos2 = findPointInVector(p2, points3D1) ; 		
+		int ptPos3 = findPointInVector(p3, points3D1) ; 
+
+
+
+		if(ptPos1 < points3D1.size() && ptPos2 < points3D1.size() && ptPos3 < points3D1.size()){	
+			//Construct the second triangle and try to locate it in the trianglesList2
+			//We find the corresponding point in the second triangles list
+			pp1 = points3D2[ptPos1];
+			pp2 = points3D2[ptPos2];
+			pp3 = points3D2[ptPos3];
+			t2[0] = pp1.x;
+			t2[1] = pp1.y;
+			t2[2] = pp1.z;
+			
+			t2[3] = pp2.x;
+			t2[4] = pp2.y;
+			t2[5] = pp2.z;
+			
+			t2[6] = pp3.x;
+			t2[7] = pp3.y;
+			t2[8] = pp3.z;			
+			newtriangles3D1.push_back(t);
+			newtriangles3D2.push_back(t2);
+		}
+	}
+
+	//logFile.close();
+	triangles3D1 = newtriangles3D1;
+	triangles3D2 = newtriangles3D2;
+
+
+}
+
+
+

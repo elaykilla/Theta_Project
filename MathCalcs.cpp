@@ -16,6 +16,26 @@
 
 //	return floor(x + 0.5);
 //}
+
+double findMin(float numbers[], int size){
+	float min = FLT_MAX;
+	for(int i=0;i<size;i++){
+		if(min>numbers[i]){
+			min = numbers[i];
+		}
+	}
+	return min;
+}
+
+double findMax(float numbers[], int size){
+	float max = -FLT_MAX;
+	for(int i=0;i<size;i++){
+		if(max<numbers[i]){
+			max = numbers[i];
+		}
+	}
+	return max;
+}
 /**
  * Norm of a vector (O,u) with O the center of the coordinate system
  */
@@ -109,7 +129,13 @@ bool sameTriangle(cv::Vec6f t1, cv::Vec6f t){
 
 }
 
+PointXYZRGB triangleCenter3D(Vec9f triangle){
+	PointXYZRGB p;
+	p.x = (triangle[0] + triangle[3] + triangle[6])/3;
+	p.y = (triangle[1] + triangle[4] + triangle[7])/3;
+	p.z = (triangle[2] + triangle[5] + triangle[8])/3;
 
+}
 
 double triangleArea(double x1,double y1,double x2,double y2,double x3,double y3){
 
@@ -313,6 +339,58 @@ bool inTriangle3D(PointXYZRGB p, Vec9f triangle3D){
 
 }
 
+
+/**
+* Function returns interpolated triangles between 2 given triangles
+*/
+cv::Vec6f getInterpolatedTriangle(cv::Vec6f triangle1, cv::Vec6f triangle2, cv::Mat *affine, double dist, double pos){
+	//Interpolated triangle
+	cv::Vec6f inter_triangle;
+	
+	//An affine transform matrix 
+	cv::Mat tWarp (2,3,CV_32FC1);
+	
+
+	cv::Point2f tri1[3];
+	cv::Point2f tri2[3];
+
+
+
+	//Recover the points in first triangle
+	cv::Vec6f t = triangle1;
+
+	//Recover the vertices of the triangle
+	tri1[0] = cv::Point2f(t[0], t[1]); 
+	tri1[1] = cv::Point2f(t[2], t[3]); 
+	tri1[2] = cv::Point2f(t[4], t[5]); 
+
+	//Recover the points in second triangle
+	t = triangle2;
+	tri2[0] = cv::Point2f(t[0], t[1]); 
+	tri2[1] = cv::Point2f(t[2], t[3]); 
+	tri2[2] = cv::Point2f(t[4], t[5]); 
+
+	/// Get the Affine Transform
+	tWarp = getAffineTransform( tri1, tri2 );
+	affine = &tWarp;
+	
+	//Get interpolated triangle1
+	double* uprow = tWarp.ptr<double>(0);
+	double* downrow = tWarp.ptr<double>(1);
+	
+	//Triangle from interpolated Image
+	inter_triangle[0] = (tri1[0].x*(dist-pos) + tri2[0].x*pos)/dist; 
+	inter_triangle[1] = (tri1[0].y*(dist-pos) + tri2[0].y*pos)/dist; 
+		
+	inter_triangle[2] = (tri1[1].x*(dist-pos) + tri2[1].x*pos)/dist; 
+	inter_triangle[3] = (tri1[1].y*(dist-pos) + tri2[1].y*pos)/dist;
+			
+	inter_triangle[4] = (tri1[2].x*(dist-pos) + tri2[2].x*pos)/dist; 
+	inter_triangle[5] = (tri1[2].y*(dist-pos) + tri2[2].y*pos)/dist;
+	
+	return inter_triangle;
+
+}
 /**
 * Compute the affine 3*4 matrix between 2 triangles given with the 3D coordinates of each point
 */

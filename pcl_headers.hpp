@@ -22,4 +22,15 @@
 
 using namespace pcl;
 
+
+/**Structure to define a triangle by:
+* - It's 3 Vertices given in euclidien x,y,z coordinates
+* - The list of points inside the triangle with their color
+*/
+
+struct Triangle3D {
+	cv::Vec6f points;
+	std::vector<PointXYZRGB> content;
+};
+
 #endif

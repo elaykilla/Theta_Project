@@ -26,11 +26,14 @@
 
 //	return floor(x + 0.5);
 //}
+
+double findMin(float numbers[], int size);
+
+double findMax(float numbers[], int size);
 /**
 * Norm of a vector (O,u) with O the center of the coordinate system
 */
 double norm(PointXYZRGB u);
-
 
 double dotProduct(PointXYZRGB u, PointXYZRGB v);
 
@@ -56,6 +59,17 @@ bool inBetweenAngles(double angle, double angle_min, double angle_max);
 * Returns true if the 2 triangles, defined by 6 floats are the same
 */
 bool sameTriangle(cv::Vec6f t1, cv::Vec6f t2);
+
+
+/**
+* This function returns the center of a 2D triangle
+*/
+cv::Point2f triangleCenter(cv::Vec6f triangle);
+
+/**
+* Return the point at the center of the trianlge
+*/
+PointXYZRGB triangleCenter3D(Vec9f triangle);
 
 
 /** 
@@ -94,6 +108,11 @@ bool inTriangle3D(PointXYZ p, Vec9f triangle3D);
 * Given a point and a triangle, this function verifies where the point is located inside the triangle
 */
 bool inTriangle(cv::Point2f p, cv::Vec6f triangle);
+
+/**
+* Function returns interpolated triangles between 2 given triangles
+*/
+cv::Vec6f getInterpolatedTriangle(cv::Vec6f triangle1, cv::Vec6f triangle2, cv::Mat *affine, double dist, double pos);
 
 /**
 * Sample points in a triangle defined by it's 3 Points in 3D. The Sampling is done depending on the size of the biggest vertex of the triangle
