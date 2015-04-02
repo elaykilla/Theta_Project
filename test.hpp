@@ -1898,22 +1898,27 @@ void testTriangleWrite(cv::Mat img1, cv::Mat img2){
 	
 	
 	//Extract Keypoints on Perspective images, and match them on Omnidirectional Images
+	
 	cout << "testTriangleReadAndWrite: Extracting Keypoints1" << endl;
 	keypoints1 =  getCubeKeypoints(img1,cube1,vds);
 	cout << "testTriangleReadAndWrite: Extracting Keypoints2" << endl;
 	keypoints2 =  getCubeKeypoints(img2,cube2,vds);
 	
-	
+	cout << "testTriangleReadAndWrite Keypoints1 size before matching : " << keypoints1.size() << endl;
+	cout << "testTriangleReadAndWrite Keypoints2 size before matching : " << keypoints2.size() << endl;
 	//Making Matches
 	cout << "testTriangleReadAndWrite: Making Macthes" << endl;
 	matches = getFlannMatches(img1, img2, keypoints1 ,keypoints2);
-	//matched_keypoints = getMatchedKeypoints(keypoints1, keypoints2, matches);
+	matched_keypoints = getMatchedKeypoints(keypoints1, keypoints2, matches);
 	
 	//Matched Keypoints on OmniDirectional Images
 	
 	ofstream logFile;
-	//keypoints1 = matched_keypoints[0];
-	//keypoints1 = matched_keypoints[1];
+	keypoints1 = matched_keypoints[0];
+	keypoints2 = matched_keypoints[1];
+	cout << "testTriangleReadAndWrite Keypoints1 size after matching : " << keypoints1.size() << endl;
+	cout << "testTriangleReadAndWrite Keypoints2 size after matching : " << keypoints2.size() << endl;
+	
 	//Write Keypoints in file
 	
 	
@@ -1927,6 +1932,8 @@ void testTriangleWrite(cv::Mat img1, cv::Mat img2){
 	//points3D1c = fromxyzrgbtoPoint3D(points3D1);
 	//points3D2c = fromxyzrgbtoPoint3D(points3D2);
 	//Save to file 
+	cout << "testTriangleReadAndWrite Points3D1 size : " << points3D1c.size() << endl;
+	cout << "testTriangleReadAndWrite Points3D2 size : " << points3D2c.size() << endl;
 	feat.writePoints3d(points3D1c, "Txt_files/pointsList3D1.txt");
 	feat.writePoints3d(points3D2c, "Txt_files/pointsList3D2.txt");
 
@@ -1947,26 +1954,64 @@ void testTrianglePerspective(Mat image1){
 
   //Mat image1 = imread(file1);
 
+
+  //Testing normal
   cv::Vec6f vec(389.0, 219.0, 538.0, 329.0, 553.0, 197.0);
   cv::Vec6f vec2(380.0, 216.0, 530.0, 320.0, 540.0, 190.0);
+  
+  //Testing Barycentric
+  cv::Point2f p1,p2,p3;
+  p1.x = 389.0;
+  p1.y = 219.0;
+
+  p2.x = 538.0;
+  p2.y = 329.0;
+
+  p3.x = 553.0;
+  p3.y = 197.0;
+    
  // if(extract_flag){
   //  vector<Vec6f> vec_list = extract_points(image1);
   //  vec = vec_list[0];
   //}
   // convert the first triangle to a perspective image
   Triangle tr;
-
+  
+ // Mat per_image_bary = tr.convToPersRectImageBarycentric(image1,)
   Mat per_image = tr.convToPersRectImage(image1, vec);
-  Mat per_image2 = tr.convToPersRectImage(image1, vec2);
-  Mat per_mix = tr.convToPersRectImageTwo(image1, vec,vec2);
+  //Mat per_image2 = tr.convToPersRectImage(image1, vec2);
+  //Mat per_mix = tr.convToPersRectImageTwo(image1, vec,vec2);
 	
   //tr.getPersCamParamsTwo(image1,vec);
   imshow("Perspective image1", per_image);
-  imshow("Perspective image2", per_image2);
-  imshow("Perspective image both", per_mix);
+  //imshow("Perspective image2", per_image2);
+  //imshow("Perspective image both", per_mix);
   waitKey(0);
 
 }
 //////////////////////// End of Test of single triangle perspective ///////////////////////////////////
+void randomTest(){
+	double theta, phi,r;
+	r = 1;
+	PointXYZRGB p;
+	p.x = 0.2 ;
+	p.y = 0.3; 
+	p.z = sqrt(1-0.2*0.2-0.3*0.3);
+	
+	//First method
+	cout << "Initial Point: " << p << endl;
+	cartesian2Spheric(p,r,theta,phi);
+	cout << "Converted point: " << theta << " , " << phi << endl;
+	spheric2Cartesian(r,theta,phi,p);
+	cout << "Converted Point: " << p << endl;
+	//Sacht method
+	cout << "Sacht Initial Point: " << p << endl;
+	cartesian2SphericSacht(p,r,theta,phi);
+	cout << "Sacht Converted point: " << theta << " , " << phi << endl;
+	spheric2CartesianSacht(r,theta,phi,p);
+	cout << "Sacht Converted Point: " << p << endl;
+	
+	
 
+}
 

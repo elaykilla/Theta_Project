@@ -36,6 +36,10 @@ double findMax(float numbers[], int size){
 	}
 	return max;
 }
+
+double norm(cv::Point2f p){
+	return sqrt(p.x*p.x + p.y*p.y);
+}
 /**
  * Norm of a vector (O,u) with O the center of the coordinate system
  */
@@ -50,8 +54,8 @@ double dotProduct(PointXYZRGB u, PointXYZRGB v){
 
 
 /**
-* The cross product of u and v
-*/
+ * The cross product of u and v
+ */
 PointXYZRGB crossProduct(PointXYZRGB u, PointXYZRGB v){
 
 	PointXYZRGB w;
@@ -59,7 +63,7 @@ PointXYZRGB crossProduct(PointXYZRGB u, PointXYZRGB v){
 	w.x = u.y*v.z - u.z *v.y;
 	w.y = u.z * v.x - u.x*v.z;
 	w.z = u.x*v.y - u.y*v.x;
-	
+
 	return w;
 }
 /**
@@ -78,37 +82,37 @@ bool inInterval(double u, double a, double b){
 
 bool inBetweenAngles(double angle, double min_angle, double max_angle){
 	double tempAngle = fmod((fmod((max_angle-min_angle),2*PI)+2*PI), 2*PI);
-	
+
 	if(tempAngle>=PI){
 		swap(min_angle,max_angle);
 	}
-	
+
 	if (min_angle<=max_angle){
 		return angle >= min_angle && angle <= max_angle;
 	}
 	else {
-	
+
 		return angle >= min_angle || angle <= max_angle;
 	}
 }
 
 bool sameTriangle(cv::Vec6f t1, cv::Vec6f t){
-//	cv::Point2f a1,b1,c1,a2,b2,c2;
-//	
-//	a1.x = t1[0];
-//	a1.y = t1[1];	
-//	b1.x = t1[2];
-//	b1.y = t1[3];
-//	c1.x = t1[4];
-//	c1.y = t1[5];
-//	
-//	a2.x = t[0];
-//	a2.y = t[1];	
-//	b2.x = t[2];
-//	b2.y = t[3];
-//	c2.x = t[4];
-//	c2.y = t[5];
-	
+	//	cv::Point2f a1,b1,c1,a2,b2,c2;
+	//	
+	//	a1.x = t1[0];
+	//	a1.y = t1[1];	
+	//	b1.x = t1[2];
+	//	b1.y = t1[3];
+	//	c1.x = t1[4];
+	//	c1.y = t1[5];
+	//	
+	//	a2.x = t[0];
+	//	a2.y = t[1];	
+	//	b2.x = t[2];
+	//	b2.y = t[3];
+	//	c2.x = t[4];
+	//	c2.y = t[5];
+
 	vector<float> t2;
 	t2.push_back(t[0]);
 	t2.push_back(t[1]);	
@@ -116,24 +120,55 @@ bool sameTriangle(cv::Vec6f t1, cv::Vec6f t){
 	t2.push_back(t[3]);
 	t2.push_back(t[4]);
 	t2.push_back(t[5]);
-	
-	
+
+
 	bool inside = find(t2.begin(), t2.end(), t1[0]) != t2.end()
-			& find(t2.begin(), t2.end(), t1[1]) != t2.end()
-			& find(t2.begin(), t2.end(), t1[2]) != t2.end()
-			& find(t2.begin(), t2.end(), t1[3]) != t2.end()
-			& find(t2.begin(), t2.end(), t1[4]) != t2.end()
-			& find(t2.begin(), t2.end(), t1[5]) != t2.end();
-			
+		& find(t2.begin(), t2.end(), t1[1]) != t2.end()
+		& find(t2.begin(), t2.end(), t1[2]) != t2.end()
+		& find(t2.begin(), t2.end(), t1[3]) != t2.end()
+		& find(t2.begin(), t2.end(), t1[4]) != t2.end()
+		& find(t2.begin(), t2.end(), t1[5]) != t2.end();
+
 	return inside;
 
 }
+
+/**
+ * This function returns the center of a 2D triangle defined by 3 vertices in (x,y) coordinates 
+ * or angular values (theta,phi)
+ */
+cv::Point2f triangleCenter(cv::Vec6f triangle){
+	cv::Point2f p;
+	p.x = (triangle[0] + triangle[2] + triangle[4])/3;
+	p.y = (triangle[1] + triangle[3] + triangle[5])/3;
+
+}
+
 
 PointXYZRGB triangleCenter3D(Vec9f triangle){
 	PointXYZRGB p;
 	p.x = (triangle[0] + triangle[3] + triangle[6])/3;
 	p.y = (triangle[1] + triangle[4] + triangle[7])/3;
 	p.z = (triangle[2] + triangle[5] + triangle[8])/3;
+
+}
+
+/**
+ * Return the length of the radius of the circumcircle of a given triangle defined by  (x,y)
+ */
+double triangleCircumRadius(cv::Vec6f triangle){
+	//Make 3 vertices
+	cv::Point2f a,b,c;
+	a.x = triangle[0];
+	a.y = triangle[1];
+	b.x = triangle[2];
+	b.y = triangle[3];
+	c.x = triangle[4];
+	c.y = triangle[5];
+
+	//Get the distance between points
+	double a_b, a_c, b_c;
+	a_b = norm(a);
 
 }
 
@@ -148,42 +183,42 @@ double triangleArea3D(PointXYZRGB p1,PointXYZRGB p2,PointXYZRGB p3 ){
 	u.x = p2.x - p1.x ; 
 	u.y = p2.y - p1.y ; 
 	u.z = p2.z - p1.z ; 
-	
+
 	v.x = p3.x - p1.x ; 
 	v.y = p3.y - p1.y ; 
 	v.z = p3.z - p1.z ;
-	
+
 	return norm(crossProduct(u,v))/2;
-	
+
 }
 
 double triangleDifference(cv::Vec6f t1, cv::Vec6f t2){
 	//Points from the 1st triangle
 	double x1,y1,x2,y2,x3,y3;
-	
+
 	//Points from the 2nd triangle
 	double xp1,yp1,xp2,yp2,xp3,yp3;
-	
+
 	//triangle areas
 	double area1,area2;
-	
+
 	x1 = t1[0];
 	y1 = t1[1];
 	x2 = t1[2];
 	y2 = t1[3];
 	x3 = t1[4];
 	y3 = t1[5];
-	
+
 	xp1 = t2[0];
 	yp1 = t2[1];
 	xp2 = t2[2];
 	yp2 = t2[3];
 	xp3 = t2[4];
 	yp3 = t2[5];
-	
+
 	area1 = triangleArea(x1,y1,x2,y2,x3,y3);
 	area2 = triangleArea(xp1,yp1,xp2,yp2,xp3,yp3);
-	
+
 	return abs(area1 - area2);
 
 }
@@ -191,29 +226,29 @@ double triangleDifference(cv::Vec6f t1, cv::Vec6f t2){
 bool inTriangleArea(cv::Point2f p, cv::Vec6f triangle){
 	cv::Point2f p1,p2,p3; 
 	double epsilon = 0.01;
-	
+
 	p1.x = triangle[0];
 	p1.y = triangle[1];
 	p2.x = triangle[2];
 	p2.y = triangle[3];
 	p3.x = triangle[4];
 	p3.y = triangle[5];
-	
-	
+
+
 	/* Calculate area of triangle ABC */
-   float A = triangleArea (p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
- 
-   /* Calculate area of triangle PBC */  
-   float A1 = triangleArea (p.x, p.y, p2.x, p2.y, p3.x, p3.y);
- 
-   /* Calculate area of triangle PAC */  
-   float A2 = triangleArea (p1.x, p1.y, p.x, p.y, p3.x, p3.y);
- 
-   /* Calculate area of triangle PAB */   
-   float A3 = triangleArea (p1.x, p1.y, p2.x, p2.y, p.x, p.y);
-   
-   /* Check if sum of A1, A2 and A3 is same as A */
-   return (A1 + A2 + A3 - epsilon <= A && A <= A1 + A2 + A3 + epsilon);
+	float A = triangleArea (p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
+
+	/* Calculate area of triangle PBC */  
+	float A1 = triangleArea (p.x, p.y, p2.x, p2.y, p3.x, p3.y);
+
+	/* Calculate area of triangle PAC */  
+	float A2 = triangleArea (p1.x, p1.y, p.x, p.y, p3.x, p3.y);
+
+	/* Calculate area of triangle PAB */   
+	float A3 = triangleArea (p1.x, p1.y, p2.x, p2.y, p.x, p.y);
+
+	/* Check if sum of A1, A2 and A3 is same as A */
+	return (A1 + A2 + A3 - epsilon <= A && A <= A1 + A2 + A3 + epsilon);
 
 }
 
@@ -222,8 +257,8 @@ bool inTriangle(cv::Point2f p, cv::Vec6f triangle){
 
 	//Epsilon is used for points on the edges 
 	double epsilon = 0.001;
-	
-	
+
+
 	cv::Point2f p1,p2,p3; 
 	p1.x = triangle[0];
 	p1.y = triangle[1];
@@ -231,52 +266,52 @@ bool inTriangle(cv::Point2f p, cv::Vec6f triangle){
 	p2.y = triangle[3];
 	p3.x = triangle[4];
 	p3.y = triangle[5];
-	
+
 	double xmax = max(p1.x, max(p2.x,p3.x)) + epsilon;
 	double ymax = max(p1.x, max(p2.y,p3.y)) + epsilon;
 	double xmin = min(p1.x, min(p2.x,p3.x)) - epsilon;
 	double ymin = min(p1.x, min(p2.y,p3.y)) - epsilon;
-	
+
 	if(p.x < xmin || p.y < ymin || p.x > xmax || p.y > ymax){
 		return false;
 	}
-	
+
 	else{
-//		double denum = p1.x*(p2.y - p3.y) + p1.x*(p3.x-p2.x) + p2.x*p3.y - p2.y*p3.x;
-//		double t1 = (p.x*(p3.y - p1.x) + p.y*(p1.x - p3.x) - p1.x*p3.y + p1.x*p3.x) / denum;
-//		double t2 = (p.x*(p2.y - p1.x) + p.y*(p1.x - p2.x) - p1.x*p2.y + p1.x*p2.x) / denum;
-//  		double s = t1 + t2;
-  		
+		//		double denum = p1.x*(p2.y - p3.y) + p1.x*(p3.x-p2.x) + p2.x*p3.y - p2.y*p3.x;
+		//		double t1 = (p.x*(p3.y - p1.x) + p.y*(p1.x - p3.x) - p1.x*p3.y + p1.x*p3.x) / denum;
+		//		double t2 = (p.x*(p2.y - p1.x) + p.y*(p1.x - p2.x) - p1.x*p2.y + p1.x*p2.x) / denum;
+		//  		double s = t1 + t2;
+
 		double denum = ((p2.y - p3.y)*(p1.x - p3.x) + (p3.x - p2.x)*(p1.y - p3.y));		
 		double t1 =  ((p2.y - p3.y)*(p.x - p3.x) + (p3.x - p2.x)*(p.y - p3.y))/ denum;
 		double t2 = ((p3.y - p1.y)*(p.x - p3.x) + (p1.x - p3.x)*(p.y - p3.y)) / denum;
-  		double s = t1 + t2;
+		double s = t1 + t2;
 
-  		//return 0<= t1 && t1 <= 1 && 0<= t2 && t2<= 1 && s <=1;
-  		return 0<= t1 && 0<= t2  && s <=1;
+		//return 0<= t1 && t1 <= 1 && 0<= t2 && t2<= 1 && s <=1;
+		return 0<= t1 && 0<= t2  && s <=1;
 	}
-	
+
 }
 
 
 /** 
-* Given a point in 3D P(x,y,z) and a triangle also in 3D defined by P1,P2,P3 ,
-* this function:
-	- projects the point P onto the plane defined by the 3 Points
-	- verifies if the point lays within the triangle 
-*/
+ * Given a point in 3D P(x,y,z) and a triangle also in 3D defined by P1,P2,P3 ,
+ * this function:
+ - projects the point P onto the plane defined by the 3 Points
+ - verifies if the point lays within the triangle 
+ */
 bool inTriangle3D(PointXYZRGB p, Vec9f triangle3D){
 	//Get triangle points
 	PointXYZRGB p1,p2,p3;
-	
+
 	p1.x = triangle3D[0];
 	p1.y = triangle3D[1];
 	p1.z = triangle3D[2];
-	
+
 	p2.x = triangle3D[3];
 	p2.y = triangle3D[4];
 	p2.z = triangle3D[5];
-	
+
 	p3.x = triangle3D[6];
 	p3.y = triangle3D[7];
 	p3.z = triangle3D[8];
@@ -289,35 +324,35 @@ bool inTriangle3D(PointXYZRGB p, Vec9f triangle3D){
 	u.x = p2.x - p1.x ; 
 	u.y = p2.y - p1.y ; 
 	u.z = p2.z - p1.z ; 
-	
+
 	v.x = p3.x - p1.x ; 
 	v.y = p3.y - p1.y ; 
 	v.z = p3.z - p1.z ;
-	
+
 	//The cross product of u and v
 	w.x = u.y*v.z - u.z *v.y;
 	w.y = u.z * v.x - u.x*v.z;
 	w.z = u.x*v.y - u.y*v.x;
-	
+
 	//Get the projection of P onto the plane (P1,w);
 	PointXYZRGB pproj = orthogonalProjection2Plane(p,p1,w);
-	
-	
+
+
 	//Create vectors pP1, pP2, pP3 which are vectors from each triangle vertex, 
 	// to the projected point on the triangle plane
 	PointXYZRGB pP1, pP2, pP3;
 	pP1.x =  p1.x - pproj.x ; 
 	pP1.y =  p1.y - pproj.y ;
 	pP1.z =  p1.z - pproj.z ;
-	
+
 	pP2.x = + p2.x - pproj.x ; 
 	pP2.y = + p2.y - pproj.y ;
 	pP2.z = + p2.z - pproj.z ;
-	
+
 	pP3.x = + p3.x - pproj.x ; 
 	pP3.y = + p3.y - pproj.y ;
 	pP3.z = + p3.z - pproj.z ;
-	
+
 	//Compare the surfaces of the 3 sub triangles: 
 	//T1:(P1,P,P2), T2:(P1,P,P3), T3:(P2,P,P3) with that of T:(P1,P2,P3) 
 	double A1,A2,A3,A;
@@ -325,31 +360,55 @@ bool inTriangle3D(PointXYZRGB p, Vec9f triangle3D){
 	A1 = triangleArea3D(p1,pproj,p2);
 	A2 = triangleArea3D(p1,pproj,p3);
 	A3 = triangleArea3D(p2,pproj,p3);
-	
+
 	A = norm(crossProduct(u,v))/2.;
-	
+
 	//We define epsilon as a small variation equal to about 5% of the mean length of arrays
 	// We then verify that the sum of the aires is 
 	// equal to the big air at epsilon difference
-	
+
 	double epsilon = 5*(norm(u)+norm(v))/200;
 	double aSum = A1+A2+A3;
 	return inInterval(aSum, A-epsilon, A+epsilon);
-	
+
 
 }
 
 
+cv::Vec6f triangle2SphericSacht(int rows, int cols, double r, Vec9f triangle){
+	//Final triangle
+	cv::Vec6f new_triangle;
+
+	//Variables to get panning and tilting angles
+	double theta, phi;
+	PointXYZRGB p;
+
+	for(int i=0, j=0;i<9;i=i+3,j=j+2){
+		p.x=triangle[i];
+		p.y=triangle[i+1];
+		p.z=triangle[i+2];
+
+		//Convert to Spheric using Sacht notations
+		cartesian2SphericSacht(p,r,theta,phi);
+		new_triangle[j] = theta;
+		new_triangle[j+1] = phi;
+		//j=j+2;
+	}
+
+	return new_triangle;
+}
+
+
 /**
-* Function returns interpolated triangles between 2 given triangles
-*/
+ * Function returns interpolated triangles between 2 given triangles
+ */
 cv::Vec6f getInterpolatedTriangle(cv::Vec6f triangle1, cv::Vec6f triangle2, cv::Mat *affine, double dist, double pos){
 	//Interpolated triangle
 	cv::Vec6f inter_triangle;
-	
+
 	//An affine transform matrix 
 	cv::Mat tWarp (2,3,CV_32FC1);
-	
+
 
 	cv::Point2f tri1[3];
 	cv::Point2f tri2[3];
@@ -373,31 +432,31 @@ cv::Vec6f getInterpolatedTriangle(cv::Vec6f triangle1, cv::Vec6f triangle2, cv::
 	/// Get the Affine Transform
 	tWarp = getAffineTransform( tri1, tri2 );
 	affine = &tWarp;
-	
+
 	//Get interpolated triangle1
 	double* uprow = tWarp.ptr<double>(0);
 	double* downrow = tWarp.ptr<double>(1);
-	
+
 	//Triangle from interpolated Image
 	inter_triangle[0] = (tri1[0].x*(dist-pos) + tri2[0].x*pos)/dist; 
 	inter_triangle[1] = (tri1[0].y*(dist-pos) + tri2[0].y*pos)/dist; 
-		
+
 	inter_triangle[2] = (tri1[1].x*(dist-pos) + tri2[1].x*pos)/dist; 
 	inter_triangle[3] = (tri1[1].y*(dist-pos) + tri2[1].y*pos)/dist;
-			
+
 	inter_triangle[4] = (tri1[2].x*(dist-pos) + tri2[2].x*pos)/dist; 
 	inter_triangle[5] = (tri1[2].y*(dist-pos) + tri2[2].y*pos)/dist;
-	
+
 	return inter_triangle;
 
 }
 /**
-* Compute the affine 3*4 matrix between 2 triangles given with the 3D coordinates of each point
-*/
+ * Compute the affine 3*4 matrix between 2 triangles given with the 3D coordinates of each point
+ */
 cv::Mat getAffine3D(Vec9f t1, Vec9f t2){
 	//Points from 1st triangle
 	float x1,x2,x3,y1,y2,y3,z1,z2,z3;
-	
+
 	//Matrices
 	cv::Mat tri_map1(4,3,CV_32FC1), tri_map2(4,3,CV_32FC1);
 	cv::Mat tri_map1_t(3,4,CV_32FC1);
@@ -425,94 +484,134 @@ cv::Mat getAffine3D(Vec9f t1, Vec9f t2){
 	xp3 = t2[6];
 	yp3 = t2[7];
 	zp3 = t2[8];
-	
-	
-	
+
+
+
 	//Fill Tmap1
 	float* r0 = tri_map1.ptr<float>(0);
 	float* r1 = tri_map1.ptr<float>(1);
 	float* r2 = tri_map1.ptr<float>(2);
 	float* r3 = tri_map1.ptr<float>(3);
-	
+
 	r0[0] = x1;
 	r0[1] = x2;
 	r0[2] = x3;
-	
+
 	r1[0] = y1;
 	r1[1] = y2;
 	r1[2] = y3;
-	
+
 	r2[0] = z1;
 	r2[1] = z2;
 	r2[2] = z3;
-	
+
 	r3[0] = 1;
 	r3[1] = 1;
 	r3[2] = 1;
-	
-	
+
+
 	//Fill Tmap2
 	float* rt0 = tri_map2.ptr<float>(0);
 	float* rt1 = tri_map2.ptr<float>(1);
 	float* rt2 = tri_map2.ptr<float>(2);
 	float* rt3 = tri_map2.ptr<float>(3);
-	
+
 	rt0[0] = xp1;
 	rt0[1] = xp2;
 	rt0[2] = xp3;
-	
+
 	rt1[0] = yp1;
 	rt1[1] = yp2;
 	rt1[2] = yp3;
-	
+
 	rt2[0] = zp1;
 	rt2[1] = zp2;
 	rt2[2] = zp3;
-	
+
 	rt3[0] = 0;
 	rt3[1] = 0;
 	rt3[2] = 1;
-	
+
 	//Get the transpose of T_map1
 	cv::transpose(tri_map1, tri_map1_t);
-	
+
 	//Get T1*T1t and T2*T1t which are square matrices
 	t1_t1t = tri_map1 * tri_map1_t;
 	t2_t1t = tri_map2 * tri_map1_t;
-	
+
 	cv::invert(t1_t1t, t1_t1t_invert);
-	
+
 	affine_transform = t2_t1t * t1_t1t_invert;
-	
+
 	cout<< "T1:" << tri_map1 << endl;
 	cout<< "T1_transpose:" << tri_map1_t << endl;
 	cout<< "T1*T1_transpose:" << t1_t1t << endl;
 	cout<< "Inverse T1*T1_transpose:" << t1_t1t_invert << endl;
 	cout<< "T1*T1_transpose * Inverse T1*T1_transpose:" << t1_t1t * t1_t1t_invert << endl;
-	
+
 	cout<< "Affine:" << affine_transform << endl;
-	
+
 	cout<< "T2:" << tri_map2 << endl;
 	cout << "Verification: affine*t1:" << affine_transform * tri_map1 << endl;
-	
+
 	cout<< "T2*T1_transpose:" << t2_t1t << endl;
 	cout << "Verification: affine*t1*t1_transpose:" << affine_transform * t1_t1t << endl;
-	
-	
+
+
 	return affine_transform;
-	
-	
-	
+
+
+
+
+}
+/********************************************************
+ * Compute 3D position of triangle from 2D triangle
+ *********************************************************/
+Vec9f get3DTriangleFrom2DTriangleSacht(int rows, int cols, cv::Vec6f triangle){
+
+	//Compute 3D positions
+	Vec9f triangle3D;
+
+	//point coordinates
+	double x1,y1,z1,x2,y2,z2,x3,y3,z3;
+	//For the first point
+	sphereCoordinates(triangle[0], triangle[1], 
+			1, rows, cols, 
+			x1,y1,z1);
+
+	triangle3D[0] = x1;
+	triangle3D[1] = x2;
+	triangle3D[2] = x3;
+
+	//Second point
+	sphereCoordinates(triangle[2], triangle[3], 
+			1, rows, cols, 
+			x2,y2,z2);
+
+	triangle3D[3] = x2;
+	triangle3D[4] = y2;
+	triangle3D[5] = z2;
+
+	//Third point
+	sphereCoordinates(triangle[4], triangle[5], 
+			1, rows, cols,
+			x3,y3,z3);
+
+	triangle3D[6] = x3;
+	triangle3D[7] = y3;
+	triangle3D[8] = z3;
+
+	//Add the new 3D triangle
+	return triangle3D;
 
 }
 
-
 /********************************************************
-* Compute 3D position of triangles from 2D triangles
-*********************************************************/
+ * Compute 3D position of triangles from 2D triangles
+ *********************************************************/
 vector<Vec9f> get3DTrianglesFrom2DTriangles(int rows, int cols, vector<cv::Vec6f> triangles){
 	vector<Vec9f> td_triangles;
-	
+
 	for(int i=0;i<triangles.size();i++){
 		cv::Vec6f triangle = triangles[i];
 		//Get the 3 points making the triangle
@@ -523,39 +622,39 @@ vector<Vec9f> get3DTrianglesFrom2DTriangles(int rows, int cols, vector<cv::Vec6f
 		//b.y = triangle[3];
 		//c.x = triangle[4];
 		//c.y = triangle[5];	
-		
+
 		//Compute 3D positions
 		Vec9f triangle3D;
-		
+
 		//point coordinates
 		double x1,y1,z1,x2,y2,z2,x3,y3,z3;
 		//For the first point
 		sphereCoordinates(triangle[0], triangle[1], 
-		1, rows, cols, 
-		x1,y1,z1);
-		
+				1, rows, cols, 
+				x1,y1,z1);
+
 		triangle3D[0] = x1;
 		triangle3D[1] = x2;
 		triangle3D[2] = x3;
-		
+
 		//Second point
 		sphereCoordinates(triangle[2], triangle[3], 
-		1, rows, cols, 
-		x2,y2,z2);
-		
+				1, rows, cols, 
+				x2,y2,z2);
+
 		triangle3D[3] = x2;
 		triangle3D[4] = y2;
 		triangle3D[5] = z2;
-		
+
 		//Third point
 		sphereCoordinates(triangle[4], triangle[5], 
-		1, rows, cols,
-		x3,y3,z3);
-		 
+				1, rows, cols,
+				x3,y3,z3);
+
 		triangle3D[6] = x3;
 		triangle3D[7] = y3;
 		triangle3D[8] = z3;
-		
+
 		//Add the new 3D triangle
 		td_triangles.push_back(triangle3D);
 	}
@@ -568,13 +667,13 @@ vector<Vec9f> get3DTrianglesFrom2DTriangles(int rows, int cols, vector<cv::Vec6f
 
 
 /**
-* Sample points in a triangle defined by it's 3 Points in 3D. The Sampling is done depending on the size of the biggest vertex of the triangle
-*/
+ * Sample points in a triangle defined by it's 3 Points in 3D. The Sampling is done depending on the size of the biggest vertex of the triangle
+ */
 vector<PointXYZRGB> sampleTriangle(Vec9f triangle){
 	PointXYZ a,b,c,temp ; 
 	vector<PointXYZRGB> points; 
 	double abnorm, acnorm;
-	
+
 	a.x = triangle[1];
 	a.y = triangle[2];
 	a.z = triangle[3];
@@ -584,12 +683,12 @@ vector<PointXYZRGB> sampleTriangle(Vec9f triangle){
 	c.x = triangle[7];
 	c.y = triangle[8];
 	c.z = triangle[9];
-	
+
 	//Calculate norm of ab
 	temp.x = b.x - a.x;
 	temp.y = b.y - a.y;
 	temp.z = b.z - a.z;
-	
+
 	//abnorm = norm(temp);
 
 	//Calculate norm of ac
@@ -597,9 +696,9 @@ vector<PointXYZRGB> sampleTriangle(Vec9f triangle){
 	temp.y = c.y - a.y;
 	temp.z = c.z - a.z;
 	//acnorm = norm(temp);
-	
+
 	return points;
-	
+
 }
 
 
@@ -610,7 +709,7 @@ void rotateX(PointXYZRGB &p, double alpha)
 	x = p.x;
 	y = p.y;
 	z = p.z;
-	
+
 	p.y = cos(alpha)*y - sin(alpha)*z;
 	p.z = sin(alpha)*y + cos(alpha)*z;
 }
@@ -623,7 +722,7 @@ void rotateY(PointXYZRGB &p, double phi)
 	x = p.x;
 	y = p.y;
 	z = p.z;
-	
+
 	p.x = cos(phi)*x + sin(phi)*z;
 	p.z = -sin(phi)*x + cos(phi)*z;
 }
@@ -635,7 +734,7 @@ void rotateZ(PointXYZRGB &p, double theta)
 	x = p.x;
 	y = p.y;
 	z = p.z;
-	
+
 	p.x = cos(theta)*x - sin(theta)*y;
 	p.y = sin(theta)*x + cos(theta)*y;
 }
@@ -660,7 +759,7 @@ cv::Point meanPoint(vector<cv::Point> points){
 		return p;
 	} 
 	else{
-		
+
 		double spx, spy;
 		for(int i=0;i<s;i++){
 			p = points[i];
@@ -703,8 +802,8 @@ PointXYZRGB meanPoint(vector<PointXYZRGB> points){
 
 
 /**
-* This function converts a pixel point (i,j) given in top left coordinates, to (i',j') center image coordinates 
-*/
+ * This function converts a pixel point (i,j) given in top left coordinates, to (i',j') center image coordinates 
+ */
 void toImageCenterCoordinate(double i, double j, int width, int height, double &ip, double &jp){
 	ip = i - height/2.;
 	jp = j - width/2.;
@@ -712,8 +811,8 @@ void toImageCenterCoordinate(double i, double j, int width, int height, double &
 }
 
 /**
-* This function converts a pixel point (i,j) given in center image coordinates , to (i',j') center image coordinates top left coordinates
-*/
+ * This function converts a pixel point (i,j) given in center image coordinates , to (i',j') center image coordinates top left coordinates
+ */
 void toImageTopLeftCoordinate(double i, double j, int width, int height, double &ip, double &jp){
 	ip  =i + height/2;
 	jp = j + width/2.;
@@ -751,9 +850,23 @@ void cartesian2Spheric(PointXYZRGB p, double r, double &theta, double &phi){
 	r = sqrt(p.x*p.x + p.y*p.y + p.z*p.z);
 	phi = acos(p.z/r);
 	theta = atan2(p.y,p.x);
-//	
+	//	
 	if(phi>PI) phi -= 2*PI;
 	if (theta>PI) theta -= 2*PI;
+}
+
+/** 
+ * Using Sacht's Notations
+ */
+void cartesian2SphericSacht(PointXYZRGB p, double r, double &theta, double &phi){
+	r = sqrt(p.x*p.x + p.y*p.y + p.z*p.z);
+	phi = asin(p.z);
+	//theta = asin(p.y/(p.x*p.x + p.y*p.y));
+	//theta = acos(p.x/(p.x*p.x + p.y*p.y));
+	theta = atan2(p.y,p.x);
+	//	
+	//if(phi>PI) phi -= 2*PI;
+	//if (theta>PI) theta -= 2*PI;
 }
 
 
@@ -766,7 +879,14 @@ void spheric2Cartesian(double r, double theta, double phi, PointXYZRGB &p){
 	p.z = r * cos(phi);
 }
 
-
+/**
+ * Using Sacht's Notations
+ */
+void spheric2CartesianSacht(double r, double theta, double phi, PointXYZRGB &p){
+	p.x = r*cos(phi)*cos(theta);
+	p.y = r * cos(phi) * sin(theta);
+	p.z = r * sin(phi);
+}
 
 
 
@@ -795,8 +915,8 @@ void sphereCoordinates(float i, float j, double r, int rows, int cols, double &x
 }
 
 /**
-* Get theta and phi angles from pixel coordinates
-*/
+ * Get theta and phi angles from pixel coordinates
+ */
 void SphericFromPixelCoordinates(float i, float j, int rows, int cols, double &theta, double &phi){
 	//Convert from (i,j) pixel values to (theta,phi) angle values 
 	//double theta,phi;
@@ -805,23 +925,23 @@ void SphericFromPixelCoordinates(float i, float j, int rows, int cols, double &t
 }
 
 /*
-* Applying sphereCoordinates to an array of points and returns a list of 3D points
-*/
+ * Applying sphereCoordinates to an array of points and returns a list of 3D points
+ */
 vector<PointXYZRGB> sphereCoordinatesList(int rows, int cols, vector<cv::Point2f> points){
 	//Radius
 	double r = 1.;
-	
+
 	//list of 3D points
 	vector<PointXYZRGB> points3D;
-	
+
 	//3D point
-	
-	
-	
+
+
+
 	//Image point in 2D
 	cv::Point2f p;
 	int i,j;
-	
+
 	for(int k=0;k<points.size();k++){
 		//cout << "Point number: " << k << endl;
 		double x,y,z;
@@ -829,20 +949,20 @@ vector<PointXYZRGB> sphereCoordinatesList(int rows, int cols, vector<cv::Point2f
 		p = points[k];
 		i = p.y;
 		j = p.x;
-		
+
 		//cout << "Sphere Coordinates for: (i,j): (" << i << "," << j << ")" << endl; 
 		sphereCoordinates(i,j,r,rows,cols,x,y,z);
 		np.x = x;
 		np.y = y;
 		np.z = z;
-		
+
 		//np.b = img.at<cv::Vec3b>(i,j)[0];
 		//np.g = img.at<cv::Vec3b>(i,j)[1];
 		//np.r = img.at<cv::Vec3b>(i,j)[2];
-		
+
 		points3D.push_back(np);
 	}
-	
+
 	return points3D;
 
 }
@@ -1006,7 +1126,7 @@ PointXYZRGB orthogonalProjection2Plane(PointXYZRGB p, PointXYZRGB u, PointXYZRGB
 PointXYZRGB nonOrthogonalProjection2Plane(PointXYZRGB p,PointXYZRGB v, PointXYZRGB u, PointXYZRGB n){
 	//Define the equation of the plane ax + by + cz = d;
 	PointXYZRGB pro;
-	
+
 	if(norm(v)==0){
 		cout << "NonOrthogonalProjection: Impossible to project in the direction of a null vector please verify" << endl;
 		return pro;
@@ -1016,34 +1136,34 @@ PointXYZRGB nonOrthogonalProjection2Plane(PointXYZRGB p,PointXYZRGB v, PointXYZR
 		return pro;
 	}
 	else{
-	double a,b,c,d;
-	a = n.x;
-	b = n.y;
-	c = n.z;
-	d = a*u.x + b*u.y + c*u.z;
+		double a,b,c,d;
+		a = n.x;
+		b = n.y;
+		c = n.z;
+		d = a*u.x + b*u.y + c*u.z;
 
-	v.x /= norm(v);
-	v.y /= norm(v);
-	v.z /= norm(v);
-	
-	//Define the line passing by p and parallele to v2
-	// The line passing by p in v direction can be parametrized by 
-	//x = kvx + px, 
-	//y = kvy + py and 
-	//z = kvy + pz
-	// We can then inject this in the equation for the plan ax + by + cz = d and get k
-	double D = a*v.x + b*v.y + c*v.z;
-	double A = d- (a*p.x + b*p.y + c*p.z);
-	double k = A/D;
+		v.x /= norm(v);
+		v.y /= norm(v);
+		v.z /= norm(v);
 
-	pro.x = k*v.x + p.x;
-	pro.y = k*v.y + p.y;
-	pro.z = k*v.z + p.z;
-	pro.r = p.r;
-	pro.g = p.g;
-	pro.b = p.b;
+		//Define the line passing by p and parallele to v2
+		// The line passing by p in v direction can be parametrized by 
+		//x = kvx + px, 
+		//y = kvy + py and 
+		//z = kvy + pz
+		// We can then inject this in the equation for the plan ax + by + cz = d and get k
+		double D = a*v.x + b*v.y + c*v.z;
+		double A = d- (a*p.x + b*p.y + c*p.z);
+		double k = A/D;
 
-	return pro;
+		pro.x = k*v.x + p.x;
+		pro.y = k*v.y + p.y;
+		pro.z = k*v.z + p.z;
+		pro.r = p.r;
+		pro.g = p.g;
+		pro.b = p.b;
+
+		return pro;
 	}
 }
 
@@ -1328,12 +1448,12 @@ void viewingLimitsOrigin(PointXYZRGB v, double v_angle, double h_angle, double &
 	double v_angle_rad = v_angle*PI/180;
 	double h_angle_rad = h_angle*PI/180;
 
-	
+
 	theta_min = theta - v_angle_rad/2;
 	theta_max = theta + v_angle_rad/2;
 	phi_min = phi - h_angle_rad/2;
 	phi_max = phi + h_angle_rad/2;
-	
+
 	if(theta_min<(-PI)) theta_min += 2*PI;
 	if(theta_min>PI) theta_min -=2*PI;
 	if(theta_max<(-PI)) theta_max += 2*PI;
@@ -1525,4 +1645,5 @@ bool isCloseToRayCube(PointXYZRGB p, PointXYZRGB o, PointXYZRGB v, double c){
 		return (truex & truey& truez);// & dotp>=0);
 	}
 }
+
 

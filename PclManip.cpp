@@ -589,7 +589,7 @@ void makeCorrespondingDelaunayTriangles3D(vector<PointXYZRGB> points3D1, vector<
 
 
 
-		if(ptPos1 < points3D1.size() && ptPos2 < points3D1.size() && ptPos3 < points3D1.size()){	
+		if(ptPos1 < points3D1.size() && ptPos2 < points3D1.size() && ptPos3 < points3D1.size())	{	
 			//Construct the second triangle and try to locate it in the trianglesList2
 			//We find the corresponding point in the second triangles list
 			pp1 = points3D2[ptPos1];

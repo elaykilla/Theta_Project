@@ -204,7 +204,7 @@ vector<cv::KeyPoint> getCubeKeypoints(cv::Mat origin, Cube cube_mat, ViewDirecti
 	//equi.makeCubeFaces2(origin,mats,vds);
 	
 	for(int i=0;i<6;i++){
-		cout <<cout << "testTriangleReadAndWrite: image " << i << endl;
+		//cout <<cout << "testTriangleReadAndWrite: image " << i << endl;
 		if(!cube_mat[i].data){
 			cout << "Sorry the cube is missing some images please verify content" << endl;
 			break;

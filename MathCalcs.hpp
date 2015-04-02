@@ -30,6 +30,9 @@
 double findMin(float numbers[], int size);
 
 double findMax(float numbers[], int size);
+
+double norm(cv::Point2f p);
+
 /**
 * Norm of a vector (O,u) with O the center of the coordinate system
 */
@@ -62,15 +65,34 @@ bool sameTriangle(cv::Vec6f t1, cv::Vec6f t2);
 
 
 /**
-* This function returns the center of a 2D triangle
+* This function returns the center of a 2D triangle defined by 3 vertices in (x,y) coordinates 
+* or angular values (theta,phi)
 */
 cv::Point2f triangleCenter(cv::Vec6f triangle);
 
 /**
-* Return the point at the center of the trianlge
+* Return the point at the center of the trianlge defined by 3 vertices in (x,y,z) coordinates
 */
 PointXYZRGB triangleCenter3D(Vec9f triangle);
 
+
+/**
+* Return the length of the radius of the circumcircle of a given triangle defined by  (x,y)
+*/
+double triangleCircumRadius(cv::Vec6f triangle);
+
+/**
+* This function converts a triangle given by the coordinates of its vertices in (x,y,z) format, 
+* to a triangle by the vertices in (phi,theta) spherical using Sacht's notations
+*/
+cv::Vec6f triangle2SphericSacht(int rows, int cols, double r,Vec9f triangle);
+
+
+/**
+* This function converts a triangle given by the vertices in (phi,theta) spherical format, 
+* to a triangle by the coordinates of its vertices in (x,y,z) using Sacht's notations
+*/
+Vec9f triangle2CartesianSacht(int rows, int cols, Vec9f triangle);
 
 /** 
 * Calculate the area of a triangle
@@ -124,6 +146,14 @@ vector<PointXYZRGB> sampleTriangle(Vec9f triangle);
 * Compute the affine 3*4 matrix between 2 triangles given with the 3D coordinates of each point
 */
 cv::Mat getAffine3D(Vec9f t1, Vec9f t2);
+
+
+/** 
+* This function given a triangle, defined by pixel coordinates of the 3 points, in an 
+* equirectangular image, computes the triangle in 3D defined by their 3D coordinates on the 
+* surface of a sphere
+*/
+Vec9f get3DTriangleFrom2DTriangleSacht(int rows, int cols, cv::Vec6f triangle);
 
 /** 
 * This function given a set of triangles, defined by pixel coordinates of the 3 points, in an 
@@ -191,11 +221,23 @@ void projectXZ(PointXYZRGB u, double &x, double &z);
 */
 void cartesian2Spheric(PointXYZRGB p, double r, double &theta, double &phi);
 
+
+/**
+* This function is the same as the previous one execpt using different conversion. The conversion if the one used in Sacht's Thesis
+*/
+void cartesian2SphericSacht(PointXYZRGB p, double r, double &theta, double &phi);
+
+
 /**
 * Inverse of previous function
 */
 void spheric2Cartesian(double r, double theta, double phi, PointXYZRGB &p);
 
+
+/**
+* Inverse of previous function using notation from Sacht's Thesis
+*/
+void spheric2CartesianSacht(double r, double theta, double phi, PointXYZRGB &p);
 
 
 /*Given a point (i,j) in a 2D image of Rows * Cols points, this function returns the coordinates of that point on 

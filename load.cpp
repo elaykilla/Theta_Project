@@ -484,11 +484,12 @@ int main(int argc, char** argv)
  	//test3DTriangulation(allPtClouds[0]);
  	
  	//Test writting 3D points
- 	testTriangleWrite(ori,templ);
+ 	//testTriangleWrite(ori,templ);
  	//Testing reading
  	//testTriangleRead();
+ 	//randomTest();
  	
- 	testTrianglePerspective(templ);
+ 	//testTrianglePerspective(templ);
 ///////////////////////End of 3D keypoints test ////////////////////////////
 
 	
