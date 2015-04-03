@@ -489,7 +489,7 @@ int main(int argc, char** argv)
  	//testTriangleRead();
  	//randomTest();
  	
- 	//testTrianglePerspective(templ);
+ 	testTrianglePerspective(templ);
 ///////////////////////End of 3D keypoints test ////////////////////////////
 
 	

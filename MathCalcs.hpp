@@ -203,13 +203,13 @@ void projectXY(PointXYZRGB u, double &x, double &y);
 /**
 * This function converts a pixel point (i,j) given in top left coordinates, to (i',j') center image coordinates 
 */
-void toImageCenterCoordinate(double i, double j, int width, int height, double &ip, double &jp);
+void toImageCenterCoordinate(double i, double j, int rows, int cols, double &ip, double &jp);
 
 
 /**
 * This function converts a pixel point (i,j) given in center image coordinates , to (i',j') center image coordinates top left coordinates
 */
-void toImageTopLeftCoordinate(double i, double j, int width, int height, double &ip, double &jp);
+void toImageTopLeftCoordinate(double i, double j, int rows, int cols, double &ip, double &jp);
 
 /**
 * This function given a point u (x,y,z) returns the (x,z) coordinates of the projection onto the XZ plane of u
@@ -253,12 +253,28 @@ void spheric2CartesianSacht(double r, double theta, double phi, PointXYZRGB &p);
 void sphereCoordinates(float i, float j, double r, int rows, int cols, double &x, double &y, double &z);
 
 
+/*Given a point (i,j) in a 2D image of Rows * Cols points, this function returns the coordinates of that point on 
+* a Sphere of Radius r centered around (0,0) considering image center coordinates
+* @INPUTS
+* 	(i,j): the pixel coordinates of the point on the image in center
+*	r: the radius of the sphere
+*	rows: the height of the image
+* 	cols: the width of the image
+* @Outputs 
+* 	(x,y,z) are the cartesian coordinates of the point on the surface of the sphere
+*/
+void sphereCoordinatesSacht(float i, float j, double r, int rows, int cols, double &x, double &y, double &z);
+
 /**
 * Given a point's (i,j) coordinates on equirectangular image, this function returns the corresponding theta and phi angles
 */
-
-
 void SphericFromPixelCoordinates(float i, float j, int rows, int cols, double &theta, double &phi);
+
+
+/**
+* Given a point's (i,j) coordinates on equirectangular image, this function returns the corresponding theta and phi angles using Sacht notation
+*/
+void SphericFromPixelCoordinatesSacht(float i, float j, int rows, int cols, double &theta, double &phi);
 
 /*
 * Applying sphereCoordinates to an array of points and returns a list of 3D points

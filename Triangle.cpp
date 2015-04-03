@@ -30,13 +30,33 @@ Mat Triangle::convToPersRectImage(Mat equi_image, Vec6f vertices){
   return cam.image;
 }
 
- cv::Mat Triangle::convToPersRectImageBarycentric(cv::Mat equi_image, Vec9f vertices3D){
+/** 
+* 
+*/
+cv::Mat Triangle::convToPersRectImageBarycentric(cv::Mat equi_image, Vec9f vertices3D){
+ 	//cout << "convToPersRectImageBarycentric: Getting Perspective Camera" << endl;
  	PersCamera  cam = getPersCamParamsBarycentric(equi_image, vertices3D);
- 	
+	//cout <<"convToPersRectImageBarycentric: PersCamera (hfov,vfov) = (" << cam.fov_h << "," << cam.fov_v << " )" << endl;  	
+	
  	EquiTrans trans;
+ 	//cout << "convToPersRectImageBarycentric: Converting using perspective cam" << endl;
  	trans.toPerspective(equi_image, cam);
- 
+ 	
+ 	return cam.image;
  }
+
+/**
+* 
+*/
+cv::Mat Triangle::convToPersRectImageBarycentricTwo(cv::Mat equi_image, Vec9f triangle3D1, Vec9f triangle3D2){
+  	PersCamera  cam = getPersCamParamsBarycentricTwo(equi_image, triangle3D1,triangle3D2);
+  	
+  	EquiTrans trans;
+  	trans.toPerspective(equi_image, cam);
+  	
+  	return cam.image;
+  }
+  
 
 /*
  * Get the perpective camera that includes the list of triangles.
@@ -81,8 +101,10 @@ PersCamera Triangle::getPersCamParams(Mat equi_image, Vec6f vertices){
 
   vd.pan = p_pan / d_wd *2.0*M_PI;
   vd.tilt = p_tilt / d_ht*M_PI;
+  cout << "getPersCamParams: Viewing Direction: (" << vd.pan << "," << vd.tilt << ")" << endl;
 
   PersCamera cam;
+  cout<< "getPersCamParams: PersCamera (hfov,vfov) = (" << r_hfov << "," << r_vfov << ")" << endl;
   cam.setCamera(equi_image, r_hfov, r_vfov, vd);
 
   return cam;
@@ -141,7 +163,7 @@ PersCamera Triangle::getPersCamParamsTwo(cv::Mat equi_image, cv::Vec6f vertices1
   	p2.x = triangle[2];
   	p2.y = triangle[3];
   	
-  	//Third vertice
+  	//Theturn cam;ird vertice
   	p3.x = triangle[4];
   	p3.y = triangle[5];
   	
@@ -180,14 +202,16 @@ PersCamera Triangle::getPersCamParamsTwo(cv::Mat equi_image, cv::Vec6f vertices1
   	
   	//Get pan and tilt angles by finding max angle distance
   	double v_angle, h_angle;
-  	h_angle = 2*max_thetad;
-  	v_angle = 2*max_phid;
+  	h_angle = max_phid;
+  	v_angle = max_thetad;
   	
   	//Set Viewing direction as the barycenter of the triangle
   	ViewDirection vd;
-  	vd.pan = center.x;
-  	vd.tilt = center.y;
-  	
+  	vd.pan = center.y;
+  	vd.tilt = center.x;
+  	//vd.pan = 0.164793;
+  	//vd.tilt = -0.276993;
+  	cout << "getPersCamParamsBarycentric: Viewing Direction: (" << vd.pan << "," << vd.tilt << ")" << endl;
   	//Finally make the Perspective camera
   	PersCamera cam;
   	cam.setCamera(equi_image, h_angle, v_angle, vd);
@@ -196,7 +220,133 @@ PersCamera Triangle::getPersCamParamsTwo(cv::Mat equi_image, cv::Vec6f vertices1
   	
   }
   
+/*
+* By using the associative property of the barycenter, we can get the barycenter of 2 triangles as the barrycenter of the barycenters of each triangle;
+*/
+  PersCamera Triangle::getPersCamParamsBarycentricTwo(cv::Mat equi_image, Vec9f triangle3D1, Vec9f triangle3D2){
+  	//First convert the triangle to get spheric coordinates of vertices
+  	cv::Vec6f triangle1 = triangle2SphericSacht(equi_image.rows, equi_image.cols,1,triangle3D1);
+  	cv::Vec6f triangle2 = triangle2SphericSacht(equi_image.rows, equi_image.cols,1,triangle3D2);
+  	//Get the 3 Vertices as points 
+  	Point2f p1,p2,p3,q1,q2,q3;
+  	//Centers for each triangle
+  	Point2f center, center1, center2;
+  	
+  	
+  	//First vertice
+  	p1.x = triangle1[0];
+  	p1.y = triangle1[1];
+  	q1.x = triangle2[0];
+  	q1.y = triangle2[1];
+  	
+  	//Second vertice
+  	p2.x = triangle1[2];
+  	p2.y = triangle1[3];
+  	q2.x = triangle2[2];
+  	q2.y = triangle2[3];
+  	
+  	//Third vertice
+  	p3.x = triangle1[4];
+  	p3.y = triangle1[5];
+  	q3.x = triangle2[4];
+  	q3.y = triangle2[5];
+  	
+  	/********************************************************************************/
+  	//Horizontal 
+  	/*******************************************************************************/
+  	
+  	// Get the maximum angular difference between the points in terms of theta (horizontal)
+  	// in order to make correct viewing direction we have to make sure that the points are all
+  	// in correct order and interval. We take the first point as anchor and cheick the angular 		// distance with the other points
+  	double t1_thetad1_2, t1_thetad1_3, t1_thetad2_3, t2_thetad1_2, t2_thetad1_3, t2_thetad2_3, t1_max_thetad, t2_max_thetad;
+  	t1_thetad1_2 = p2.x - p1.x;
+  	t2_thetad1_2 = q2.x - q1.x;
+  	
+  	t1_thetad1_3 = p3.x - p1.x;
+  	t2_thetad1_2 = q2.x - q1.x;
+  	
+  	t1_thetad2_3 = p3.x - p2.x;
+  	t2_thetad2_3 = q3.x - q2.x;
+  	
+  	t1_max_thetad = max(t1_thetad1_2, max(t1_thetad1_3,t1_thetad2_3));
+  	t2_max_thetad = max(t2_thetad1_2, max(t2_thetad1_3,t2_thetad2_3));
+  	
+  	//Make sure there are no loopings in the point angle calculations
+  	//If the angle is larger than PI then we have to shift the point to the other side
+  	// depending on the sign of p1, we either add or remove 2PI
+  	//For first Triangle
+  	if(abs(t1_thetad1_2) > M_PI) {
+  		p2.x += (p1.x/abs(p1.x))*2*M_PI;
+  		triangle1[2] = p2.x;
+  	}
+  	if(abs(t1_thetad1_3) > M_PI){
+  		p3.x += (p1.x/abs(p1.x))*2*M_PI;
+  		triangle1[4] = p3.x;
+  	}
+  	
+  	//For Second Triangle
+  	if(abs(t2_thetad1_2) > M_PI) {
+  		p2.x += (p1.x/abs(p1.x))*2*M_PI;
+  		triangle2[2] = q2.x;
+  	}
+  	if(abs(t2_thetad1_3) > M_PI){
+  		p3.x += (p1.x/abs(p1.x))*2*M_PI;
+  		triangle2[4] = q3.x;
+  	}
+  	
+  	
+  	
+  	/***************************************************************************************/
+  	//Vertical
+  	/**************************************************************************************/
+  	//Get the angular phi difference between points
+  	double t1_phid1_2, t1_phid1_3, t1_phid2_3, t2_phid1_2, t2_phid1_3, t2_phid2_3, t1_max_phid,t2_max_phid;
+  	//Triangle1
+  	t1_phid1_2 = p2.y - p1.y;
+  	t1_phid1_3 = p3.y - p1.y;
+  	t1_phid2_3 = p3.y - p2.y;
+  	t1_max_phid = max(t1_phid1_2, max(t1_phid1_3,t1_phid2_3));
+  	
+  	//Triangle2
+  	t2_phid1_2 = p2.y - p1.y;
+  	t2_phid1_3 = p3.y - p1.y;
+  	t2_phid2_3 = p3.y - p2.y;
+  	t2_max_phid = max(t2_phid1_2, max(t2_phid1_3,t2_phid2_3));
+  	
+  	
+  	
+  	
+  	//Get barycenters for each triangle
+  	center1 = triangleCenter(triangle1);
+  	center2 = triangleCenter(triangle2);
+  	
+  	//Get the barycenter of the centers
+  	center.x = (center1.x + center2.x)/2;
+  	center.y = (center1.y + center2.y)/2;
+  	
+  	//Set Viewing direction as the barycenter of the triangles
+  	ViewDirection vd;
+  	vd.pan = center.y;
+  	vd.tilt = center.x;
+  	
+  	//Calculate the field of view as the difference between the barycenters to which we add the radius 
+  	// of the circumcircles
+  	double bary_theta = abs(center1.x - center2.x);
+  	double bary_phi = abs(center2.y - center2.y);
+  	
+  	//Get pan and tilt angles by finding max angle distance and adding to barycenter difference
+  	double v_angle, h_angle;
+  	h_angle = bary_phi + t2_max_phid + t2_max_phid;
+  	v_angle = bary_theta + t2_max_thetad + t2_max_thetad;
+  	
+  	//Finally make the Perspective camera
+  	PersCamera cam;
+  	cam.setCamera(equi_image, h_angle, v_angle, vd);
 
+  	return cam;
+  }
+  
+  
 /*
  * Convert the image coordinates of a triangle from equirectangular to perspective
  */

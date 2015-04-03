@@ -42,6 +42,17 @@ public:
   */
   cv::Mat convToPersRectImageBarycentric(cv::Mat equi_image, Vec9f vertices3D);
   
+  
+    /**
+  * Function to generate perspective view from triangle defined by its 3 coordinates in Euclidien space and
+  *   cartesian coordinates
+  * @Input:
+  * - Equi_image: image in equirectangular format (W = 2*H)
+  * - triangle3D1, triangle3D2: 2 triangles given by their parameters in 3D 
+  */
+  cv::Mat convToPersRectImageBarycentricTwo(cv::Mat equi_image, Vec9f triangle3D1, Vec9f triangle3D2);
+  
+  
   /*
  * Get the perpective camera that includes the list of triangles.
  *     Triangles could be one or a pair of matching
@@ -56,6 +67,15 @@ public:
  * - vertices: the 3 vertices of the triangle given in 3D cartesian coordinates
  */
   PersCamera getPersCamParamsBarycentric(cv::Mat equi_image, Vec9f vertices);
+  
+  
+    /*
+ * Get the perpective camera that includes both triangles by using the barycenter as point and the 
+ * radius of the circumcircle.
+ * @Input
+ * - vertices: the 3 vertices of the triangle given in 3D cartesian coordinates
+ */
+  PersCamera getPersCamParamsBarycentricTwo(cv::Mat equi_image, Vec9f triangle3D1, Vec9f triangle3D2);
   
   /** 
   * Same as above but using 2 triangles 

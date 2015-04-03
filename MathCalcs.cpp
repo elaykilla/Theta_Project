@@ -139,8 +139,12 @@ bool sameTriangle(cv::Vec6f t1, cv::Vec6f t){
  */
 cv::Point2f triangleCenter(cv::Vec6f triangle){
 	cv::Point2f p;
-	p.x = (triangle[0] + triangle[2] + triangle[4])/3;
-	p.y = (triangle[1] + triangle[3] + triangle[5])/3;
+	float x = (triangle[0] + triangle[2] + triangle[4])/3;
+	float y = (triangle[1] + triangle[3] + triangle[5])/3;
+	p.x = x;
+	p.y = y;
+	
+	return p;
 
 }
 
@@ -804,18 +808,18 @@ PointXYZRGB meanPoint(vector<PointXYZRGB> points){
 /**
  * This function converts a pixel point (i,j) given in top left coordinates, to (i',j') center image coordinates 
  */
-void toImageCenterCoordinate(double i, double j, int width, int height, double &ip, double &jp){
-	ip = i - height/2.;
-	jp = j - width/2.;
+void toImageCenterCoordinate(float i, float j, int rows, int cols, float &ip, float &jp){
+	ip = i - rows/2.;
+	jp = j - cols/2.;
 
 }
 
 /**
  * This function converts a pixel point (i,j) given in center image coordinates , to (i',j') center image coordinates top left coordinates
  */
-void toImageTopLeftCoordinate(double i, double j, int width, int height, double &ip, double &jp){
-	ip  =i + height/2;
-	jp = j + width/2.;
+void toImageTopLeftCoordinate(float i, float j, int rows, int cols, float &ip, float &jp){
+	ip = i + rows/2;
+	jp = j + cols/2.;
 }
 
 
@@ -914,8 +918,27 @@ void sphereCoordinates(float i, float j, double r, int rows, int cols, double &x
 	z = r * cos(theta);
 }
 
+/*
+* Same as previous but in Sacht notation
+*/
+void sphereCoordinatesSacht(float i, float j, double r, int rows, int cols, double &x, double &y, double &z){
+	//Get phi,theta angular values in [-PI,PI] x [-PI/2, PI/2]
+	double theta,phi;
+	SphericFromPixelCoordinatesSacht(i,j,rows,cols,theta,phi);
+	
+	//Convert to cartesian (x,y,z)
+	PointXYZRGB p;
+	spheric2CartesianSacht(r, theta, phi, p);
+	x = p.x;
+	y = p.y;
+	z = p.z;
+	
+	
+
+}
+
 /**
- * Get theta and phi angles from pixel coordinates
+ * Get theta and phi angles from pixel coordinates [0,2PI] x [0, PI]
  */
 void SphericFromPixelCoordinates(float i, float j, int rows, int cols, double &theta, double &phi){
 	//Convert from (i,j) pixel values to (theta,phi) angle values 
@@ -924,6 +947,15 @@ void SphericFromPixelCoordinates(float i, float j, int rows, int cols, double &t
 	phi = j * 2*PI/cols;
 }
 
+/**
+* Get the theta and phi coordinates in center coordinates on [-PI,PI] x [-PI/2, PI/2]
+*/
+void SphericFromPixelCoordinatesSacht(float i, float j, int rows, int cols, double &theta, double &phi){
+	float ic,jc;
+	toImageCenterCoordinate(i,j,rows,cols,ic,jc);
+	theta = ic * PI/rows ;
+	phi = jc * 2*PI/cols;
+}
 /*
  * Applying sphereCoordinates to an array of points and returns a list of 3D points
  */

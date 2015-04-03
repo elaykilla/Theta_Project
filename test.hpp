@@ -1949,10 +1949,11 @@ void testTriangleRead(string filename){
 
 //////////////////////// Test of single triangle perspective ///////////////////////////////////
 void testTrianglePerspective(Mat image1){
+	cout << "TestTrianglePerspective: Beginning..." << endl;
 	//string file1 = "../images/R0010103_small.JPG";
   bool extract_flag = false;
 
-  //Mat image1 = imread(file1);
+  image1 = imread("test4_1.JPG");
 
 
   //Testing normal
@@ -1960,30 +1961,86 @@ void testTrianglePerspective(Mat image1){
   cv::Vec6f vec2(380.0, 216.0, 530.0, 320.0, 540.0, 190.0);
   
   //Testing Barycentric
-  cv::Point2f p1,p2,p3;
-  p1.x = 389.0;
-  p1.y = 219.0;
+  cv::Point2f p1,p2,p3,pp1,pp2,pp3;
+  p1.x = 389.0; pp1.x = 380.0;
+  p1.y = 219.0; pp1.y = 216.0;
 
-  p2.x = 538.0;
-  p2.y = 329.0;
+  p2.x = 538.0; pp2.x = 530.0;
+  p2.y = 329.0; pp2.y = 320.0;
 
-  p3.x = 553.0;
-  p3.y = 197.0;
-    
+  p3.x = 553.0; pp3.x = 540.0;
+  p3.y = 197.0; pp3.y = 190.0;
+  
+  int rows = image1.rows, cols = image1.cols;
+  double x1,y1,z1,x2,y2,z2,x3,y3,z3,xx1,yy1,zz1,xx2,yy2,zz2,xx3,yy3,zz3 ;
+  cout << "TestTrianglePerspective: getting Sphere Coordinates" << endl;
+  sphereCoordinatesSacht(p1.y,p1.x,1., rows, cols, x1, y1, z1);
+  sphereCoordinatesSacht(p2.y,p2.x,1., rows, cols, x2, y2, z2);
+  sphereCoordinatesSacht(p3.y,p3.x,1., rows, cols, x3, y3, z3);
+  
+  Vec9f triangle3D;
+  triangle3D[0] = x1;
+  triangle3D[1] = y1;
+  triangle3D[2] = z1;
+  triangle3D[3] = x2;
+  triangle3D[4] = y2;
+  triangle3D[5] = z2;
+  triangle3D[6] = x3;
+  triangle3D[7] = y3;
+  triangle3D[8] = z3;
+  
+  sphereCoordinatesSacht(pp1.y,pp1.x,1., rows, cols, x1, y1, z1);
+  sphereCoordinatesSacht(pp2.y,pp2.x,1., rows, cols, x2, y2, z2);
+  sphereCoordinatesSacht(pp3.y,pp3.x,1., rows, cols, x3, y3, z3);
+   Vec9f triangle3D2;
+  triangle3D2[0] = x1;
+  triangle3D2[1] = y1;
+  triangle3D2[2] = z1;
+  triangle3D2[3] = x2;
+  triangle3D2[4] = y2;
+  triangle3D2[5] = z2;
+  triangle3D2[6] = x3;
+  triangle3D2[7] = y3;
+  triangle3D2[8] = z3;
+  
+  //Display Coordinates
+  //double theta, phi; 
+  //PointXYZRGB q1; q1.x = x1; q1.y = y1; q1.z = z1;
+  //cartesian2SphericSacht(q1,1,theta,phi);
+  //cout << "P1(theta,phi) : (" << theta*180/M_PI << "," << phi*180/M_PI << ")" << endl;
+  
+  //PointXYZRGB q2; q2.x = x2; q2.y = y2; q2.z = z2;
+  //cartesian2SphericSacht(q2,1,theta,phi);
+  //cout << "P1(theta,phi) : (" << theta*180/M_PI << "," << phi*180/M_PI << ")" << endl;
+  
+ // PointXYZRGB q3; q3.x = x3; q3.y = y3; q3.z = z3;
+  //cartesian2SphericSacht(q3,1,theta,phi);
+  //cout << "P1(theta,phi) : (" << theta*180/M_PI << "," << phi*180/M_PI << ")" << endl;
+  
+  
  // if(extract_flag){
   //  vector<Vec6f> vec_list = extract_points(image1);
   //  vec = vec_list[0];
   //}
   // convert the first triangle to a perspective image
   Triangle tr;
+  cout << "TestTrianglePerspective: Converting to perspective using triangle normal" << endl;
+  Mat per_image = tr.convToPersRectImage(image1,vec);
   
- // Mat per_image_bary = tr.convToPersRectImageBarycentric(image1,)
-  Mat per_image = tr.convToPersRectImage(image1, vec);
+  cout << "TestTrianglePerspective: Converting to perspective using triangle barry" << endl;
+  Mat per_image_bary = tr.convToPersRectImageBarycentric(image1,triangle3D);
+  
+    cout << "TestTrianglePerspective: Converting to perspective using 2 triangles barry" << endl;
+  Mat per_image_bary2 = tr.convToPersRectImageBarycentricTwo(image1,triangle3D,triangle3D2);
+  
+  
   //Mat per_image2 = tr.convToPersRectImage(image1, vec2);
   //Mat per_mix = tr.convToPersRectImageTwo(image1, vec,vec2);
 	
   //tr.getPersCamParamsTwo(image1,vec);
-  imshow("Perspective image1", per_image);
+  imshow("Perspective Barry", per_image_bary);
+  imshow("Perspective image1", per_image); 
+  imshow("Perspective Barry2", per_image_bary2);
   //imshow("Perspective image2", per_image2);
   //imshow("Perspective image both", per_mix);
   waitKey(0);
@@ -1993,25 +2050,26 @@ void testTrianglePerspective(Mat image1){
 void randomTest(){
 	double theta, phi,r;
 	r = 1;
-	PointXYZRGB p;
-	p.x = 0.2 ;
-	p.y = 0.3; 
-	p.z = sqrt(1-0.2*0.2-0.3*0.3);
+	int i,j, rows, cols;
+	i = 155;
+	j = 255;
+	rows = 160;
+	cols = 320;
 	
-	//First method
-	cout << "Initial Point: " << p << endl;
-	cartesian2Spheric(p,r,theta,phi);
-	cout << "Converted point: " << theta << " , " << phi << endl;
-	spheric2Cartesian(r,theta,phi,p);
-	cout << "Converted Point: " << p << endl;
-	//Sacht method
-	cout << "Sacht Initial Point: " << p << endl;
-	cartesian2SphericSacht(p,r,theta,phi);
-	cout << "Sacht Converted point: " << theta << " , " << phi << endl;
-	spheric2CartesianSacht(r,theta,phi,p);
-	cout << "Sacht Converted Point: " << p << endl;
+	//Convert to spheric
+	//double x,y,z;
+	//sphereCoordinatesSacht(i,j,r,rows,cols,x,y,z);
 	
+	Vec6f triangle;
+	triangle[0] = -2.00893 * M_PI/180;
+	triangle[1] = -23.7054* M_PI/180;
+	triangle[2] = 42.1875* M_PI/180;
+	triangle[3] = 36.1607* M_PI/180;
+	triangle[4] = -10.8482* M_PI/180;
+	triangle[5] = 42.1875* M_PI/180;
 	
-
+	Point2f p = triangleCenter(triangle);
+	cout << "Calculated Mean: [" << (triangle[0] + triangle[2] + triangle[4]) / 3 << "," << (triangle[1] + triangle[3] + triangle[5]) / 3. << "]" << endl;
+	cout << "Triangle center: " << p << endl;	
 }
 

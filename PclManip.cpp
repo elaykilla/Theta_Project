@@ -237,6 +237,29 @@ void sphereToEqui(PointCloud<PointXYZRGB>::Ptr sphere, double r, int rows, int c
 		result->push_back(pi);
 	}	
 }
+
+/**
+* This function given 2 triangles in (x,y,z) vertice coordinates, computes the interpolation between the 2 triangles (linearly) at a given position between 0 and dist;
+*/
+Vec9f getInterpolatedTriangle3D(Vec9f triangle1,Vec9f triangle2, double dist, double pos){
+	//Define vectors between each of the points of the triangles. We suppose that the points are 
+	// matched in order and hence point1 from triangle1 matches point1 from triangle2 etc...
+	PointXYZRGB p1,p2,p3,q1,q2,q3;
+	p1.x = triangle[0];
+	p1.y = triangle[1];
+	p1.z = triangle[2];
+	
+	p2.x = triangle[3];
+	p2.y = triangle[4];
+	p2.z = triangle[5];
+	
+	p3.x = triangle[];
+	p3.y = triangle[];
+	p3.z = triangle[];
+
+}
+
+
 /**
 *This function takes an input image in Equirectangular pixel coordinates (i,j) and returns 
 * a Point cloud. The point cloud is the Spherical projection of this image onto a sphere of
@@ -248,6 +271,18 @@ void sphereToEqui(PointCloud<PointXYZRGB>::Ptr sphere, double r, int rows, int c
 * @Output
 * Ptr cloud : a point cloud of the sphere
 */
+
+/**
+* This function takes a point cloud and 2 triangles as input, and returns a Point cloud of the interpolated triangle between the 2 given triangles
+*/
+PointCloud<PointXYZRGB>::Ptr singleTriangleInterpolate3D(PointCloud<PointXYZRGB>::Ptr sphere,double r,int rows, int cols, double dist, double pos, Vec9f triangle1, Vec9f triangle2 ){
+
+	bool use_first, use_second;
+	
+	
+
+
+}
 
 /************************************************ Cloud Viewer Call back functions **************************************/
 void hPointLine(PointXYZRGB o, PointXYZRGB u, vector<PointXYZRGB> &line)
