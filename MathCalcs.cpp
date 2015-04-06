@@ -454,6 +454,76 @@ cv::Vec6f getInterpolatedTriangle(cv::Vec6f triangle1, cv::Vec6f triangle2, cv::
 	return inter_triangle;
 
 }
+
+/**
+* This function given 2 triangles in (x,y,z) vertice coordinates, computes the interpolation between the 2 triangles (linearly) at a given position between 0 and dist;
+*/
+Vec9f getInterpolatedTriangle3D(Vec9f triangle1,Vec9f triangle2, double dist, double pos){
+	//Resulting triangle, with vertices not forcefully on sphere
+	Vec9f triangle;
+	
+	//Define vectors between each of the points of the triangles. We suppose that the points are 
+	// matched in order and hence point1 from triangle1 matches point1 from triangle2 etc...
+	PointXYZRGB p1,p2,p3,q1,q2,q3;
+	p1.x = triangle1[0];
+	p1.y = triangle1[1];
+	p1.z = triangle1[2];
+	
+	p2.x = triangle1[3];
+	p2.y = triangle1[4];
+	p2.z = triangle1[5];
+	
+	p3.x = triangle1[6];
+	p3.y = triangle1[7];
+	p3.z = triangle1[8];
+	
+	q1.x = triangle2[0];
+	q1.y = triangle2[1];
+	q1.z = triangle2[2];
+	
+	q2.x = triangle2[3];
+	q2.y = triangle2[4];
+	q2.z = triangle2[5];
+	
+	q3.x = triangle2[6];
+	q3.y = triangle2[7];
+	q3.z = triangle2[8];
+	
+	//Define vector between matching points
+	PointXYZ p1q1, p2q2, p3q3;
+	p1q1.x = q1.x - p1.x;
+	p1q1.y = q1.y - p1.y;
+	p1q1.z = q1.z - p1.z;
+	
+	p2q2.x = q2.x - p2.x;
+	p2q2.y = q2.y - p2.y;
+	p2q2.z = q2.z - p2.z;
+	
+	
+	p3q3.x = q3.x - p3.x;
+	p3q3.y = q3.y - p3.y;
+	p3q3.z = q3.z - p3.z;
+	
+	//Calculate the interpolated points
+	triangle[0] = p1.x + (pos/dist)*p1q1.x;
+	triangle[1] = p1.y + (pos/dist)*p1q1.y;
+	triangle[2] = p1.z + (pos/dist)*p1q1.z;
+	
+	triangle[3] = p2.x + (pos/dist)*p2q2.x;
+	triangle[4] = p2.y + (pos/dist)*p2q2.y;
+	triangle[5] = p2.z + (pos/dist)*p2q2.z;
+	
+	triangle[6] = p3.x + (pos/dist)*p3q3.x;
+	triangle[7] = p3.y + (pos/dist)*p3q3.y;
+	triangle[8] = p3.z + (pos/dist)*p3q3.z;
+	
+	//Eventually we could project the point onto the sphere, but the important thing is getting
+	// the theta and phi angles which will be used, so this might be an unnecessary step
+	
+	return triangle;
+}
+
+
 /**
  * Compute the affine 3*4 matrix between 2 triangles given with the 3D coordinates of each point
  */

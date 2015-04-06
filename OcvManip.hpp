@@ -145,10 +145,18 @@ cv::Mat delaunayInterpolate(cv::Mat image1, cv::Mat image2, double dist, double 
 
 
 /**
-* Function to retrieve only interpolated content
+* Function to retrieve only interpolated content. Given 2 images with their respective triangle positions,
+* this function interpolates the content of the intermediate triangle. 
+* 
 */
 cv::Mat getInterpolatedTriangleContent(cv::Mat image1, cv::Mat image2, cv::Vec6f triangle1, cv::Vec6f triangle2, cv::Vec6f &trianglesInter, vector<PointWithColor> &content, double dist, double pos);
 
+
+/**
+* Function to retrieve only interpolated content. Given 2 images with their respective triangle positions and perspective camera parameters.
+* this function interpolates the content of the intermediate triangle. 
+*/
+cv::Mat getDiffPerspInterpolate(cv::Mat img1, cv::Mat img2, PersCamera cam1, PersCamera cam2, cv::Vec6f triangle1, cv::Vec6f triangle2, vector<PointWithColor> &content, double dist, double pos);
 
 /**
 * Function to interpolate between 2 images having already extracted keypoints and matched them and computed

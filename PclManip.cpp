@@ -238,25 +238,27 @@ void sphereToEqui(PointCloud<PointXYZRGB>::Ptr sphere, double r, int rows, int c
 	}	
 }
 
-/**
-* This function given 2 triangles in (x,y,z) vertice coordinates, computes the interpolation between the 2 triangles (linearly) at a given position between 0 and dist;
-*/
-Vec9f getInterpolatedTriangle3D(Vec9f triangle1,Vec9f triangle2, double dist, double pos){
-	//Define vectors between each of the points of the triangles. We suppose that the points are 
-	// matched in order and hence point1 from triangle1 matches point1 from triangle2 etc...
-	PointXYZRGB p1,p2,p3,q1,q2,q3;
-	p1.x = triangle[0];
-	p1.y = triangle[1];
-	p1.z = triangle[2];
-	
-	p2.x = triangle[3];
-	p2.y = triangle[4];
-	p2.z = triangle[5];
-	
-	p3.x = triangle[];
-	p3.y = triangle[];
-	p3.z = triangle[];
 
+/**
+* This function, given a triangle in 3D and a cloud of points, returns the points which projected onto the * plane defined by the triangle, are inside the triangle
+*/
+PointCloud<PointXYZRGB>::Ptr getTriangleContent3D(PointCloud<PointXYZRGB>::Ptr sphere, Vec9f triangle ){
+	//Resulting point cloud
+	PointCloud<PointXYZRGB>::Ptr content;
+	
+	//Go through the cloud
+	for(int i=0;i<sphere->points.size();i++){
+		//PointXYZ p;
+		//p.x = sphere->points[i].x;
+		//p.y = sphere->points[i].y;
+		//p.z = sphere->points[i].z;
+		
+		if(inTriangle3D(sphere->points[i],triangle)){
+			content->points.push_back(sphere->points[i]);
+		}
+	}
+	
+	return content;
 }
 
 

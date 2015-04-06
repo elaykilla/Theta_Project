@@ -124,7 +124,7 @@ bool inTriangle(cv::Point2f p, cv::Vec6f triangle);
 	- projects the point onto the plane defined by the 3 Points
 	- verifies if the point lays within the triangle 
 */
-bool inTriangle3D(PointXYZ p, Vec9f triangle3D);
+bool inTriangle3D(PointXYZRGB p, Vec9f triangle3D);
 
 /** 
 * Given a point and a triangle, this function verifies where the point is located inside the triangle
@@ -135,6 +135,13 @@ bool inTriangle(cv::Point2f p, cv::Vec6f triangle);
 * Function returns interpolated triangles between 2 given triangles
 */
 cv::Vec6f getInterpolatedTriangle(cv::Vec6f triangle1, cv::Vec6f triangle2, cv::Mat *affine, double dist, double pos);
+
+
+/**
+* This function given 2 triangles in (x,y,z) vertice coordinates, computes the interpolation between the 2 triangles (linearly) at a given position between 0 and dist;
+*/
+Vec9f getInterpolatedTriangle3D(Vec9f triangle1,Vec9f triangle2, double dist, double pos);
+
 
 /**
 * Sample points in a triangle defined by it's 3 Points in 3D. The Sampling is done depending on the size of the biggest vertex of the triangle

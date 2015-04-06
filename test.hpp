@@ -2046,6 +2046,41 @@ void testTrianglePerspective(Mat image1){
   waitKey(0);
 
 }
+
+
+void testTriangleContent3D(cv::Mat image1, PointCloud<PointXYZRGB>::Ptr sphere, PointCloud<PointXYZRGB>::Ptr &content){
+	//Testing Barycentric
+  cv::Point2f p1,p2,p3,pp1,pp2,pp3;
+  p1.x = 389.0; pp1.x = 380.0;
+  p1.y = 219.0; pp1.y = 216.0;
+
+  p2.x = 538.0; pp2.x = 530.0;
+  p2.y = 329.0; pp2.y = 320.0;
+
+  p3.x = 553.0; pp3.x = 540.0;
+  p3.y = 197.0; pp3.y = 190.0;
+  
+  int rows = image1.rows, cols = image1.cols;
+  double x1,y1,z1,x2,y2,z2,x3,y3,z3,xx1,yy1,zz1,xx2,yy2,zz2,xx3,yy3,zz3 ;
+  cout << "testTriangleContent3D: getting Sphere Coordinates" << endl;
+  sphereCoordinatesSacht(p1.y,p1.x,1., rows, cols, x1, y1, z1);
+  sphereCoordinatesSacht(p2.y,p2.x,1., rows, cols, x2, y2, z2);
+  sphereCoordinatesSacht(p3.y,p3.x,1., rows, cols, x3, y3, z3);
+  
+  Vec9f triangle3D;
+  triangle3D[0] = x1;
+  triangle3D[1] = y1;
+  triangle3D[2] = z1;
+  triangle3D[3] = x2;
+  triangle3D[4] = y2;
+  triangle3D[5] = z2;
+  triangle3D[6] = x3;
+  triangle3D[7] = y3;
+  triangle3D[8] = z3;
+
+  cout << "testTriangleContent3D: getting Triangle Content" << endl;
+	content = getTriangleContent3D(sphere,triangle3D);
+}
 //////////////////////// End of Test of single triangle perspective ///////////////////////////////////
 void randomTest(){
 	double theta, phi,r;

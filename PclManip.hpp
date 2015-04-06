@@ -63,15 +63,16 @@ void sphereToEqui(PointCloud<PointXYZRGB>::Ptr sphere, double r, int rows, int c
 void sphere2Equi(cv::Mat ori, double r,PointCloud<PointXYZRGB>::Ptr spherePts, PointCloud<PointXYZRGB>::Ptr &result);
 
 
-/**
-* This function given 2 triangles in (x,y,z) vertice coordinates, computes the interpolation between the 2 triangles (linearly) at a given position between 0 and dist;
-*/
-Vec9f getInterpolatedTriangle3D(Vec9f triangle1,Vec9f triangle2, double dist, double pos);
 
 /**
-* This function takes a point cloud and 2 triangles as input, and returns a Point cloud of the interpolated triangle between the 2 given triangles
+* This function, given a triangle in 3D and a cloud of points, returns the points which projected onto the * plane defined by the triangle, are inside the triangle
 */
-PointCloud<PointXYZRGB>::Ptr singleTriangleInterpolate3D(PointCloud<PointXYZRGB>::Ptr sphere,double r,int rows, int cols, double dist, double pos, Vec9f triangle1, Vec9f triangle2 );
+PointCloud<PointXYZRGB>::Ptr getTriangleContent3D(PointCloud<PointXYZRGB>::Ptr sphere, Vec9f triangle );
+
+/**
+* This function takes a 2 point clouds and 2 triangles as input, and returns a Point cloud of the interpolated triangle between the 2 given triangles
+*/
+PointCloud<PointXYZRGB>::Ptr singleTriangleInterpolate3D(PointCloud<PointXYZRGB>::Ptr sphere1,PointCloud<PointXYZRGB>::Ptr sphere2,double r,int rows, int cols, double dist, double pos, Vec9f triangle1, Vec9f triangle2 );
 
 /**
 * Returns line.size() points on the line between o and u

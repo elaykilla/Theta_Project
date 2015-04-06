@@ -1213,6 +1213,25 @@ bool onSameCubicFaceRaw(int width, int height, int i1, int j1, int i2, int j2){
 	
 }
 
+/**
+* Function to retrieve only interpolated content. Given 2 images with their respective triangle positions and perspective camera parameters.
+* this function interpolates the content of the intermediate triangle. 
+*/
+cv::Mat getDiffPerspInterpolate(cv::Mat img1, cv::Mat img2, PersCamera cam1, PersCamera cam2, cv::Vec6f triangle1, cv::Vec6f triangle2, vector<PointWithColor> &content, double dist, double pos){
+	//Resulting image
+	cv::Mat result;
+	
+	
+	//Affine transform
+	cv::Mat tWarp;
+	
+	//Get the interpolated triangle
+	Vec6f triangle_inter;
+	triangle_inter =  getInterpolatedTriangle( triangle1, triangle2, &tWarp,  dist, pos);
+	return result;
+}
+
+
 
 cv::Mat getInterpolatedTriangleContent(cv::Mat img1, cv::Mat img2, cv::Vec6f triangle1, cv::Vec6f triangle2, cv::Vec6f &triangle_inter, vector<PointWithColor> &content, double dist, double pos){
 	
@@ -2555,17 +2574,21 @@ cv::Mat delaunayInterpolateCubeFromTriangles(cv::Mat img1, cv::Mat img2, double 
 		
 		//Generate the perspective view for the given triangle
 		inter = cv::Mat::zeros(img1.rows, img1.cols, img1.type());
-		//persp1 = tri_class.convToPersRectImage(img1,triangle1);
-		//persp2 = tri_class.convToPersRectImage(img2,triangle1);
-		//inter = getInterpolatedTriangleContent(img1,img2,triangle1,triangle2,triangle_inter,content,dist,pos);
+		persp1 = tri_class.convToPersRectImageTwo(img1,triangle1,triangle2);
+		persp2 = tri_class.convToPersRectImageTwo(img2,triangle1,triangle2);
+		inter = getInterpolatedTriangleContent(img1,img2,triangle1,triangle2,triangle_inter,content,dist,pos);
 		
 		//Convert the triangle content to Equirectangular image
 		for(int j=0;j<content.size();j++){
 			cv::Point2f p (content[j].x, content[j].y);
+			//Find the position of each point in the equi and fill the content
+			double xi, yi;
+			//getposition
+			//result.at<Vec3b>(yi,xi)[0] = content[j].color[0];
 		}
 	}
 	
-
+	return result;
 }
 
 

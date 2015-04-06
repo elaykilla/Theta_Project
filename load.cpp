@@ -140,7 +140,7 @@ int main(int argc, char** argv)
 
 
 	//Setup 3D visualizer
-	//visualization::PCLVisualizer viewer("3D viewer");
+	visualization::PCLVisualizer viewer("3D viewer");
 	//	visualization::CloudViewer cViewer ("Simple Cloud Viewer");
 	//	//viewer.setBackgroundColor (0, 0, 0);
 
@@ -489,7 +489,9 @@ int main(int argc, char** argv)
  	//testTriangleRead();
  	//randomTest();
  	
- 	testTrianglePerspective(templ);
+ 	//testTrianglePerspective(templ);
+ 	
+ 	testTriangleContent3D(allImages[0], allPtClouds[0],sightFlat);
 ///////////////////////End of 3D keypoints test ////////////////////////////
 
 	
@@ -505,7 +507,7 @@ int main(int argc, char** argv)
 	//	cViewer.showCloud (allPtClouds[0]);
 	//	cViewer.showCloud (sightFlat);
 	//cViewer.showCloud(sightFlat);
-	//viewer.addPointCloud(sightFlat, "Sphere");
+	viewer.addPointCloud(sightFlat, "Sphere");
 
 	//	viewer.addPointCloud(sight, "Sphere");
 	//viewer.addPointCloud(sight, "Sphere1");
