@@ -244,17 +244,20 @@ void sphereToEqui(PointCloud<PointXYZRGB>::Ptr sphere, double r, int rows, int c
 */
 PointCloud<PointXYZRGB>::Ptr getTriangleContent3D(PointCloud<PointXYZRGB>::Ptr sphere, Vec9f triangle ){
 	//Resulting point cloud
-	PointCloud<PointXYZRGB>::Ptr content;
+	PointCloud<PointXYZRGB>::Ptr content (new PointCloud<PointXYZRGB>);
 	
 	//Go through the cloud
 	for(int i=0;i<sphere->points.size();i++){
-		//PointXYZ p;
+		PointXYZRGB p;
 		//p.x = sphere->points[i].x;
 		//p.y = sphere->points[i].y;
 		//p.z = sphere->points[i].z;
 		
-		if(inTriangle3D(sphere->points[i],triangle)){
-			content->points.push_back(sphere->points[i]);
+		p = sphere->points[i];
+		//cout << "getTriangleContent3D: Test if point in Triangle:" << sphere ->points[i] << endl;
+		if(inTriangle3D(p,triangle)){
+			//cout << "Point in Triangle found!!" << endl;
+			content->points.push_back(p);
 		}
 	}
 	

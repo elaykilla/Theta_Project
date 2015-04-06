@@ -7,12 +7,14 @@ WarpImage::WarpImage(){
   method = LINEAR;
 }
 
-bool WarpImage::warp(Mat src, Mat mapI, Mat mapJ, Mat dst){
+Mat WarpImage::warp(Mat src, Mat mapI, Mat mapJ, Mat dst){
   if(method == LINEAR){
-    warpLinear(src, mapI, mapJ, dst);
+    dst = warpLinear(src, mapI, mapJ, dst);
   }else{
-    warpNearest(src, mapI, mapJ, dst);
+    dst = warpNearest(src, mapI, mapJ, dst);
   }
+
+  return dst;
 }
 
 
@@ -23,7 +25,7 @@ bool WarpImage::warp(Mat src, Mat mapI, Mat mapJ, Mat dst){
  *    mapI: Warping column vectors for each pixel
  *    mapJ: Warping row vectors for each pixel
  */
-bool WarpImage::warpLinear(Mat src, Mat mapI, Mat mapJ, Mat dst){
+Mat WarpImage::warpLinear(Mat src, Mat mapI, Mat mapJ, Mat dst){
   bool ret = true;
   int nrows = dst.rows;
   int ncols = dst.cols;
@@ -80,13 +82,13 @@ bool WarpImage::warpLinear(Mat src, Mat mapI, Mat mapJ, Mat dst){
     }
   }
 
-  return ret;
+  return dst;
 }
 
 /*
  *
  */
-bool WarpImage::warpNearest(Mat src, Mat mapI, Mat mapJ, Mat dst){
+Mat WarpImage::warpNearest(Mat src, Mat mapI, Mat mapJ, Mat dst){
   bool ret = true;
   int nrows = dst.rows;
   int ncols = dst.cols;
@@ -111,7 +113,7 @@ bool WarpImage::warpNearest(Mat src, Mat mapI, Mat mapJ, Mat dst){
     }
   }
 
-  return ret;
+  return dst;
 }
 
 

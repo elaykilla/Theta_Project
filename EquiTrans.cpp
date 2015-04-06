@@ -1,5 +1,6 @@
 /*
- * Transform images in Equirectangular form to those in perspective cameara.
+ * Transform images between equirectangular form 
+ *  to that on the perspective cameara.
  */
 #include <math.h>
 #include "EquiTrans.hpp"
@@ -38,9 +39,25 @@ void EquiTrans::unsetFOV(){
 }
 
 /*
+ * Convert a point in equirectangular image coordinates to pan/tilt angles in radian
+ *   pan/titl angles is in the coorinate system whose origin at the center.
+ */
+void EquiTrans::convEquiToAngles(Mat equi_image, Point2f equi_point, double &pan, double &tilt){
+  double d_wd = equi_image.cols;
+  double d_ht = equi_image.rows;
+
+  double p_pan = equi_point.x - d_wd/2.0 + 0.5; // panning in pixel
+  double p_tilt = d_ht/2.0 - equi_point.y - 0.5; // tilting in pixel
+
+  pan = p_pan / d_wd * 2.0 * M_PI;
+  tilt = p_tilt / d_ht * M_PI;
+}
+
+/*
  * src: Equirectangular image
  * cam_phi_deg: camera pannng in degrees (center origin, left-right)
  * cam_theta_deg: camera tilting in degrees (center origin, botom-top)
+ *
  *
  */
 Mat EquiTrans::toPerspective(Mat src, double cam_phi_deg, double cam_theta_deg){
@@ -101,7 +118,7 @@ Mat EquiTrans::toPerspective(Mat src, double cam_phi_deg, double cam_theta_deg){
   WarpImage wi;
 
   wi.setLinear();  // Bi-linear interpolation
-  wi.warp(src, warpI, warpJ, dst);
+  dst = wi.warp(src, warpI, warpJ, dst);
 
   warpI.release();
   warpJ.release();
@@ -365,7 +382,7 @@ void EquiTrans::convSpherePointToEquiCoord(Point3f point, Mat equi_img, double *
  *     
  */
 
- void EquiTrans::toPerspective(Mat src, PersCamera &cam){
+Mat EquiTrans::toPerspective(Mat src, PersCamera cam){
   bool debug = false;
 
   ViewDirection vd = cam.view_dir;
@@ -373,6 +390,9 @@ void EquiTrans::convSpherePointToEquiCoord(Point3f point, Mat equi_img, double *
   double d_nrows = (double)nrows, d_ncols = (double)ncols;
   int film_height = cam.image.rows;
   int film_width = cam.image.cols;
+
+
+  Mat dst = Mat::zeros(cam.image.rows, cam.image.cols, cam.image.type());
 
   // set focal_length
   focal_length = cam.focal_length;
@@ -424,26 +444,12 @@ void EquiTrans::convSpherePointToEquiCoord(Point3f point, Mat equi_img, double *
   WarpImage wi;
 
   wi.setLinear();  // Bi-linear interpolation
-  wi.warp(src, warpI, warpJ, cam.image);
+  wi.warp(src, warpI, warpJ, dst);
 
   warpI.release();
   warpJ.release();
-}
 
-
-/*
- * Convert a point in equirectangular image coordinates to pan/tilt angles in radian
- *   pan/titl angles is in the coorinate system whose origin at the center.
- */
-void EquiTrans::convEquiToAngles(Mat equi_image, Point2f equi_point, double &pan, double &tilt){
-  double d_wd = equi_image.cols;
-  double d_ht = equi_image.rows;
-
-  double p_pan = equi_point.x - d_wd/2.0 + 0.5; // panning in pixel
-  double p_tilt = d_ht/2.0 - equi_point.y - 0.5; // tilting in pixel
-
-  pan = p_pan / d_wd * 2.0 * M_PI;
-  tilt = p_tilt / d_ht * M_PI;
+  return dst;
 }
 
 /*
@@ -456,20 +462,536 @@ Point2f EquiTrans::toPersPoint(Mat equi_image, PersCamera cam, Point2f equi_poin
   double r_pan = 0.0, r_tilt = 0.0; // in radian
   convEquiToAngles(equi_image, equi_point, r_pan, r_tilt);
 
-  r_pan -= cam.view_dir.pan;
-  r_tilt -= cam.view_dir.tilt;
-
   // center origin
-  double c_i = cam.focal_length * tan(r_pan); // horizontal 
-  double c_j = cam.focal_length * tan(r_tilt); // vertical bottom-top
+  // unit vector 3D coordinates.
+  double X = cos(r_pan)*cos(r_tilt); // depth
+  double Y = sin(r_pan)*cos(r_tilt); // horizontal
+  double Z = sin(r_tilt); // vertical
 
-  // top-left origin
-  double d_wd = (double)cam.image.cols;
-  double d_ht = (double)cam.image.rows;
+  Point3d i_point; // initial point
+  i_point.x = X;
+  i_point.y = Y;
+  i_point.z = Z;
+
+  Point3d v_point; // viewing direction
+  v_point.x = cos(cam.view_dir.pan) * cos(cam.view_dir.tilt);
+  v_point.y = sin(cam.view_dir.pan) * cos(cam.view_dir.tilt);
+  v_point.z = sin(cam.view_dir.tilt);
+
+  bool angle_diff = checkVectorAngle(i_point, v_point);
 
   Point2f pers_point;
-  pers_point.x = (float)(c_i + d_wd/2.0 - 0.5);
-  pers_point.y = (float)(d_ht/2.0 - c_j - 0.5);
+  if(angle_diff){
+    Point3d r_point = i_point;
+    if(cam.view_dir.pan != 0.0){
+      r_point = rotatePan(-cam.view_dir.pan, i_point);
+    }else{
+      r_point = i_point;
+    }
+
+    if(cam.view_dir.tilt != 0.0){
+      r_point = rotateTilt(-cam.view_dir.tilt, r_point);
+    }
+
+    double scale = cam.focal_length / r_point.x;
+    double c_i = scale * r_point.y; // horizontal 
+    double c_j = scale * r_point.z; // vertical bottom-top
+
+    // top-left origin
+    double d_wd = (double)cam.image.cols;
+    double d_ht = (double)cam.image.rows;
+
+
+    pers_point.x = (float)(c_i + d_wd/2.0 - 0.5);
+    pers_point.y = (float)(d_ht/2.0 - c_j - 0.5);
+  }else{
+    pers_point.x = -1.0;
+    pers_point.y = -1.0;
+  }
 
   return pers_point;
+}
+
+
+/*
+ * Convert coordinates of a point from center origin to top-left origin.
+ */
+Point2f EquiTrans::toTopLeftCoord(Point2f c_p, Mat image){
+  Point2f i_p;
+  
+  i_p.x = c_p.x + (float)image.cols/2.0 - 0.5;
+  i_p.y = c_p.y + (float)image.rows/2.0 - 0.5;
+
+  return i_p;
+}
+
+/*
+ * Convert coordinates of a point from center origin to top-left origin.
+ */
+Point2f EquiTrans::toCenterCoord(Point2f i_p, Mat image){
+  Point2f c_p;
+  
+  c_p.x = i_p.x - (float)image.cols/2.0 + 0.5;
+  c_p.y = i_p.y - (float)image.rows/2.0 + 0.5;
+
+  return c_p;
+}
+
+
+
+/*
+ * Convert image cooridnates of a point in perpective camera to that in equirectangular.
+ *     p_p: point image coordinates. (origin: top-left).
+ */
+Point2f EquiTrans::toEquiPoint(PersCamera cam, Mat equi_img, Point2f p_p){
+  Point2f c_p = toCenterCoord(p_p, cam.image);
+  double d_nrows = (double)equi_img.rows;
+  double d_ncols = (double)equi_img.cols;
+
+  double ec_i = -1.0, ec_j = -1.0;
+  toEquirectCore((double)c_p.x, (double)c_p.y, cam.focal_length, cam.view_dir, d_nrows, d_ncols, &ec_i, &ec_j);
+  Point2f e_p;
+
+  e_p.x = (float)ec_i;
+  e_p.y = (float)ec_j;
+
+  e_p = toTopLeftCoord(e_p, equi_img);
+
+  return e_p;
+}
+
+
+/*
+ * get the rectangular region in equirectangular image by examining all of the image pixels in perspective image.
+ */
+Rect EquiTrans::getEquiRegionFull(PersCamera pers, Mat equi){
+  
+  // take the border pixel in the perspective camera.
+  int i_max = pers.image.cols - 1;
+  int j_max = pers.image.rows - 1;
+
+  vector<Point2f> point_list;
+  float f_wd = (float)pers.image.cols - 1.0;
+  float f_ht = (float)pers.image.rows - 1.0;
+
+
+  for(int j =  0;j < j_max;j++){
+    for(int i =  0;i < i_max;i++){
+      Point2f point;
+      point.x = (float)i;
+      point.y = (float)j;
+      point_list.push_back(point);
+    }
+  }
+
+  size_t size = point_list.size();
+  vector<Point2f> e_pt(size);
+  for(int i = 0;i < size;i++){
+    e_pt[i] = toEquiPoint(pers, equi, point_list[i]);
+  }
+
+  Rect rect;
+
+  float min_x = -1.0, min_y = -1.0;
+  float max_x = -1.0, max_y = -1.0;
+
+  for(int i = 0;i < size;i++){
+
+    if(e_pt[i].x < min_x || min_x == -1.0){
+      min_x = e_pt[i].x;
+    }
+    if(e_pt[i].y < min_y || min_y == -1.0){
+      min_y = e_pt[i].y;
+    }
+    if(e_pt[i].x > max_x || max_x == -1.0){
+      max_x = e_pt[i].x;
+    }
+    if(e_pt[i].y > max_y || max_y == -1.0){
+      max_y = e_pt[i].y;
+    }
+  }
+
+  rect.x = min_x;
+  rect.y = min_y;
+  rect.width = max_x - min_x + 1.0;
+  rect.height = max_y - min_y + 1.0;
+
+  return rect;
+}
+
+
+/*
+ * get the rectangular region by image border in equirectangular image
+ */
+Rect EquiTrans::getEquiRegionBorder(PersCamera pers, Mat equi){
+  
+  // take the border pixel in the perspective camera.
+  int i_max = pers.image.cols - 1;
+  int j_max = pers.image.rows - 1;
+
+  vector<Point2f> point_list;
+  float f_wd = (float)pers.image.cols - 1.0;
+  float f_ht = (float)pers.image.rows - 1.0;
+
+
+  for(int j =  0;j < j_max;j++){
+
+    if(j == 0 || j == j_max){
+      for(int i =  0;i < i_max;i++){
+	Point2f point;
+	point.x = (float)i;
+	point.y = (float)j;
+	point_list.push_back(point);
+      }
+    }else{
+      
+      Point2f point;
+      // left border
+      point.x = (float)0;
+      point.y = (float)j;
+      point_list.push_back(point);
+      
+      // right border
+      point.x = (float)i_max;
+      point.y = (float)j;
+      point_list.push_back(point);
+    }
+  }
+
+  size_t size = point_list.size();
+  vector<Point2f> e_pt(size);
+  for(int i = 0;i < size;i++){
+    e_pt[i] = toEquiPoint(pers, equi, point_list[i]);
+  }
+
+  Rect rect;
+
+  float min_x = -1.0, min_y = -1.0;
+  float max_x = -1.0, max_y = -1.0;
+
+  for(int i = 0;i < size;i++){
+
+    if(e_pt[i].x < min_x || min_x == -1.0){
+      min_x = e_pt[i].x;
+    }
+    if(e_pt[i].y < min_y || min_y == -1.0){
+      min_y = e_pt[i].y;
+    }
+    if(e_pt[i].x > max_x || max_x == -1.0){
+      max_x = e_pt[i].x;
+    }
+    if(e_pt[i].y > max_y || max_y == -1.0){
+      max_y = e_pt[i].y;
+    }
+  }
+
+  rect.x = min_x;
+  rect.y = min_y;
+  rect.width = max_x - min_x + 1.0;
+  rect.height = max_y - min_y + 1.0;
+
+  return rect;
+}
+
+
+/*
+ * get the rectangular region by some points in equirectangular image
+ */
+Rect EquiTrans::getEquiRegionPoints(PersCamera pers, Mat equi){
+  // convert 8 points of the perspective camera;
+  
+  size_t size = 9;
+
+  vector<Point2f> points(size);
+  float f_wd = (float)pers.image.cols - 1.0;
+  float f_ht = (float)pers.image.rows - 1.0;
+
+
+  points[0].x = 0.0;
+  points[0].y = 0.0;
+  points[1].x = f_wd/2.0 - 1.0;
+  points[1].y = 0.0;
+  points[2].x = f_wd - 1.0;
+  points[2].y = 0.0;
+  points[3].x = 0.0;
+  points[3].y = f_ht/2.0 - 1.0;
+  points[4].x = f_wd - 1.0;
+  points[4].y = f_ht/2.0 - 1.0;
+  points[5].x = 0.0;
+  points[5].y = f_ht - 1.0;
+  points[6].x = f_wd/2.0 - 1.0;
+  points[6].y = f_ht - 1.0;
+  points[7].x = f_wd - 1.0;
+  points[7].y = f_ht - 1.0;
+  points[8].x = f_wd/2.0 - 1.0;
+  points[8].y = f_ht/2.0 - 1.0;
+
+  vector<Point2f> e_pt(size);
+  for(int i = 0;i < size;i++){
+    e_pt[i] = toEquiPoint(pers, equi, points[i]);
+  }
+
+  Rect rect;
+
+  float min_x = -1.0, min_y = -1.0;
+  float max_x = -1.0, max_y = -1.0;
+
+  for(int i = 0;i < size;i++){
+
+    if(e_pt[i].x < min_x || min_x == -1.0){
+      min_x = e_pt[i].x;
+    }
+    if(e_pt[i].y < min_y || min_y == -1.0){
+      min_y = e_pt[i].y;
+    }
+    if(e_pt[i].x > max_x || max_x == -1.0){
+      max_x = e_pt[i].x;
+    }
+    if(e_pt[i].y > max_y || max_y == -1.0){
+      max_y = e_pt[i].y;
+    }
+  }
+
+  rect.x = min_x;
+  rect.y = min_y;
+  rect.width = max_x - min_x + 1.0;
+  rect.height = max_y - min_y + 1.0;
+
+  return rect;
+}
+
+/*
+ * Initialize a matrix with minus one
+ */
+void EquiTrans::initMinus(Mat image){
+
+  float val = -1.0f;
+
+  for(int r = 0;r < image.rows;r++){
+    for(int c = 0;c < image.cols;c++){
+      image.at<float>(r, c) = val;
+    }
+  }
+}
+
+/*
+ * Convert a perspective image to a portion in the equirectangular image.
+ * 
+ *  pers: perspective camera including its image.
+ *  equi: equirectangular image to render
+ */
+Mat EquiTrans::toEquirectangular(PersCamera cam, Mat equi){
+
+  // get the rectangular region in equirectangular image
+  Rect rect = getEquiRegionFull(cam, equi);
+
+  // Warping vectors
+  int width = equi.cols;
+  int height = equi.rows;
+
+  Mat warpI = Mat::ones(height, width, CV_32F);
+  Mat warpJ = Mat::ones(height, width, CV_32F);
+  warpI.mul(-1.0f);
+  warpJ.mul(-1.0f);
+
+  // convert pixels
+  int max_i = rect.x + rect.width;
+  int max_j = rect.y + rect.height;
+
+
+  double max_x = (double)cam.image.cols - 1.0;
+  double max_y = (double)cam.image.rows - 1.0;
+  for(int j= rect.y;j < rect.y + rect.height;j++){
+    for(int i = rect.x;i < rect.x + rect.width;i++){
+      Point2f e_point;
+      e_point.x = (float)i;
+      e_point.y = (float)j;
+
+      Point2f p_point = toPersPoint(equi, cam, e_point);
+      double x = p_point.x;
+      double y = p_point.y;
+      if(x < 0.0 || y < 0.0 || x > max_x || y > max_y){
+	continue;
+      }else{
+	warpI.at<float>(j, i) =  x;
+	warpJ.at<float>(j, i) =  y;
+      }
+    }
+  }
+  
+   WarpImage wi;
+
+  wi.setLinear();  // Bi-linear interpolation
+  wi.warp(cam.image, warpI, warpJ, equi);
+
+  warpI.release();
+  warpJ.release();
+
+  return equi;
+}
+
+
+/*
+ * Convert a traingle in perspective image to the portion in the equirectangular image.
+ * 
+ *  pers: perspective camera including its image.
+ *  tri:  triangle in the perspecive camera
+ *  equi: equirectangular image to render
+ */
+Mat EquiTrans::toEquirectangular(PersCamera cam, Vec6f tri, Mat equi){
+
+  // get the rectangular region in equirectangular image
+  Rect rect = getEquiRegionFull(cam, equi);
+
+  // Warping vectors
+  int width = equi.cols;
+  int height = equi.rows;
+
+  Mat warpI = Mat::ones(height, width, CV_32F);
+  Mat warpJ = Mat::ones(height, width, CV_32F);
+  warpI.mul(-1.0f);
+  warpJ.mul(-1.0f);
+
+  // convert pixels
+  int max_i = rect.x + rect.width;
+  int max_j = rect.y + rect.height;
+
+
+  double max_x = (double)cam.image.cols - 1.0;
+  double max_y = (double)cam.image.rows - 1.0;
+  for(int j= rect.y;j < rect.y + rect.height;j++){
+    for(int i = rect.x;i < rect.x + rect.width;i++){
+      Point2f e_point;
+      e_point.x = (float)i;
+      e_point.y = (float)j;
+
+      Point2f p_point = toPersPoint(equi, cam, e_point);
+      double x = p_point.x;
+      double y = p_point.y;
+      if(!isInsideTriangle(tri, p_point))
+	continue;
+      if(x < 0.0 || y < 0.0 || x > max_x || y > max_y){
+	continue;
+      }else{
+	warpI.at<float>(j, i) =  x;
+	warpJ.at<float>(j, i) =  y;
+      }
+    }
+  }
+  
+   WarpImage wi;
+
+  wi.setLinear();  // Bi-linear interpolation
+  wi.warp(cam.image, warpI, warpJ, equi);
+
+  warpI.release();
+  warpJ.release();
+
+  return equi;
+}
+
+
+/* 
+ *  Check if the point is inside the triangle
+ *    Based on Barycentric coordinate system on Wikipedia.
+ *    http://en.wikipedia.org/wiki/Barycentric_coordinate_system
+ */
+bool EquiTrans::isInsideTriangle(Vec6f vertices, Point2f point){
+  double x = (double)point.x;
+  double y = (double)point.y;
+
+  double x1 = (double)vertices[0]; 
+  double y1 = (double)vertices[1]; 
+  double x2 = (double)vertices[2]; 
+  double y2 = (double)vertices[3]; 
+  double x3 = (double)vertices[4]; 
+  double y3 = (double)vertices[5]; 
+
+  double lambda1, lambda2, lambda3;
+  double det;
+
+  det = (y2 - y3)*(x1 - x3) + (x3 - x2)*(y1 - y3);
+
+  bool ret = false;
+  if(det != 0.0){
+    lambda1 = ((y2 - y3) * (x - x3) + (x3 - x2)*(y - y3))/det; 
+    lambda2 = ((y3 - y1) * (x - x3) + (x1 - x3)*(y - y3))/det; 
+    lambda3 = 1.0 - lambda1 - lambda2;
+    if(lambda1 >= 0.0 && lambda2 >= 0.0 && lambda3 >= 0.0){
+      ret = true;
+    }
+  }
+
+  return ret;
+}
+
+
+/*
+ * 3D rotation around the tilting axis. 
+ *    Y axis in Sacht's notation
+ *   
+ *    angle: rotational angle in radian
+ *    point: 3D point
+ */
+Point3d EquiTrans::rotateTilt(double angle, Point3d point){
+  Mat RY = (Mat_<double>(3, 3) << 
+	    cos(angle), 0.0, -sin(angle),
+	    0.0, 1.0, 0.0,
+	    sin(angle), 0.0, cos(angle));
+
+  Mat vec = (Mat_<double>(3,1) <<
+	     point.x,
+             point.y,
+             point.z);
+
+  Mat dst = RY * vec;
+
+  Point3d r_p;
+  r_p.x = dst.at<double>(0,0);
+  r_p.y = dst.at<double>(1,0);
+  r_p.z = dst.at<double>(2,0);
+
+  return r_p;
+}
+
+/*
+ * Check if two vector angels in 3D are over 90 degrees or not.
+ */
+bool EquiTrans::checkVectorAngle(Point3d a, Point3d b){
+  double dot_val =  a.dot(b);
+  bool ret = true;
+
+  if(dot_val < 0.0){
+    ret = false;
+  }
+
+  return ret;
+}
+
+/*
+ * 3D rotation around the panning axis. 
+ *    Z axis in Sacht's notation
+ *   
+ *    angle: rotational angle in radian
+ *    point: 3D point
+ */
+Point3d EquiTrans::rotatePan(double angle, Point3d point){
+  Mat RZ = (Mat_<double>(3, 3) << 
+	    cos(angle), -sin(angle), 0.0,
+	    sin(angle), cos(angle), 0.0,
+	    0.0, 0.0, 1.0);
+
+  Mat vec = (Mat_<double>(3,1) <<
+	     point.x,
+             point.y,
+             point.z);
+
+  Mat dst = RZ * vec;
+
+  Point3d r_p;
+  r_p.x = dst.at<double>(0,0);
+  r_p.y = dst.at<double>(1,0);
+  r_p.z = dst.at<double>(2,0);
+
+  return r_p;
 }

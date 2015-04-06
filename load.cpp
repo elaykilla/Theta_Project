@@ -381,7 +381,7 @@ int main(int argc, char** argv)
 	//KeyPointAndMatchesTest(allImages[0], allImages[1]);
 	
 	//Test of image interpolation
-	ori = cv::imread("test3.JPG",1);
+	ori = cv::imread("test3_1.JPG",1);
 	//ori = allImages[0];
 	
 	cv::Mat templ = cv::imread("test4.JPG",1);
@@ -490,8 +490,8 @@ int main(int argc, char** argv)
  	//randomTest();
  	
  	//testTrianglePerspective(templ);
- 	
- 	testTriangleContent3D(allImages[0], allPtClouds[0],sightFlat);
+ 	cloud = EquiToSphere(ori,1,0,0,0);
+ 	testTriangleContent3D(ori, cloud,sightFlat);
 ///////////////////////End of 3D keypoints test ////////////////////////////
 
 	
@@ -521,14 +521,14 @@ int main(int argc, char** argv)
 	//viewer.addCoordinateSystem (radius*2);
 	//viewer.setPointCloudRenderingProperties (visualization::PCL_VISUALIZER_POINT_SIZE, 1, "Sphere");
 	//viewer.registerKeyboardCallback (keyboardEventOccurred, (void*)&viewer);
-	//while (!viewer.wasStopped ()){
+	while (!viewer.wasStopped ()){
 		// This seems to cause trouble when having cloud viewer and viewr running
 		//cv::imshow("Keypoints 2D" , sightMat);
-//		viewer.spinOnce (100);
+		viewer.spinOnce (100);
 
 		//cv::waitKey(0);
 //		boost::this_thread::sleep (boost::posix_time::microseconds (10000));
-//	}
+	}
 
 	//close viewer
 
