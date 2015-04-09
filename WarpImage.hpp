@@ -13,12 +13,13 @@ class WarpImage {
 private:
   enum Method {NEAREST, LINEAR};
   Method method;
-  Mat warpLinear(Mat src, Mat mapI, Mat mapJ, Mat dst);
-  Mat warpNearest(Mat src, Mat mapI, Mat mapJ, Mat dst);
+  bool wrapping;  // horizontal wrapping around for equirectangular images.
+  void warpLinear(Mat src, Mat mapI, Mat mapJ, Mat &dst);
+  void warpNearest(Mat src, Mat mapI, Mat mapJ, Mat &dst);
 
 public:
   WarpImage();
-  Mat warp(Mat src, Mat mapI, Mat mapJ, Mat dst);
+  void warp(Mat src, Mat mapI, Mat mapJ, Mat &dst);
   void setNearest();
   void setLinear();
 };

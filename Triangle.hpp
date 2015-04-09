@@ -59,6 +59,12 @@ public:
  */
   PersCamera getPersCamParams(cv::Mat equi_image, cv::Vec6f vertices);
   
+  /** 
+  * This function returns the intermediate camera parameters given 
+  * - 2 perspective cameras
+  * - the desired interpolated position defined by pos and dist = pos/dist 
+  */
+  PersCamera getInterpolatedPersCamParams( PersCamera cam1, PersCamera cam2, double dist, double pos);
   
    /*
  * Get the perpective camera that includes a triangle by using the barycenter as point and the 

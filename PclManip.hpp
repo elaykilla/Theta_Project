@@ -22,6 +22,12 @@ int findPointInVector(PointXYZRGB p, vector<PointXYZRGB> points);
 vector<cv::Point3d> fromxyzrgbtoPoint3D(vector<PointXYZRGB> points);
 
 
+/**
+* Simple function to convert a list of Point3D  to a list of PointXYZRGB
+*/
+vector<PointXYZRGB> fromPoint3Dtoxyzrgb(vector<cv::Point3d> points);
+
+
 /***************************************************End Simple Functions **************************************/
 
 /***************************************************Image Manipulation PCL***********************************************/

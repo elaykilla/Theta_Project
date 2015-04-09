@@ -186,30 +186,39 @@ vector<cv::KeyPoint> getSiftKeypoints(cv::Mat image){
 * These keypoints are normalized to an equirectangular image which was at the origin of the 6 cube faces.
 * - this function assumes that the cube was obtained using the makeCubeFaces function
 */
-vector<cv::KeyPoint> getCubeKeypoints(cv::Mat origin, Cube cube_mat, ViewDirection vds[6]){
-	//Begin by extracting keypoints from each of the faces
-	vector<vector<cv::KeyPoint> > keypointsList;
+vector<cv::KeyPoint> getCubeKeypoints(cv::Mat origin){
+	//All parameters of the cube 
+	EquiTrans equi;
+	Cube cube;
+	Mat faces[6];
+	PersCamera cams[6];
 	vector<cv::KeyPoint> keypoints;
 	vector<cv::KeyPoint> final_keypoints;
 	cv::KeyPoint keypoint;
-	cv::Point point;
+
+
+	//Extract Cube faces
+	equi.setFOV(90.0, 90.0);
+	cout << "getCubeKeypoints: Making Cube Faces" << endl;
+	equi.makeCubeFaces2(origin,cube,cams);
+
 	
 //	ViewDirection vds[6];
 	ViewDirection vd;
+	PersCamera cam;
 //	Mat mats[6];
 	
-	
-	EquiTrans equi;
-	//equi.getCubeFaceViewingDirections(origin,mats);
-	//equi.makeCubeFaces2(origin,mats,vds);
-	
+	//Extract points from each Face and convert coordinates back to Equi Image
 	for(int i=0;i<6;i++){
-		//cout <<cout << "testTriangleReadAndWrite: image " << i << endl;
-		if(!cube_mat[i].data){
+		
+		if(!cube[i].data){
+			cout << "getCubeKeypoints Cube image: " << i << endl;
 			cout << "Sorry the cube is missing some images please verify content" << endl;
 			break;
 		}
-		keypoints = get2DKeypoints(cube_mat[i]);
+		cout << "getCubeKeypoints: Extracting Keypoints from image:" << i << endl;
+		//keypoints = get2DKeypoints(cube[i]);
+		keypoints = getSiftKeypoints(cube[i]);
 		//kepointsList.push_back(keypoints);
 		
 		// In order to match the keypoints and keep track of the actually point positions,
@@ -217,23 +226,97 @@ vector<cv::KeyPoint> getCubeKeypoints(cv::Mat origin, Cube cube_mat, ViewDirecti
 		// And generate a single keypoints vector
 		
 		for(int j=0;j<keypoints.size();j++){
-			vd = vds[i];
+			//vd = vds[i];
 			keypoint = keypoints[j];
-			point = keypoint.pt;
+			cv::Point2f point = keypoint.pt;
 			//Convert point to Equi coordinates
 			//equi.toEquirectCore(double i_c, double j_c, double focal_length, ViewDirection vd, double d_nrows, double d_ncols, double *ec_i, double *ec_j)
-			
+			point = equi.toEquiPoint(cams[i],origin,point);
+			//keypoint.pt.x = cvRound(point.x);
+			//keypoint.pt.y = cvRound(point.y);
+			keypoint.pt = point;
 			//Set new Keypoint coordinates
 			final_keypoints.push_back(keypoint);
 		}
+		
+		cout << "Size of Keypoints in Image: " << i << ": " << keypoints.size() << endl;
 	}
-	
+	cout << "Size of Final Keypoints  " << ": " << final_keypoints.size() << endl;
 	return final_keypoints;
 
 	
 
 }
 
+
+/** 
+* This functions extracts cube faces and matches points on corresponding faces
+*/
+vector<vector<cv::KeyPoint> > getMatchedCubeKeypoints(cv::Mat img1, cv::Mat img2){
+	//All parameters of the cube 
+	EquiTrans equi;
+	Cube cube1, cube2;
+	Mat faces1[6], faces2[6];
+	PersCamera cams1[6], cams2[6];
+	vector<cv::KeyPoint> keypoints1,keypoints2;
+	vector<vector<cv::KeyPoint> > matched_keypoints, final_matched_keypoints;
+	vector<cv::KeyPoint> final_keypoints1, final_keypoints2;
+	cv::KeyPoint keypoint1, keypoint2;
+
+
+	//Extract Cube faces
+	equi.setFOV(90.0, 90.0);
+	//Get Cube Faces for both images
+	cout << "getCubeKeypoints: Making Cube Faces" << endl;
+	equi.makeCubeFaces2(img1,cube1,cams1);
+	equi.makeCubeFaces2(img2,cube2,cams2);
+	
+	
+	//For matches
+	vector<cv::DMatch> matches;
+	
+	//Get Matches on individual faces
+	for(int i=0;i<6;i++){
+		if(!cube1[i].data ||!cube2[i].data ){
+			cout << "getCubeKeypoints Cube image: " << i << endl;
+			cout << "Sorry the cube is missing some images please verify content" << endl;
+			break;
+		}
+		
+		//Get keypoints from face
+		keypoints1 = getSiftKeypoints(cube1[i]);
+		keypoints2 = getSiftKeypoints(cube2[i]);
+		
+		matches = getMatches(cube1[i], cube2[i], keypoints1,keypoints2);
+		matched_keypoints = getMatchedKeypoints(keypoints1,keypoints2,matches);
+		keypoints1 = matched_keypoints[0];
+		keypoints2 = matched_keypoints[1];
+		
+		
+		//Convert matches keypoints to Equi Format 
+		for(int j=0;j<keypoints1.size();j++){
+			keypoint1 = keypoints1[j];
+			keypoint2 = keypoints2[j];
+			
+			cv::Point2f point1 = keypoint1.pt;
+			cv::Point2f point2 = keypoint2.pt;
+			
+			point1 = equi.toEquiPoint(cams1[i],img1,point1);
+			point2 = equi.toEquiPoint(cams2[i],img2,point2);			
+		
+			final_keypoints1.push_back(keypoint1);
+			final_keypoints2.push_back(keypoint2);
+		}
+		
+		
+	}
+	
+	final_matched_keypoints.push_back(final_keypoints1);
+	final_matched_keypoints.push_back(final_keypoints2);
+	
+	return final_matched_keypoints;
+
+}
 
 
 int ratioTest(std::vector<std::vector<cv::DMatch> >& matches, float ratio) {
@@ -309,9 +392,8 @@ vector<cv::Point2f> convertKeypoints(vector<cv::KeyPoint> keypoints){
 }
 
 vector<cv::DMatch> getFlannMatches(cv::Mat image1, cv::Mat image2,vector<cv::KeyPoint> keypoints1 ,vector<cv::KeyPoint> keypoints2){
-	//SurfDescriptorExtractor extractor;
 	SiftDescriptorExtractor extractor;
-	
+	 //SurfDescriptorExtractor extractor;
 	cv::FlannBasedMatcher matcher;
 	Mat descriptors1, descriptors2;
 
@@ -473,14 +555,22 @@ vector<vector<cv::KeyPoint> > getMatchedKeypoints(vector<cv::KeyPoint> keypoints
 	vector<vector<cv::KeyPoint> > matched;
 
 	std::vector<cv::KeyPoint> points1, points2;
-	for (std::vector<cv::DMatch>::const_iterator it= matches.begin();
-			it!= matches.end(); ++it) {
+	//for (std::vector<cv::DMatch>::const_iterator it= matches.begin();
+	//		it!= matches.end(); ++it) {
 
 		// Get the position of left keypoints
-		points1.push_back(keypoints1[it->queryIdx]);
+	//	points1.push_back(keypoints1[it->queryIdx]);
 
 		// Get the position of right keypoints
-		points2.push_back(keypoints2[it->trainIdx]);
+		//points2.push_back(keypoints2[it->trainIdx]);
+	//}
+
+	for( int i = 0; i < matches.size(); i++ ){ 
+	
+		points1.push_back(keypoints1[matches[i].queryIdx]);
+		points2.push_back(keypoints2[matches[i].trainIdx]);
+		//printf( "-- Good Match [%d] Keypoint 1: %d  -- Keypoint 2: %d  \n", i, good_matches[i].queryIdx, good_matches[i].trainIdx ); 
+	
 	}
 
 	matched.push_back(points1);
@@ -972,10 +1062,11 @@ void makeCorrespondingDelaunayTriangles(vector<cv::Point2f> points1, vector<cv::
 	}
 
 	//logFile.close();
-	//trianglesList1 = newtrianglesList1;
+	trianglesList1 = newtrianglesList1;
 	trianglesList2 = newtrianglesList2;
 
 }
+
 
 
 /**
@@ -1227,7 +1318,7 @@ cv::Mat getDiffPerspInterpolate(cv::Mat img1, cv::Mat img2, PersCamera cam1, Per
 	
 	//Get the interpolated triangle
 	Vec6f triangle_inter;
-	triangle_inter =  getInterpolatedTriangle( triangle1, triangle2, &tWarp,  dist, pos);
+	triangle_inter =  getInterpolatedTriangle( triangle1, triangle2, tWarp,  dist, pos);
 	return result;
 }
 
@@ -1242,7 +1333,7 @@ cv::Mat getInterpolatedTriangleContent(cv::Mat img1, cv::Mat img2, cv::Vec6f tri
 	//Affine transform
 	cv::Mat tWarp;
 	
-	triangle_inter =  getInterpolatedTriangle( triangle1, triangle2, &tWarp,  dist, pos);
+	triangle_inter =  getInterpolatedTriangle( triangle1, triangle2, tWarp,  dist, pos);
 	
 	double* uprow = tWarp.ptr<double>(0);
 	double* downrow = tWarp.ptr<double>(1);
@@ -1297,6 +1388,7 @@ cv::Mat getInterpolatedTriangleContent(cv::Mat img1, cv::Mat img2, cv::Vec6f tri
 
 				if(i>0 && j>0 && j<img2.cols && i<img2.rows){
 					if(inTriangleArea(p,triangle1)){
+					cout << "Point in triangle: " << p << endl;
 						//Get the position of the point in the first image
 						float x = uprow[0] * p.x + uprow[1]* p.y + uprow[2];
 						float y = downrow[0] * p.x + downrow[1]* p.y + downrow[2];
@@ -1323,6 +1415,7 @@ cv::Mat getInterpolatedTriangleContent(cv::Mat img1, cv::Mat img2, cv::Vec6f tri
 									use_first = true;
 								}
 							}
+							//use_first = use_second = false;
 							if(use_first){
 								b = img1.at<Vec3b>(p)[0];
 								g = img1.at<Vec3b>(p)[1];
@@ -1340,18 +1433,24 @@ cv::Mat getInterpolatedTriangleContent(cv::Mat img1, cv::Mat img2, cv::Vec6f tri
 								b = (img2.at<Vec3b>(p2)[0]*pos + img1.at<Vec3b>(p)[0]*(dist-pos))/dist;
 								g = (img2.at<Vec3b>(p2)[1]*pos + img1.at<Vec3b>(p)[1]*(dist-pos))/dist;
 								r = (img2.at<Vec3b>(p2)[2]*pos + img1.at<Vec3b>(p)[2]*(dist-pos))/dist;
+								//b = img2.at<Vec3b>(p)[0];
+								//g = img2.at<Vec3b>(p)[1];
+								//r = img2.at<Vec3b>(p)[2];
 
 //							
 							}
 							
-							color = cv::Scalar(b,g,r);
-							pt_color.x = xinter;
-							pt_color.y = yinter;
-							pt_color.color = color;
-							content.push_back(pt_color);
-							result.at<Vec3b>(yinter,xinter)[0] = b;
-							result.at<Vec3b>(yinter,xinter)[1] = g;
-							result.at<Vec3b>(yinter,xinter)[2] = r;
+							if(yinter>0 && xinter>0 && yinter<result.rows && xinter<result.cols){
+							//cout << "Point Position in interp: " << xinter << "," << yinter << endl;
+								color = cv::Scalar(b,g,r);
+								pt_color.x = xinter;
+								pt_color.y = yinter;
+								pt_color.color = color;
+								content.push_back(pt_color);
+								result.at<Vec3b>(yinter,xinter)[0] = b;
+								result.at<Vec3b>(yinter,xinter)[1] = g;
+								result.at<Vec3b>(yinter,xinter)[2] = r;
+							}
 	
 					}
 				}
@@ -1359,6 +1458,26 @@ cv::Mat getInterpolatedTriangleContent(cv::Mat img1, cv::Mat img2, cv::Vec6f tri
 		}
 		
 		return result;
+}
+
+
+/**
+* Function to retrieve only interpolated content. Given 2 images with their respective triangle positions,
+* this function interpolates the content of the intermediate triangle using different perspective cameras. 
+* 
+*/
+cv::Mat getInterpolatedTriangleContentDiffCam(PersCamera cam1, PersCamera cam2, cv::Vec6f triangle1, cv::Vec6f triangle2, cv::Vec6f &trianglesInter, vector<PointWithColor> &content, double dist, double pos){
+	//Get perspective images
+	cv::Mat img1 = cam1.image, img2 = cam2.image;
+	
+	//Affine transform
+	cv::Mat tWarp;
+	
+	cv::Vec6f triangle_inter;
+	triangle_inter =  getInterpolatedTriangle( triangle1, triangle2, tWarp,  dist, pos);
+	
+	double* uprow = tWarp.ptr<double>(0);
+	double* downrow = tWarp.ptr<double>(1);
 }
 
 /**
@@ -1429,8 +1548,8 @@ cv::Mat InterpolateWithGivenTriangles(cv::Mat img1, cv::Mat img2, vector<cv::Vec
 		int ymin = cvRound(min(a.y, min(b.y,c.y)));
 		
 		
-		Vec6f triangle_inter;
-		triangle_inter =  getInterpolatedTriangle( triangle1, triangle2, &tWarp,  dist, pos);
+		cv::Vec6f triangle_inter;
+		triangle_inter =  getInterpolatedTriangle( triangle1, triangle2, tWarp,  dist, pos);
 
 		cv::Point2f p,pinter,p2;
 
@@ -2462,7 +2581,7 @@ cv::Mat delaunayInterpolateSphere(cv::Mat img1, cv::Mat img2, double dist, doubl
 /** 
 * Function to interpolate between 2 images using Delaunay triangulation using triangles on the surface of the sphere and cube faces. This first function generates and writes the triangles onto file
 */
-void delaunayInterpolateCubeMakeTriangles(cv::Mat img1, cv::Mat img2, double dist, double pos){
+void delaunayInterpolateCubeMakeTriangles(cv::Mat img1, cv::Mat img2, double dist, double pos,string file1, string file2){
 	//Final Output image
 	cv::Mat result;
 	
@@ -2470,7 +2589,8 @@ void delaunayInterpolateCubeMakeTriangles(cv::Mat img1, cv::Mat img2, double dis
 	EquiTrans equi;
 	Cube cube1, cube2;
 	Mat faces1[6] ,faces2[6];
-	ViewDirection vds[6];
+	PersCamera cams1[6], cams2[6];
+	//ViewDirection vds[6];
 	vector<vector<cv::KeyPoint> > matched_keypoints;
 	vector<cv::KeyPoint> keypoints1, keypoints2;
 	vector<cv::Point2f> points1, points2;
@@ -2478,14 +2598,16 @@ void delaunayInterpolateCubeMakeTriangles(cv::Mat img1, cv::Mat img2, double dis
 	vector<cv::Point3d> points3D1c, points3D2c;
 	vector<cv::DMatch> matches;
 	
-	equi.setFOV(90.0, 90.0);
-	equi.makeCubeFaces(img1,cube1);
-	equi.makeCubeFaces(img2,cube2);
+	//equi.setFOV(90.0, 90.0);
+	//equi.makeCubeFaces2(img1,cube1,cams1);
+	//equi.makeCubeFaces2(img2,cube2,cam2);
 	
 	
 	//Extract Keypoints on Perspective images, and match them on Omnidirectional Images
-	keypoints1 =  getCubeKeypoints(img1,cube1,vds);
-	keypoints2 =  getCubeKeypoints(img2,cube2,vds);
+	//keypoints1 =  getCubeKeypoints(img1);
+	keypoints1 = get2DKeypoints(img1);
+	//keypoints2 =  getCubeKeypoints(img2);
+	keypoints2 =  get2DKeypoints(img2);
 	matches = getFlannMatches(img1, img2,keypoints1 ,keypoints2);
 	matched_keypoints = getMatchedKeypoints(keypoints1, keypoints2, matches);
 	//Matched Keypoints on OmniDirectional Images
@@ -2506,32 +2628,10 @@ void delaunayInterpolateCubeMakeTriangles(cv::Mat img1, cv::Mat img2, double dis
 	feat.toSpherePoints(img1,keypoints1,points3D1c);
 	feat.toSpherePoints(img2,keypoints2,points3D2c);
 	//Save to file 
-	feat.writePoints3d(points3D1c, "pointsList3D1.txt");
-	feat.writePoints3d(points3D2c, "pointsList3D2.txt");
-	
-	//Triangulate on the surface of the sphere
-	//Apply matlab algorithm and then the reading algorithm to get a list of triangles elay's
-	//vector<Vec9f> triangles3D1, triangles3D2;
-	//Get 3D triangles using PointFeature Class function Chiba's
-	//vector< vector<float> > triangles3D1c, triangles3D2c;
-	//feat.readTriangles3d("TrianglesFromPointsList3D1.txt",&triangles3D1c );
-	//feat.readTriangles3d("TrianglesFromPointsList3D2.txt",&triangles3D2c );
+	feat.writePoints3d(points3D1c, file1);
+	feat.writePoints3d(points3D2c, file2);
 	
 	
-	//We supposed that the triangles are matched For each triangle, get perspective view, generate affine transformation
-	
-	
-	//First get matched triangles
-	//makeCorrespondingDelaunayTriangles3D(points3D1, points3D2, triangles3D1, triangles3D2);
-	
-	//for(int i=0;i<triangles3D1.size();i++){
-		
-	
-	//}
-	
-
-	//Return final result
-	//return result;
 } 
 
 /** 
@@ -2543,7 +2643,8 @@ void delaunayInterpolateCubeMakeTriangles(cv::Mat img1, cv::Mat img2, double dis
 *	triangles_file: file name for triangles from img1 in 3D
 *	
 */
-cv::Mat delaunayInterpolateCubeFromTriangles(cv::Mat img1, cv::Mat img2, double dist, double pos, string triangles_file, vector<cv::Point2f> points1c, vector<cv::Point2f> points2c){
+cv::Mat delaunayInterpolateCubeFromTriangles(cv::Mat img1, cv::Mat img2, double dist, double pos, string triangles_file, vector<PointXYZRGB> points1c, vector<PointXYZRGB> points2c){
+	cout << "delaunayInterpolateCubeFromTriangles Called" << endl;
 	//Resulting image
 	cv::Mat result = cv::Mat::zeros(img1.rows, img1.cols, img1.type());
 	
@@ -2555,36 +2656,109 @@ cv::Mat delaunayInterpolateCubeFromTriangles(cv::Mat img1, cv::Mat img2, double 
 	vector<Vec9f> triangles3D1c, triangles3D2c;
 	
 	triangles3D1c = feat.readTriangles3d(triangles_file);
+	cout << "Triangles 3D size: " << triangles3D1c.size() << endl;
 	//feat.readTriangles3d(triangles2,&triangles3D2c );
+	
+
 	
 	//First get matched triangles
 	vector<cv::Vec6f> triangles_list1, triangles_list2;
+	
+	makeCorrespondingDelaunayTriangles3D(points1c, points2c, triangles3D1c, triangles3D2c);
 	triangles_list1 = feat.convTriangles3dToEqui(triangles3D1c, img1);
-	makeCorrespondingDelaunayTriangles(points1c, points2c, triangles_list1, triangles_list2);
+	triangles_list2 = feat.convTriangles3dToEqui(triangles3D2c, img2);
+	cout << "Triangles 2D size: " << triangles_list1.size() << endl;
+	
 	//convToPersRectImage2()
+	//Testing 
+	for(int i=0;i<triangles_list1.size();i++){
+		Vec6f triangle = triangles_list1[i];
+		cout << "Triangle number " << i << ": " << triangle[0] << "," << triangle[1] << endl;
+	}
+	//End testing
+	
 	
 	//Go through the triangles
-	Vec6f triangle1, triangle2, triangle_inter;
+	Vec6f triangle1, triangle2, triangle_inter, triangle_persp1,triangle_persp2, triangle_inter_persp ;
+	PersCamera cam1, cam2, cam_inter;
 	cv::Mat persp1, persp2, inter;
 	vector<PointWithColor> content;
+	
+	//For calling functiona
 	Triangle tri_class;
+	EquiTrans trans_class;
+	
+	//Use boolean sameView to test using single view and multiple view
+	
+	bool sameView = true;
+	
+	if(sameView){
 	for(int i=0;i<triangles_list1.size();i++){
 		 triangle1 = triangles_list1[i];
 		 triangle2 = triangles_list2[i];
 		
-		//Generate the perspective view for the given triangle
-		inter = cv::Mat::zeros(img1.rows, img1.cols, img1.type());
-		persp1 = tri_class.convToPersRectImageTwo(img1,triangle1,triangle2);
-		persp2 = tri_class.convToPersRectImageTwo(img2,triangle1,triangle2);
+		//Get perspective triangle locations
+		triangle_persp1 = tri_class.convToPersTriangle(result,cam_inter,triangle1);
+		triangle_persp2 = tri_class.convToPersTriangle(result,cam_inter,triangle2);
+		
+		//Generate the perspective view for the given triangle using the same view for 
+		// both triangles
+		//inter = cv::Mat::zeros(img1.rows, img1.cols, img1.type());
+		//Image 1 and camera 1
+		cam1 = tri_class.getPersCamParamsTwo(img1,triangle1,triangle2);
+		persp1 = trans_class.toPerspective(img1,cam1);
+		
+		//Image 2 and camera 2
+		cam2 = tri_class.getPersCamParamsTwo(img2,triangle1,triangle2);
+		persp2 = trans_class.toPerspective(img2,cam2);
+		
+		//Interpolated camera
+		cam_inter = tri_class.getInterpolatedPersCamParams(cam1,cam2,dist,pos);
 		inter = getInterpolatedTriangleContent(img1,img2,triangle1,triangle2,triangle_inter,content,dist,pos);
 		
+		triangle_inter_persp = tri_class.convToPersTriangle(result,cam_inter,triangle_inter);
+		
+		trans_class.toEquirectangular(cam_inter, triangle_inter_persp, result);
 		//Convert the triangle content to Equirectangular image
-		for(int j=0;j<content.size();j++){
-			cv::Point2f p (content[j].x, content[j].y);
+		//for(int j=0;j<content.size();j++){
+		//	cv::Point2f p (content[j].x, content[j].y);
 			//Find the position of each point in the equi and fill the content
-			double xi, yi;
+		//	double xi, yi;
 			//getposition
 			//result.at<Vec3b>(yi,xi)[0] = content[j].color[0];
+		//}
+		
+		
+		}
+	}
+	
+	else{
+		for(int i=0;i<triangles_list1.size();i++){
+		 triangle1 = triangles_list1[i];
+		 triangle2 = triangles_list2[i];
+		
+		
+		//Generate the perspective view for the given triangle using the same view for 
+		// both triangles
+		//inter = cv::Mat::zeros(img1.rows, img1.cols, img1.type());
+		//Image 1 and camera 1
+		cam1 = tri_class.getPersCamParams(img1,triangle1);
+		persp1 = trans_class.toPerspective(img1,cam1);
+		
+		//Image 2 and camera 2
+		cam2 = tri_class.getPersCamParams(img2,triangle2);
+		persp2 = trans_class.toPerspective(img2,cam2);
+		
+		//Interpolated camera
+		cam_inter = tri_class.getInterpolatedPersCamParams(cam1,cam2,dist,pos);
+		inter = getInterpolatedTriangleContentDiffCam(cam1,cam2,triangle1,triangle2,triangle_inter,content,dist,pos);
+		
+		//Put the content in the resulting image...Iteratively fill the image
+		cam_inter.image = inter;
+		trans_class.toEquirectangular(cam_inter, triangle_inter, result);
+		
+		
+		
 		}
 	}
 	

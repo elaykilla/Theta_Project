@@ -367,6 +367,37 @@ Vec6f Triangle::convToPersTriangle(Mat equi_image, PersCamera cam, Vec6f vertice
   return p_vertices;
 }
 
+ /** 
+  * This function returns the intermediate camera parameters given 
+  * - 2 perspective cameras
+  * - the desired interpolated position defined by pos and dist = pos/dist 
+  */
+  PersCamera Triangle::getInterpolatedPersCamParams(PersCamera cam1, PersCamera cam2, double dist, double pos){
+  	//Get actual position
+  	double act_pos = pos/dist;
+  	PersCamera cam;
+  	ViewDirection vd;
+  	double v_angle, h_angle;
+  	
+  	
+  	//Calculate the cam parameters
+  	vd.pan = cam1.view_dir.pan * (1-act_pos) + cam2.view_dir.pan*act_pos;
+  	vd.tilt = cam1.view_dir.tilt * (1-act_pos) + cam2.view_dir.tilt*act_pos;
+  	v_angle = cam1.fov_v * (1-act_pos) + cam2.fov_h*act_pos;
+  	h_angle = cam1.fov_h * (1-act_pos) + cam2.fov_v*act_pos;
+  	
+  	//Set Image size
+  	int rows = cam1.image.rows* (1-act_pos) + cam2.image.rows* act_pos;
+  	int cols = cam1.image.cols* (1-act_pos) + cam2.image.cols* act_pos;
+  	cv::Mat image_inter (rows,cols, cam1.image.type());
+  	
+  	cam.setCamera(image_inter, h_angle, v_angle, vd);
+  	
+  	return cam;
+  	
+  }
+
+
 /*
  * convert 6 element floating type to a set of points.
  */

@@ -5,16 +5,15 @@
 
 WarpImage::WarpImage(){
   method = LINEAR;
+  wrapping = true;
 }
 
-Mat WarpImage::warp(Mat src, Mat mapI, Mat mapJ, Mat dst){
+void WarpImage::warp(Mat src, Mat mapI, Mat mapJ, Mat &dst){
   if(method == LINEAR){
-    dst = warpLinear(src, mapI, mapJ, dst);
+    warpLinear(src, mapI, mapJ, dst);
   }else{
-    dst = warpNearest(src, mapI, mapJ, dst);
+    warpNearest(src, mapI, mapJ, dst);
   }
-
-  return dst;
 }
 
 
@@ -25,23 +24,27 @@ Mat WarpImage::warp(Mat src, Mat mapI, Mat mapJ, Mat dst){
  *    mapI: Warping column vectors for each pixel
  *    mapJ: Warping row vectors for each pixel
  */
-Mat WarpImage::warpLinear(Mat src, Mat mapI, Mat mapJ, Mat dst){
+void WarpImage::warpLinear(Mat src, Mat mapI, Mat mapJ, Mat &dst){
   bool ret = true;
   int nrows = dst.rows;
   int ncols = dst.cols;
   int rmax = src.rows - 1;
   int cmax = src.cols - 1;
+  float c_min = -1.0, r_min = -1.0;
+  float c_max = (float)src.cols;
+  float r_max = (float)src.rows;
 
   for(int r = 0;r < nrows;r++){
     for(int c = 0;c < ncols;c++){
       float wi = mapI.at<float>(r, c);
       float wj = mapJ.at<float>(r, c);
       
-      if(wi < 0.0 ||  wj < 0.0 || wi > cmax || wj > rmax){
-	ret = false;
+      if(wi <= c_min ||  wj <= r_min || wi >= c_max || wj >= rmax){
+	continue;
       }else{
 	int i_low = (int)floor(wi);
 	int j_low = (int)floor(wj);
+
 	double i_frac = (double)wi - (double)i_low;
 	double j_frac = (double)wj - (double)j_low;
 	int i_high = (int)i_low + 1;
@@ -50,6 +53,12 @@ Mat WarpImage::warpLinear(Mat src, Mat mapI, Mat mapJ, Mat dst){
 	int e_j = wj;
 	int e_i = wi;
 
+	if(wrapping){
+	  if(i_low < 0) i_low = c_max;
+	  if(j_low < 0) j_low = c_max;
+	  if(i_high > c_max) i_high = 0;
+	  if(j_high > r_max) j_high = 0;
+	}
 	Vec3b pix_00, pix_01, pix_10, pix_11;
 	pix_00 = src.at<Vec3b>(j_low, i_low); 
 	pix_01 = src.at<Vec3b>(j_low, i_high); 
@@ -82,13 +91,12 @@ Mat WarpImage::warpLinear(Mat src, Mat mapI, Mat mapJ, Mat dst){
     }
   }
 
-  return dst;
 }
 
 /*
  *
  */
-Mat WarpImage::warpNearest(Mat src, Mat mapI, Mat mapJ, Mat dst){
+void WarpImage::warpNearest(Mat src, Mat mapI, Mat mapJ, Mat &dst){
   bool ret = true;
   int nrows = dst.rows;
   int ncols = dst.cols;
@@ -112,8 +120,6 @@ Mat WarpImage::warpNearest(Mat src, Mat mapI, Mat mapJ, Mat dst){
       }
     }
   }
-
-  return dst;
 }
 
 

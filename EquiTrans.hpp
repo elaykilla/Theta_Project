@@ -29,7 +29,7 @@ private:
   Rect getEquiRegionFull(PersCamera cam, Mat image);
   Rect getEquiRegionBorder(PersCamera cam, Mat image);
 
-  void initMinus(Mat image);
+  void initMinus(Mat &image);
   bool isInsideTriangle(Vec6f vertices, Point2f point);
   bool checkVectorAngle(Point3d a, Point3d b);
 
@@ -38,19 +38,20 @@ public:
   EquiTrans(double);
 
   void makeCubeFaces(Mat, Mat[6]);
-  void makeCubeFaces2(Mat, Mat[6], ViewDirection[6]);
+  void makeCubeFaces2(Mat, Mat[6], PersCamera[6]);
   void getCubeFaceViewingDirections(ViewDirection[6]);
+  void getCubeFaceCams(PersCamera[6]);
   //void getCubeFaceViewingDirections(ViewDirection[6]);
   bool setFOV(double, double);
   Mat toPerspective(Mat, double, double);
-  Mat toPerspective(Mat image, PersCamera cam);
+  Mat toPerspective(Mat image, PersCamera &cam);
   Mat toPerspectiveCore(Mat, double, double);
   void unsetFOV();
   void toEquirectCore(double i_c, double j_c, double focal_length, ViewDirection vd, double d_rows, double d_ncols, double *ec_i, double *ec_j);
   void convSpherePointToEquiCoord(Point3f point, Mat equi_img, double *x, double *y);
   Point2f toPersPoint(Mat image, PersCamera cam, Point2f point);
-  Mat toEquirectangular(PersCamera cam, Mat image);
-  Mat toEquirectangular(PersCamera cam, Vec6f triangle, Mat image);
+  void toEquirectangular(PersCamera cam, Mat &image);
+  void toEquirectangular(PersCamera cam, Vec6f triangle, Mat &image);
   Point3d rotateTilt(double angle_rad, Point3d point);
   Point3d rotatePan(double angle_rad, Point3d point);
   Point2f toEquiPoint(PersCamera cam, Mat image, Point2f point);

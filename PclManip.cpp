@@ -40,6 +40,26 @@ vector<cv::Point3d> fromxyzrgbtoPoint3D(vector<PointXYZRGB> points){
 
 	return points3D;
 }
+
+/**
+* Simple function to convert a list of Point3D  to a list of PointXYZRGB
+*/
+vector<PointXYZRGB> fromPoint3Dtoxyzrgb(vector<cv::Point3d> points){
+	vector<PointXYZRGB> points3D;
+	
+	for(int i=0;i<points.size();i++){
+		PointXYZRGB p;
+		p.x = points[i].x;
+		p.y = points[i].y;
+		p.z = points[i].z;
+		
+		points3D.push_back(p);
+	}
+
+	return points3D;
+
+}
+
 /***************************************************Image Manipulation PCL***********************************************/
 
 

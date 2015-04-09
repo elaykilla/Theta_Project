@@ -64,16 +64,72 @@ void get_pers(int argc, char** argv, Mat image1){
 
 }
 
+
+/*
+ * Verify pespecvie<->equirectangular transformations by cube faces.
+ */
+void verify_by_cube(Mat equi_img){
+  // get cube perspective cameras.
+  double fov_h = M_PI/2.0; // 90.0 degrees
+  double fov_v = M_PI/2.0;
+  ViewDirection vd;
+  double pan_deg = 0.0, tilt_deg = 0.0;
+  PersCamera cam[6];
+  Mat pers_img[6];
+  
+  // Converting to perspective images.
+  int i;
+  EquiTrans trans;
+  for(i = 0;i < 4;i++, pan_deg += 90.0){
+    vd.pan = pan_deg/180.0 * M_PI;
+    vd.tilt = 0.0/180.0 * M_PI;
+    cam[i].setCamera(equi_img, fov_h, fov_v, vd);
+    pers_img[i] = trans.toPerspective(equi_img, cam[i]);
+  }
+
+  // top and bottom
+  pan_deg = 0.0; tilt_deg = 90.0;
+  vd.pan = pan_deg/180.0 * M_PI;
+  vd.tilt = tilt_deg/180.0 * M_PI;
+  cam[i].setCamera(equi_img, fov_h, fov_v, vd);
+  pers_img[i] = trans.toPerspective(equi_img, cam[i]);
+  i++;
+
+  pan_deg = 0.0; tilt_deg = -90.0;
+  vd.pan = pan_deg/180.0 * M_PI;
+  vd.tilt = tilt_deg/180.0 * M_PI;
+  cam[i].setCamera(equi_img, fov_h, fov_v, vd);
+  pers_img[i] = trans.toPerspective(equi_img, cam[i]);
+
+  // Show faces
+  for(int i = 0;i < 6;i++){
+    imshow("Cube face", cam[i].image);
+    waitKey(0);
+  }
+
+  // Coverting back to equirectangular image
+  Mat equi_back = Mat::zeros(equi_img.rows, equi_img.cols, equi_img.type());
+  imshow("Initial", equi_back);
+
+
+  for(int i = 0;i < 6;i++){
+    trans.toEquirectangular(cam[i], equi_back);
+    imshow("Equirectangular", equi_back);
+    waitKey(0);
+  }
+}
+
+
 /*
  * convert perspective to equirectangular
  */
 void pers_equi(Mat equi_img){
   PersCamera cam;
   
-  double fov_h = M_PI/2.0; // 90.0 degrees
-  double fov_v = M_PI/2.0;
+  double fov_h = M_PI/4.0; // 90.0 degrees
+  double fov_v = M_PI/4.0;
   ViewDirection vd;
-  vd.pan = 170.0/180.0 * M_PI;
+  vd.pan = 45.0/180.0 * M_PI;
   vd.tilt = 45.0/180.0 * M_PI;
 
   cam.setCamera(equi_img, fov_h, fov_v, vd);
@@ -95,15 +151,14 @@ void pers_equi(Mat equi_img){
     vertices[3] = (float)cam.image.rows - 1.0;
     vertices[4] = (float)cam.image.cols-1.0;
     vertices[5] = (float)cam.image.rows - 1.0;
-    equi = trans.toEquirectangular(cam, vertices, equi);
+    trans.toEquirectangular(cam, vertices, equi);
   }else{
-    equi = trans.toEquirectangular(cam, equi);
+    trans.toEquirectangular(cam, equi);
   }
 
   imwrite("../images/equi.png",equi);
   imshow("Equirectangular", equi);
   waitKey(0);
-  
 }
 
 void check_rotation(){
@@ -119,14 +174,14 @@ void check_rotation(){
 }
 
 int main(int argc, char** argv){
-  string file1 = "../images/R0010103_small.JPG";
+  string file1 = "test3_1.JPG";
   double pan_deg = 0.0, tilt_deg = 90.0;
 
 
   Mat image1 = imread(file1);
   double focal_length = 36.0;
 
-  int mode  = 2;
+  int mode  = 4;
 
   switch(mode){
   case 0:
@@ -139,8 +194,11 @@ int main(int argc, char** argv){
     pers_equi(image1);
     break;
   case 3:
-  default:
     check_rotation();
+    break;
+  case 4:
+  default:
+    verify_by_cube(image1);
     break;
   }
 

@@ -140,7 +140,7 @@ int main(int argc, char** argv)
 
 
 	//Setup 3D visualizer
-	visualization::PCLVisualizer viewer("3D viewer");
+	//visualization::PCLVisualizer viewer("3D viewer");
 	//	visualization::CloudViewer cViewer ("Simple Cloud Viewer");
 	//	//viewer.setBackgroundColor (0, 0, 0);
 
@@ -381,7 +381,7 @@ int main(int argc, char** argv)
 	//KeyPointAndMatchesTest(allImages[0], allImages[1]);
 	
 	//Test of image interpolation
-	ori = cv::imread("test3_1.JPG",1);
+	ori = cv::imread("test3.JPG",1);
 	//ori = allImages[0];
 	
 	cv::Mat templ = cv::imread("test4.JPG",1);
@@ -406,14 +406,14 @@ int main(int argc, char** argv)
 //	cv::imshow("edges2", result2);
 	
 	
-	//cv::Mat inter = cv::Mat::ones(ori.rows/1, ori.cols/1, ori.type());
-	//cv::resize(ori,inter,inter.size(),0,0,INTER_CUBIC);
+	cv::Mat inter = cv::Mat::ones(ori.rows/2, ori.cols/2, ori.type());
+	cv::resize(ori,inter,inter.size(),0,0,INTER_CUBIC);
 	//cv::pyrDown(ori,inter,Size(ori.cols/2,ori.rows/2));
 	//ori = inter;
 	
 	//cv::pyrDown(templ,inter,Size(ori.cols/2,ori.rows/2));
-	//cv::Mat inter2 = cv::Mat::ones(ori.rows/1, ori.cols/1, ori.type());
-	//cv::resize(templ,inter2,inter.size(),0,0,INTER_CUBIC);
+	cv::Mat inter2 = cv::Mat::ones(ori.rows/2, ori.cols/2, ori.type());
+	cv::resize(templ,inter2,inter.size(),0,0,INTER_CUBIC);
 	//templ = inter2;
 	
 	//Test of Delaunay Triangles
@@ -484,14 +484,17 @@ int main(int argc, char** argv)
  	//test3DTriangulation(allPtClouds[0]);
  	
  	//Test writting 3D points
- 	//testTriangleWrite(ori,templ);
+ 	//delaunayInterpolateCubeMakeTriangles(ori,templ,1,0.5,"Txt_files/Points3D_test3_1.txt","Txt_files/Points3D_test4_1.txt");
+ 	testTriangleWrite(allImages[0],allImages[1],1,0.5);
  	//Testing reading
- 	//testTriangleRead();
+ 	//testTriangleRead(ori, templ, 1, 0.5, "Txt_files/trianglesList3D1.txt", "Txt_files/Points3D_test3_1.txt","Txt_files/Points3D_test3_1.txt" );
  	//randomTest();
  	
  	//testTrianglePerspective(templ);
- 	cloud = EquiToSphere(ori,1,0,0,0);
- 	testTriangleContent3D(ori, cloud,sightFlat);
+ 	//cloud = EquiToSphere(ori,1,0,0,0);
+ 	//testTriangleContent3D(ori, cloud,sightFlat);
+ 	
+ 	//testSingleTrianglePerspective(ori,templ,1,0.5);
 ///////////////////////End of 3D keypoints test ////////////////////////////
 
 	
@@ -507,7 +510,7 @@ int main(int argc, char** argv)
 	//	cViewer.showCloud (allPtClouds[0]);
 	//	cViewer.showCloud (sightFlat);
 	//cViewer.showCloud(sightFlat);
-	viewer.addPointCloud(sightFlat, "Sphere");
+	//viewer.addPointCloud(sightFlat, "Sphere");
 
 	//	viewer.addPointCloud(sight, "Sphere");
 	//viewer.addPointCloud(sight, "Sphere1");
@@ -521,21 +524,21 @@ int main(int argc, char** argv)
 	//viewer.addCoordinateSystem (radius*2);
 	//viewer.setPointCloudRenderingProperties (visualization::PCL_VISUALIZER_POINT_SIZE, 1, "Sphere");
 	//viewer.registerKeyboardCallback (keyboardEventOccurred, (void*)&viewer);
-	while (!viewer.wasStopped ()){
+	//while (!viewer.wasStopped ()){
 		// This seems to cause trouble when having cloud viewer and viewr running
 		//cv::imshow("Keypoints 2D" , sightMat);
-		viewer.spinOnce (100);
+	//	viewer.spinOnce (100);
 
 		//cv::waitKey(0);
 //		boost::this_thread::sleep (boost::posix_time::microseconds (10000));
-	}
+	//}
 
 	//close viewer
 
 
 
 	
-	//cv::waitKey(0);
+	cv::waitKey(0);
 
 
 

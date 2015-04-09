@@ -134,7 +134,7 @@ bool inTriangle(cv::Point2f p, cv::Vec6f triangle);
 /**
 * Function returns interpolated triangles between 2 given triangles
 */
-cv::Vec6f getInterpolatedTriangle(cv::Vec6f triangle1, cv::Vec6f triangle2, cv::Mat *affine, double dist, double pos);
+cv::Vec6f getInterpolatedTriangle(cv::Vec6f triangle1, cv::Vec6f triangle2, cv::Mat &affine, double dist, double pos);
 
 
 /**

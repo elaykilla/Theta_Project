@@ -406,7 +406,7 @@ cv::Vec6f triangle2SphericSacht(int rows, int cols, double r, Vec9f triangle){
 /**
  * Function returns interpolated triangles between 2 given triangles
  */
-cv::Vec6f getInterpolatedTriangle(cv::Vec6f triangle1, cv::Vec6f triangle2, cv::Mat *affine, double dist, double pos){
+cv::Vec6f getInterpolatedTriangle(cv::Vec6f triangle1, cv::Vec6f triangle2, cv::Mat &affine, double dist, double pos){
 	//Interpolated triangle
 	cv::Vec6f inter_triangle;
 
@@ -435,7 +435,7 @@ cv::Vec6f getInterpolatedTriangle(cv::Vec6f triangle1, cv::Vec6f triangle2, cv::
 
 	/// Get the Affine Transform
 	tWarp = getAffineTransform( tri1, tri2 );
-	affine = &tWarp;
+	affine = tWarp;
 
 	//Get interpolated triangle1
 	double* uprow = tWarp.ptr<double>(0);

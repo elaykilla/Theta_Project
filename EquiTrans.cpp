@@ -79,6 +79,8 @@ Mat EquiTrans::toPerspective(Mat src, double cam_phi_deg, double cam_theta_deg){
   // warping vectors
   Mat warpI = Mat::zeros(film_height, film_width, CV_32F);
   Mat warpJ = Mat::zeros(film_height, film_width, CV_32F);
+  initMinus(warpI);
+  initMinus(warpJ);
 
   int half_ht = film_height/2, half_wd = film_width/2;
 
@@ -118,7 +120,7 @@ Mat EquiTrans::toPerspective(Mat src, double cam_phi_deg, double cam_theta_deg){
   WarpImage wi;
 
   wi.setLinear();  // Bi-linear interpolation
-  dst = wi.warp(src, warpI, warpJ, dst);
+  wi.warp(src, warpI, warpJ, dst);
 
   warpI.release();
   warpJ.release();
@@ -181,7 +183,7 @@ void EquiTrans::makeCubeFaces(Mat src, Mat faces[6]){
   faces[i++] = face;
 }
 
-void EquiTrans::makeCubeFaces2(Mat src, Mat faces[6], ViewDirection v_directions[6]){
+void EquiTrans::makeCubeFaces2(Mat src, Mat faces[6], PersCamera cams[6]){
   double cube_fov = 90.0;
   double pan_deg = 0.0, tilt_deg = 0.0;
   
@@ -193,8 +195,14 @@ void EquiTrans::makeCubeFaces2(Mat src, Mat faces[6], ViewDirection v_directions
 
   Mat face;
   ViewDirection vd;
+  PersCamera cam;
+  
+  //Calculate the angular field of view in radians
+  double h_fov_rad = M_PI/2;
+  double v_fov_rad = M_PI/2;
   // side
   int i;
+  //cout << "makeCubeFaces2: Making sides" << endl;
   for(i = 0;i < 4;i++, pan_deg += 90.0){
     face = toPerspective(src, pan_deg, tilt_deg);
     faces[i] = face;
@@ -202,25 +210,35 @@ void EquiTrans::makeCubeFaces2(Mat src, Mat faces[6], ViewDirection v_directions
     //Add Viewing Direction
     vd.pan = pan_deg;
     vd.tilt = tilt_deg;
-    v_directions[i] = vd;
+    
+    //Get camera
+     
+     cam.setCamera(face, h_fov_rad, v_fov_rad, vd);
+     cams[i] = cam;
+    //v_directions[i] = vd;
   }
+  //cout << "makeCubeFaces2 top i: " << i << endl;
   // top
   pan_deg = 0.0, tilt_deg = 90.0;
   face = toPerspective(src, pan_deg, tilt_deg);
-  faces[i++] = face;
-  
+  faces[4] = face;
   //Vd 
   vd.pan = pan_deg, vd.tilt = tilt_deg;
-  v_directions[i++] = vd;
+  cam.setCamera(face, h_fov_rad, v_fov_rad, vd);
+  cams[4] = cam;
+  //cout << "makeCubeFaces2 bottom i: " << i << endl;
+  //v_directions[i++] = vd;
 
+  
   // bottom
   pan_deg = 0.0, tilt_deg = -90.0;
   face = toPerspective(src, pan_deg, tilt_deg);
-  faces[i++] = face;
-  
+  faces[5] = face;
   //Vd 
   vd.pan = pan_deg, vd.tilt = tilt_deg;
-  v_directions[i++] = vd;
+  cam.setCamera(face, h_fov_rad, v_fov_rad, vd);
+  cams[5] = cam;
+  //v_directions[i++] = vd;
 
 }
 
@@ -382,7 +400,7 @@ void EquiTrans::convSpherePointToEquiCoord(Point3f point, Mat equi_img, double *
  *     
  */
 
-Mat EquiTrans::toPerspective(Mat src, PersCamera cam){
+Mat EquiTrans::toPerspective(Mat src, PersCamera &cam){
   bool debug = false;
 
   ViewDirection vd = cam.view_dir;
@@ -449,6 +467,7 @@ Mat EquiTrans::toPerspective(Mat src, PersCamera cam){
   warpI.release();
   warpJ.release();
 
+  cam.image = dst;
   return dst;
 }
 
@@ -763,7 +782,7 @@ Rect EquiTrans::getEquiRegionPoints(PersCamera pers, Mat equi){
 /*
  * Initialize a matrix with minus one
  */
-void EquiTrans::initMinus(Mat image){
+void EquiTrans::initMinus(Mat &image){
 
   float val = -1.0f;
 
@@ -780,7 +799,7 @@ void EquiTrans::initMinus(Mat image){
  *  pers: perspective camera including its image.
  *  equi: equirectangular image to render
  */
-Mat EquiTrans::toEquirectangular(PersCamera cam, Mat equi){
+void EquiTrans::toEquirectangular(PersCamera cam, Mat &equi){
 
   // get the rectangular region in equirectangular image
   Rect rect = getEquiRegionFull(cam, equi);
@@ -791,8 +810,9 @@ Mat EquiTrans::toEquirectangular(PersCamera cam, Mat equi){
 
   Mat warpI = Mat::ones(height, width, CV_32F);
   Mat warpJ = Mat::ones(height, width, CV_32F);
-  warpI.mul(-1.0f);
-  warpJ.mul(-1.0f);
+
+  initMinus(warpI);
+  initMinus(warpJ);
 
   // convert pixels
   int max_i = rect.x + rect.width;
@@ -819,7 +839,7 @@ Mat EquiTrans::toEquirectangular(PersCamera cam, Mat equi){
     }
   }
   
-   WarpImage wi;
+  WarpImage wi;
 
   wi.setLinear();  // Bi-linear interpolation
   wi.warp(cam.image, warpI, warpJ, equi);
@@ -827,7 +847,6 @@ Mat EquiTrans::toEquirectangular(PersCamera cam, Mat equi){
   warpI.release();
   warpJ.release();
 
-  return equi;
 }
 
 
@@ -838,7 +857,7 @@ Mat EquiTrans::toEquirectangular(PersCamera cam, Mat equi){
  *  tri:  triangle in the perspecive camera
  *  equi: equirectangular image to render
  */
-Mat EquiTrans::toEquirectangular(PersCamera cam, Vec6f tri, Mat equi){
+void EquiTrans::toEquirectangular(PersCamera cam, Vec6f tri, Mat &equi){
 
   // get the rectangular region in equirectangular image
   Rect rect = getEquiRegionFull(cam, equi);
@@ -879,15 +898,13 @@ Mat EquiTrans::toEquirectangular(PersCamera cam, Vec6f tri, Mat equi){
     }
   }
   
-   WarpImage wi;
+  WarpImage wi;
 
   wi.setLinear();  // Bi-linear interpolation
   wi.warp(cam.image, warpI, warpJ, equi);
 
   warpI.release();
   warpJ.release();
-
-  return equi;
 }
 
 

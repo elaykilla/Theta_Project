@@ -1869,13 +1869,31 @@ void twoDToThreeDkeypoints(Mat img){
 //////////////////////////////////// end of Test of 2D to 3D keypoints ///////////////////////////////////
 
 //////////////////////// Test of 3D triangle reading and writting ///////////////////////////////////
-void testTriangleWrite(cv::Mat img1, cv::Mat img2){
+void testTriangleRead(cv::Mat img1, cv::Mat img2, double dist, double pos, string triangles_file, string points1_file, string points2_file){
+
+	PointFeature feat;
+	//vector<Vec9f > triangles = readTriangles3D(filename) ;
+	cv::Mat result;
 	
-	img1 = cv::imread("test3.JPG",1);
-	//ori = allImages[0];
+	//Points XYZRGB
+	vector<cv::Point3d> points1c, points2c;
+	vector<PointXYZRGB> points3D1, points3D2;
 	
-	img2 = cv::imread("test4.JPG",1);//Final Output image
 	
+	points1c = feat.readPoints3d(points1_file);
+	points2c = feat.readPoints3d(points2_file);
+	points3D1 = fromPoint3Dtoxyzrgb(points1c);
+	points3D2 = fromPoint3Dtoxyzrgb(points2c);
+	//points3D1 = points1c;
+	//points3D2 = points2c;
+	result = delaunayInterpolateCubeFromTriangles(img1,img2, dist, pos, triangles_file,  points3D1,  points3D2);
+	
+	namedWindow("Result Equi",0);
+	imshow("Result Equi",result);
+	 
+}
+
+void testTriangleWrite(cv::Mat img1, cv::Mat img2, double dist, double pos){
 	
 	cv::Mat result;
 	
@@ -1891,33 +1909,74 @@ void testTriangleWrite(cv::Mat img1, cv::Mat img2){
 	//vector<cv::Point3d> points3D1c, points3D2c;
 	vector<cv::DMatch> matches;
 	
-	equi.setFOV(90.0, 90.0);
-	cout << "testTriangleReadAndWrite: Making Cube Faces" << endl;
-	equi.makeCubeFaces(img1,cube1);
-	equi.makeCubeFaces(img2,cube2);
+	//equi.setFOV(90.0, 90.0);
+	//cout << "testTriangleReadAndWrite: Making Cube Faces" << endl;
+	//equi.makeCubeFaces(img1,cube1);
+	//equi.makeCubeFaces(img2,cube2);
 	
 	
 	//Extract Keypoints on Perspective images, and match them on Omnidirectional Images
+	Mat cube_keypoints, equi_keypoints;
+	//cout << "testTriangleReadAndWrite: Extracting Keypoints1" << endl;
+	//keypoints1 =  getCubeKeypoints(img1);
+	//drawKeypoints(img1, keypoints1, cube_keypoints, Scalar::all(-1), DrawMatchesFlags::DEFAULT );
+	//keypoints1 = get2DKeypoints(img1);
+	keypoints1 = getSiftKeypoints(img1);
+	drawKeypoints(img1, keypoints1, equi_keypoints, Scalar::all(-1), DrawMatchesFlags::DEFAULT );
+	imshow("Equi keypoints", equi_keypoints);
+	//cout << "testTriangleReadAndWrite: Extracting Keypoints2" << endl;
+	//keypoints2 =  getCubeKeypoints(img2);
+	//keypoints2 = get2DKeypoints(img2);
+	//keypoints2 = getSiftKeypoints(img2);
 	
-	cout << "testTriangleReadAndWrite: Extracting Keypoints1" << endl;
-	keypoints1 =  getCubeKeypoints(img1,cube1,vds);
-	cout << "testTriangleReadAndWrite: Extracting Keypoints2" << endl;
-	keypoints2 =  getCubeKeypoints(img2,cube2,vds);
 	
-	cout << "testTriangleReadAndWrite Keypoints1 size before matching : " << keypoints1.size() << endl;
-	cout << "testTriangleReadAndWrite Keypoints2 size before matching : " << keypoints2.size() << endl;
+	////////////////////Testing Keypoints
+	//cv::namedWindow("From Cube",0);
+	//cv::namedWindow("From Equi",0);
+	//imshow("From Cube", cube_keypoints);
+  	//imshow("From Equi", equi_keypoints); 
+//  	//Display cube keypoints
+  	
+  	
+  	//for(int i=0;i<6;i++){
+  	//	ostringstream imagename;
+  	//	imagename << "CubeFace" << i ;
+  	//	Mat face = cube1[i];
+  	//	keypoints1 = getSiftKeypoints(face);
+  	//	drawKeypoints(face, keypoints1, equi_keypoints, Scalar::all(-1), DrawMatchesFlags::DEFAULT );
+  	//	cv::namedWindow(imagename.str(),0);
+  	//	imshow(imagename.str(), equi_keypoints);
+  	//}
+	
+	
+	///////////////////// End Keypoints Test
+	//cout << "testTriangleReadAndWrite Keypoints1 size before matching : " << keypoints1.size() << endl;
+	//cout << "testTriangleReadAndWrite Keypoints2 size before matching : " << keypoints2.size() << endl;
 	//Making Matches
-	cout << "testTriangleReadAndWrite: Making Macthes" << endl;
-	matches = getFlannMatches(img1, img2, keypoints1 ,keypoints2);
-	matched_keypoints = getMatchedKeypoints(keypoints1, keypoints2, matches);
+	//cout << "testTriangleReadAndWrite: Making Macthes" << endl;
+	//matches = getMatches(img1, img2, keypoints1 ,keypoints2);
+	//matches = getMatches(img1, img2, keypoints1 ,keypoints2);
+	
+	//for( int i = 0; i < (int)matches.size(); i++ )
+  	//{ 
+ 	 //printf( "-- Good Match [%d] Keypoint 1: %d  -- Keypoint 2: %d  \n", i, matches[i].queryIdx, matches[i].trainIdx ); 
+  	//}
+	
+	cout << "testTriangleReadAndWrite Matches size : " << matches.size() << endl;
+
+	
+	//Put points in matched order such that keypoints1[i] ~ keypoints2[i]
+	matched_keypoints = getMatchedCubeKeypoints(img1,img2);
 	
 	//Matched Keypoints on OmniDirectional Images
 	
 	ofstream logFile;
 	keypoints1 = matched_keypoints[0];
+	drawKeypoints(img1, keypoints1, cube_keypoints, Scalar::all(-1), DrawMatchesFlags::DEFAULT );
+	imshow("Cube face keypoints", cube_keypoints);
 	keypoints2 = matched_keypoints[1];
-	cout << "testTriangleReadAndWrite Keypoints1 size after matching : " << keypoints1.size() << endl;
-	cout << "testTriangleReadAndWrite Keypoints2 size after matching : " << keypoints2.size() << endl;
+	cout << "testTriangleReadAndWrite Keypoints1 size after matching order : " << keypoints1.size() << endl;
+	cout << "testTriangleReadAndWrite Keypoints2 size after matching order: " << keypoints2.size() << endl;
 	
 	//Write Keypoints in file
 	
@@ -1934,17 +1993,17 @@ void testTriangleWrite(cv::Mat img1, cv::Mat img2){
 	//Save to file 
 	cout << "testTriangleReadAndWrite Points3D1 size : " << points3D1c.size() << endl;
 	cout << "testTriangleReadAndWrite Points3D2 size : " << points3D2c.size() << endl;
-	feat.writePoints3d(points3D1c, "Txt_files/pointsList3D1.txt");
-	feat.writePoints3d(points3D2c, "Txt_files/pointsList3D2.txt");
-
-}
-
-
-void testTriangleRead(string filename){
-	//vector<Vec9f > triangles = readTriangles3D(filename) ;
+	//feat.writePoints3d(points3D1c, "Txt_files/OmniImage1.txt");
+	//feat.writePoints3d(points3D2c, "Txt_files/OmniImage2.txt");
 	
-	 
+	//Testing the second part
+	//string triangles_file1;
+	//testTriangleRead(img1,img2,dist,pos,triangles_file1,points3D1c,points3D2c);
+
 }
+
+
+
 //////////////////////// End Test of 3D triangle reading and writting ///////////////////////////////////
 
 //////////////////////// Test of single triangle perspective ///////////////////////////////////
@@ -1959,6 +2018,8 @@ void testTrianglePerspective(Mat image1){
   //Testing normal
   cv::Vec6f vec(389.0, 219.0, 538.0, 329.0, 553.0, 197.0);
   cv::Vec6f vec2(380.0, 216.0, 530.0, 320.0, 540.0, 190.0);
+  cv::Vec6f vecPerp;
+  
   
   //Testing Barycentric
   cv::Point2f p1,p2,p3,pp1,pp2,pp3;
@@ -2023,9 +2084,14 @@ void testTrianglePerspective(Mat image1){
   //  vec = vec_list[0];
   //}
   // convert the first triangle to a perspective image
+  
+
   Triangle tr;
   cout << "TestTrianglePerspective: Converting to perspective using triangle normal" << endl;
+  EquiTrans trans;
   Mat per_image = tr.convToPersRectImage(image1,vec);
+ 
+  
   
   cout << "TestTrianglePerspective: Converting to perspective using triangle barry" << endl;
   Mat per_image_bary = tr.convToPersRectImageBarycentric(image1,triangle3D);
@@ -2037,10 +2103,32 @@ void testTrianglePerspective(Mat image1){
   //Mat per_image2 = tr.convToPersRectImage(image1, vec2);
   //Mat per_mix = tr.convToPersRectImageTwo(image1, vec,vec2);
 	
+	
+  //Test conversion back to Equi
+   
+  PersCamera  cam2 = tr.getPersCamParams(image1, vec);
+  cam2.image = trans.toPerspective(image1, cam2);
+  
+  //Convert triangle to perspective
+  cv::Point2f pe1,pe2,pe3;
+  pe1 = trans.toPersPoint(image1,cam2,p1);
+  pe2 = trans.toPersPoint(image1,cam2,p2);
+  pe3 = trans.toPersPoint(image1,cam2,p3);
+  vecPerp[0] = pe1.x;
+  vecPerp[1] = pe1.y;
+  vecPerp[2] = pe2.x;
+  vecPerp[3] = pe2.y;
+  vecPerp[4] = pe3.x;
+  vecPerp[5] = pe3.y;
+  
+  cv::Mat equi = Mat::zeros(image1.rows, image1.cols, image1.type());
+ trans.toEquirectangular(cam2, vecPerp, equi);
   //tr.getPersCamParamsTwo(image1,vec);
-  imshow("Perspective Barry", per_image_bary);
+  imshow("Original", image1);
+  //imshow("Perspective Barry", per_image_bary);
   imshow("Perspective image1", per_image); 
-  imshow("Perspective Barry2", per_image_bary2);
+  //imshow("Perspective Barry2", per_image_bary2);
+  imshow("New Equi", equi);
   //imshow("Perspective image2", per_image2);
   //imshow("Perspective image both", per_mix);
   waitKey(0);
@@ -2049,7 +2137,7 @@ void testTrianglePerspective(Mat image1){
 
 
 void testTriangleContent3D(cv::Mat image1, PointCloud<PointXYZRGB>::Ptr sphere, PointCloud<PointXYZRGB>::Ptr &content){
-	//Testing Barycentric
+  //Testing Barycentric
   cv::Point2f p1,p2,p3,pp1,pp2,pp3;
   p1.x = 389.0; pp1.x = 380.0;
   p1.y = 219.0; pp1.y = 216.0;
@@ -2081,6 +2169,54 @@ void testTriangleContent3D(cv::Mat image1, PointCloud<PointXYZRGB>::Ptr sphere, 
   cout << "testTriangleContent3D: getting Triangle Content" << endl;
 	content = getTriangleContent3D(sphere,triangle3D);
 }
+
+/////////////////////////////Test of single triangle perspective interpolate////////////////////////////
+void testSingleTrianglePerspective(cv::Mat image1, cv::Mat image2, double dist, double pos){
+//Function to test the perspective interpolation between 2 triangles taken from omnidirectional image,
+//The projected back to Equiformat
+	
+  //Triangle position in equi format
+  cv::Vec6f vec(389.0, 219.0, 538.0, 329.0, 553.0, 197.0);
+  cv::Vec6f vec2(380.0, 216.0, 530.0, 320.0, 540.0, 190.0);
+  
+  
+  Triangle tr;
+  EquiTrans trans; 
+  
+  //Get perspective cams
+  PersCamera cam1 = tr.getPersCamParamsTwo(image1, vec,vec2);
+  PersCamera  cam2 = tr.getPersCamParamsTwo(image2, vec,vec2);
+  
+  cam1.image = trans.toPerspective(image1, cam1);
+  cam2.image = trans.toPerspective(image2, cam2);
+  
+  
+  PersCamera cam_inter = tr.getInterpolatedPersCamParams(cam1,cam2,dist,pos);
+  
+  //Get triangles in Pers
+  cv::Vec6f tri_pers1 = tr.convToPersTriangle(image1, cam1, vec);
+  cv::Vec6f tri_pers2 = tr.convToPersTriangle(image2, cam2, vec2);
+  
+  //Get perspective interpolated
+	cv::Vec6f tri_inter_pers;
+	vector<PointWithColor> content;
+	cout<<"testSingleTrianglePerspective: Interpolating Content" << endl;
+	cv::Mat inter_image = getInterpolatedTriangleContent(cam1.image, cam2.image, tri_pers1, tri_pers2, tri_inter_pers, content,  dist, pos);
+	cam_inter.image = inter_image;
+	
+	//Put back on equi
+	//cout<<"testSingleTrianglePerspective: Projecting back to Equi" << endl;
+	cv::Mat equi = Mat::zeros(image1.rows, image1.cols, image1.type());
+  	trans.toEquirectangular(cam_inter, tri_inter_pers, equi);
+	
+	imshow("Persp Image1", cam1.image);
+	imshow("Persp Image2", cam2.image);
+	imshow("Persp Interpolated", inter_image);
+	imshow("Equi Interpolated", equi);
+	imshow("Original", image1);
+}
+ 
+
 //////////////////////// End of Test of single triangle perspective ///////////////////////////////////
 void randomTest(){
 	double theta, phi,r;

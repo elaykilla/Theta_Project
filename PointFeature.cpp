@@ -114,6 +114,42 @@ void PointFeature::writePoints3d(vector<Point3d> &points, string filename ){
   file.close();
 }
 
+/**
+* Read points from file into vector of points 3D
+*/
+vector<Point3d> PointFeature::readPoints3d(string filename ){
+  ifstream infile (filename.c_str());
+  string value;
+  vector<Point3d> points3d;
+  
+  Point3d p;
+  while(infile.good()){
+    string line;
+    while(getline(infile, line)){
+	istringstream line_stream(line);
+	size_t size = 3;
+	vector<float>  vec(size);
+
+	int i = 0;
+	while(getline(line_stream, value, ',')){
+	    double dvalue = atof(value.c_str());
+	    vec[i] = (float)dvalue;
+//	    if(debug_flag){
+	      //cout << dvalue << ", ";
+	   // }
+	    i++;
+	}
+	
+	p.x = vec[0];
+	p.y = vec[1];
+	p.z = vec[2];
+	points3d.push_back(p);
+      }
+  }
+
+	return points3d;	
+}
+
 
 /*
  * read 3D triangles on the unit sphere.
@@ -293,7 +329,8 @@ void PointFeature::convTriangles3dToEqui(vector< vector<float> >&tri3d_list, Mat
  * Convert trianlges on the unit sphere to those in equirectangular image.
  *   triangles are in vector< vector<float> >.   
  */
-vector<Vec6f> PointFeature::convTriangles3dToEqui(vector<Vec9f>&tri3d_list, Mat equi_img){
+vector<Vec6f> PointFeature::convTriangles3dToEqui(vector<Vec9f> tri3d_list, Mat equi_img){
+    cout << "convTriangles3dToEqui called with: " << tri3d_list.size() << " triangles" << endl;
     int tri_num = tri3d_list.size();
     bool debug_flag = true;
 
