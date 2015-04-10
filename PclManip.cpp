@@ -637,19 +637,30 @@ void makeCorrespondingDelaunayTriangles3D(vector<PointXYZRGB> points3D1, vector<
 	PointXYZRGB p1,p2,p3,pp1,pp2,pp3;
 	for(int i=0;i<triangles3D1.size();i++){
 		t = triangles3D1[i];
-		p1 = PointXYZRGB(t[0], t[1], t[2]);
-		p2 = PointXYZRGB(t[3], t[4], t[5]);
-		p3 = PointXYZRGB(t[6], t[7], t[8]);
+		cout << "Triangle " << i << ": " << t << endl;
+		p1.x = round(10000*(t[0]))/10000.;
+		p1.y = round(10000*(t[1]))/10000.;
+		p1.z = round(10000*(t[2]))/10000.;
+		
+		
+		p2.x = round(10000*(t[3]))/10000.;
+		p2.y = round(10000*(t[4]))/10000.;
+		p2.z = round(10000*(t[5]))/10000.;
+		
+		p3.x = round(10000*(t[6]))/10000.;
+		p3.y = round(10000*(t[7]))/10000.;
+		p3.z = round(10000*(t[8]))/10000.;
 
 		//logFile << p1 << "||" << p2 << "||" << p3 << endl;
 		//For each point in triangle 1 we search for the corresponding point in triangle 2
 		int ptPos1 = findPointInVector(p1, points3D1) ; 
 		int ptPos2 = findPointInVector(p2, points3D1) ; 		
 		int ptPos3 = findPointInVector(p3, points3D1) ; 
+		
+		cout << "Triangle Points" << i << p1 << ";" << p2 << ";" << p3 << endl;
 
 
-
-		if(ptPos1 < points3D1.size() && ptPos2 < points3D1.size() && ptPos3 < points3D1.size())	{	
+		if(ptPos1 < points3D1.size() && ptPos2 < points3D1.size() && ptPos3 < points3D1.size())	{			cout << "Triangle found" << endl;
 			//Construct the second triangle and try to locate it in the trianglesList2
 			//We find the corresponding point in the second triangles list
 			pp1 = points3D2[ptPos1];

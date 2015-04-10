@@ -1388,7 +1388,7 @@ cv::Mat getInterpolatedTriangleContent(cv::Mat img1, cv::Mat img2, cv::Vec6f tri
 
 				if(i>0 && j>0 && j<img2.cols && i<img2.rows){
 					if(inTriangleArea(p,triangle1)){
-					cout << "Point in triangle: " << p << endl;
+					//cout << "Point in triangle: " << p << endl;
 						//Get the position of the point in the first image
 						float x = uprow[0] * p.x + uprow[1]* p.y + uprow[2];
 						float y = downrow[0] * p.x + downrow[1]* p.y + downrow[2];
@@ -2671,10 +2671,10 @@ cv::Mat delaunayInterpolateCubeFromTriangles(cv::Mat img1, cv::Mat img2, double 
 	
 	//convToPersRectImage2()
 	//Testing 
-	for(int i=0;i<triangles_list1.size();i++){
-		Vec6f triangle = triangles_list1[i];
-		cout << "Triangle number " << i << ": " << triangle[0] << "," << triangle[1] << endl;
-	}
+	//for(int i=0;i<triangles_list1.size();i++){
+	//	Vec6f triangle = triangles_list1[i];
+	//	cout << "Triangle number " << i << ": " << triangle[0] << "," << triangle[1] << endl;
+	//}
 	//End testing
 	
 	
@@ -2693,13 +2693,12 @@ cv::Mat delaunayInterpolateCubeFromTriangles(cv::Mat img1, cv::Mat img2, double 
 	bool sameView = true;
 	
 	if(sameView){
-	for(int i=0;i<triangles_list1.size();i++){
+	//for(int i=0;i<triangles_list1.size();i++){
+	for(int i=0;i<10;i++){
 		 triangle1 = triangles_list1[i];
 		 triangle2 = triangles_list2[i];
 		
-		//Get perspective triangle locations
-		triangle_persp1 = tri_class.convToPersTriangle(result,cam_inter,triangle1);
-		triangle_persp2 = tri_class.convToPersTriangle(result,cam_inter,triangle2);
+		
 		
 		//Generate the perspective view for the given triangle using the same view for 
 		// both triangles
@@ -2707,18 +2706,38 @@ cv::Mat delaunayInterpolateCubeFromTriangles(cv::Mat img1, cv::Mat img2, double 
 		//Image 1 and camera 1
 		cam1 = tri_class.getPersCamParamsTwo(img1,triangle1,triangle2);
 		persp1 = trans_class.toPerspective(img1,cam1);
+		cam1.image = persp1;
 		
 		//Image 2 and camera 2
 		cam2 = tri_class.getPersCamParamsTwo(img2,triangle1,triangle2);
 		persp2 = trans_class.toPerspective(img2,cam2);
+		cam2.image = persp2;
+		
+		
+		
+		//Get perspective triangle locations
+		triangle_persp1 = tri_class.convToPersTriangle(img1,cam1,triangle1);
+		triangle_persp2 = tri_class.convToPersTriangle(result,cam2,triangle2);
 		
 		//Interpolated camera
 		cam_inter = tri_class.getInterpolatedPersCamParams(cam1,cam2,dist,pos);
-		inter = getInterpolatedTriangleContent(img1,img2,triangle1,triangle2,triangle_inter,content,dist,pos);
+		inter = getInterpolatedTriangleContent(persp1,persp2,triangle_persp1,triangle_persp2,triangle_inter_persp,content,dist,pos);
+		cam_inter.image = inter;
 		
-		triangle_inter_persp = tri_class.convToPersTriangle(result,cam_inter,triangle_inter);
+		ostringstream inter_string;
+		if(i%1==0){
+			
+			inter_string << "inter Image" << i;
+			//imshow(inter_string.str(), inter);
+		}
+		//triangle_inter_persp = tri_class.convToPersTriangle(result,cam_inter,triangle_inter);
 		
 		trans_class.toEquirectangular(cam_inter, triangle_inter_persp, result);
+		if(i%1==0){
+			inter_string << "Equi" ;
+			namedWindow(inter_string.str(),0);
+			imshow(inter_string.str(), result);
+		}
 		//Convert the triangle content to Equirectangular image
 		//for(int j=0;j<content.size();j++){
 		//	cv::Point2f p (content[j].x, content[j].y);
@@ -2733,10 +2752,12 @@ cv::Mat delaunayInterpolateCubeFromTriangles(cv::Mat img1, cv::Mat img2, double 
 	}
 	
 	else{
-		for(int i=0;i<triangles_list1.size();i++){
+		//for(int i=0;i<triangles_list1.size()/100;i++){
+		for(int i=0;i<2;i++){
 		 triangle1 = triangles_list1[i];
 		 triangle2 = triangles_list2[i];
 		
+	
 		
 		//Generate the perspective view for the given triangle using the same view for 
 		// both triangles
@@ -2744,18 +2765,29 @@ cv::Mat delaunayInterpolateCubeFromTriangles(cv::Mat img1, cv::Mat img2, double 
 		//Image 1 and camera 1
 		cam1 = tri_class.getPersCamParams(img1,triangle1);
 		persp1 = trans_class.toPerspective(img1,cam1);
+		cam1.image = persp1;
 		
 		//Image 2 and camera 2
 		cam2 = tri_class.getPersCamParams(img2,triangle2);
 		persp2 = trans_class.toPerspective(img2,cam2);
+		cam2.image = persp2;
+		
+		//Get perspective triangle locations
+		triangle_persp1 = tri_class.convToPersTriangle(img1,cam1,triangle1);
+		triangle_persp2 = tri_class.convToPersTriangle(result,cam2,triangle2);
 		
 		//Interpolated camera
 		cam_inter = tri_class.getInterpolatedPersCamParams(cam1,cam2,dist,pos);
-		inter = getInterpolatedTriangleContentDiffCam(cam1,cam2,triangle1,triangle2,triangle_inter,content,dist,pos);
+		inter = getInterpolatedTriangleContentDiffCam(cam1,cam2,triangle_persp1,triangle_persp2,triangle_inter_persp,content,dist,pos);
+		cam_inter.image = inter;
+		
+		ostringstream inter_string;
+		inter_string << "inter Image" << i;
+		imshow(inter_string.str(), inter);
 		
 		//Put the content in the resulting image...Iteratively fill the image
-		cam_inter.image = inter;
-		trans_class.toEquirectangular(cam_inter, triangle_inter, result);
+		//cam_inter.image = inter;
+		trans_class.toEquirectangular(cam_inter, triangle_inter_persp, result);
 		
 		
 		

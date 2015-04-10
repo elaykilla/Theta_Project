@@ -133,7 +133,7 @@ vector<Point3d> PointFeature::readPoints3d(string filename ){
 	int i = 0;
 	while(getline(line_stream, value, ',')){
 	    double dvalue = atof(value.c_str());
-	    vec[i] = (float)dvalue;
+	    vec[i] = round((float)dvalue*10000)/10000;
 //	    if(debug_flag){
 	      //cout << dvalue << ", ";
 	   // }

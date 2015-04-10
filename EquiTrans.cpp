@@ -868,8 +868,8 @@ void EquiTrans::toEquirectangular(PersCamera cam, Vec6f tri, Mat &equi){
 
   Mat warpI = Mat::ones(height, width, CV_32F);
   Mat warpJ = Mat::ones(height, width, CV_32F);
-  warpI.mul(-1.0f);
-  warpJ.mul(-1.0f);
+  initMinus(warpI);
+  initMinus(warpJ);
 
   // convert pixels
   int max_i = rect.x + rect.width;

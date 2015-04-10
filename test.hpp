@@ -1881,9 +1881,13 @@ void testTriangleRead(cv::Mat img1, cv::Mat img2, double dist, double pos, strin
 	
 	
 	points1c = feat.readPoints3d(points1_file);
+	cout << "Points in Points1:" << points1c.size()<< endl;
 	points2c = feat.readPoints3d(points2_file);
+	cout << "Points in Points2:" << points2c.size()<< endl;
 	points3D1 = fromPoint3Dtoxyzrgb(points1c);
+	cout << "Points in Points1XYZ:" << points1c.size()<< endl;
 	points3D2 = fromPoint3Dtoxyzrgb(points2c);
+	cout << "Points in Points2XYZ:" << points2c.size()<< endl;
 	//points3D1 = points1c;
 	//points3D2 = points2c;
 	result = delaunayInterpolateCubeFromTriangles(img1,img2, dist, pos, triangles_file,  points3D1,  points3D2);
@@ -1922,12 +1926,12 @@ void testTriangleWrite(cv::Mat img1, cv::Mat img2, double dist, double pos){
 	//drawKeypoints(img1, keypoints1, cube_keypoints, Scalar::all(-1), DrawMatchesFlags::DEFAULT );
 	//keypoints1 = get2DKeypoints(img1);
 	keypoints1 = getSiftKeypoints(img1);
-	drawKeypoints(img1, keypoints1, equi_keypoints, Scalar::all(-1), DrawMatchesFlags::DEFAULT );
-	imshow("Equi keypoints", equi_keypoints);
+	//drawKeypoints(img1, keypoints1, equi_keypoints, Scalar::all(-1), DrawMatchesFlags::DEFAULT );
+	//imshow("Equi keypoints", equi_keypoints);
 	//cout << "testTriangleReadAndWrite: Extracting Keypoints2" << endl;
 	//keypoints2 =  getCubeKeypoints(img2);
 	//keypoints2 = get2DKeypoints(img2);
-	//keypoints2 = getSiftKeypoints(img2);
+	keypoints2 = getSiftKeypoints(img2);
 	
 	
 	////////////////////Testing Keypoints
@@ -1972,8 +1976,8 @@ void testTriangleWrite(cv::Mat img1, cv::Mat img2, double dist, double pos){
 	
 	ofstream logFile;
 	keypoints1 = matched_keypoints[0];
-	drawKeypoints(img1, keypoints1, cube_keypoints, Scalar::all(-1), DrawMatchesFlags::DEFAULT );
-	imshow("Cube face keypoints", cube_keypoints);
+	//drawKeypoints(img1, keypoints1, cube_keypoints, Scalar::all(-1), DrawMatchesFlags::DEFAULT );
+	//imshow("Cube face keypoints", cube_keypoints);
 	keypoints2 = matched_keypoints[1];
 	cout << "testTriangleReadAndWrite Keypoints1 size after matching order : " << keypoints1.size() << endl;
 	cout << "testTriangleReadAndWrite Keypoints2 size after matching order: " << keypoints2.size() << endl;
@@ -1993,11 +1997,11 @@ void testTriangleWrite(cv::Mat img1, cv::Mat img2, double dist, double pos){
 	//Save to file 
 	cout << "testTriangleReadAndWrite Points3D1 size : " << points3D1c.size() << endl;
 	cout << "testTriangleReadAndWrite Points3D2 size : " << points3D2c.size() << endl;
-	//feat.writePoints3d(points3D1c, "Txt_files/OmniImage1.txt");
-	//feat.writePoints3d(points3D2c, "Txt_files/OmniImage2.txt");
+	feat.writePoints3d(points3D1c, "Txt_files/Points3D_test3_1.txt");
+	feat.writePoints3d(points3D2c, "Txt_files/Points3D_test4_1.txt");
 	
 	//Testing the second part
-	//string triangles_file1;
+	string triangles_file1 = "Txt_files/trianglesPoints3D_test3.txt";
 	//testTriangleRead(img1,img2,dist,pos,triangles_file1,points3D1c,points3D2c);
 
 }

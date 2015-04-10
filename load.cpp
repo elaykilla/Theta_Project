@@ -409,12 +409,12 @@ int main(int argc, char** argv)
 	cv::Mat inter = cv::Mat::ones(ori.rows/2, ori.cols/2, ori.type());
 	cv::resize(ori,inter,inter.size(),0,0,INTER_CUBIC);
 	//cv::pyrDown(ori,inter,Size(ori.cols/2,ori.rows/2));
-	//ori = inter;
+	ori = inter;
 	
 	//cv::pyrDown(templ,inter,Size(ori.cols/2,ori.rows/2));
 	cv::Mat inter2 = cv::Mat::ones(ori.rows/2, ori.cols/2, ori.type());
 	cv::resize(templ,inter2,inter.size(),0,0,INTER_CUBIC);
-	//templ = inter2;
+	templ = inter2;
 	
 	//Test of Delaunay Triangles
 	//delaunayTriangleTest(ori, "T1");
@@ -487,7 +487,7 @@ int main(int argc, char** argv)
  	//delaunayInterpolateCubeMakeTriangles(ori,templ,1,0.5,"Txt_files/Points3D_test3_1.txt","Txt_files/Points3D_test4_1.txt");
  	testTriangleWrite(allImages[0],allImages[1],1,0.5);
  	//Testing reading
- 	//testTriangleRead(ori, templ, 1, 0.5, "Txt_files/trianglesList3D1.txt", "Txt_files/Points3D_test3_1.txt","Txt_files/Points3D_test3_1.txt" );
+ 	//testTriangleRead(ori, templ, 1, 0.5, "Txt_files/trianglesPoints3D_test3.txt", "Txt_files/Points3D_test3_1.txt","Txt_files/Points3D_test4_1.txt" );
  	//randomTest();
  	
  	//testTrianglePerspective(templ);
