@@ -122,7 +122,17 @@ vector<Point3d> PointFeature::readPoints3d(string filename ){
   string value;
   vector<Point3d> points3d;
   
+  //Verifying the read function
+  ofstream logFile;
+  ostringstream newFile;
+  newFile << "RW_ReadPoints3d.txt" ;
+  string name = newFile.str();
+  logFile.open(name.c_str());
+  
+  logFile << filename << endl;
   Point3d p;
+  
+  double factor = 100000;
   while(infile.good()){
     string line;
     while(getline(infile, line)){
@@ -133,7 +143,8 @@ vector<Point3d> PointFeature::readPoints3d(string filename ){
 	int i = 0;
 	while(getline(line_stream, value, ',')){
 	    double dvalue = atof(value.c_str());
-	    vec[i] = round((float)dvalue*10000)/10000;
+	    logFile << "read value: " << dvalue << "||" << "Written value: " << round((float)dvalue*factor)/factor << endl;
+	    vec[i] = round((float)dvalue*factor)/factor;
 //	    if(debug_flag){
 	      //cout << dvalue << ", ";
 	   // }
@@ -146,7 +157,7 @@ vector<Point3d> PointFeature::readPoints3d(string filename ){
 	points3d.push_back(p);
       }
   }
-
+	logFile.close();
 	return points3d;	
 }
 
@@ -297,7 +308,7 @@ void PointFeature::printTriangles3d(vector<Vec9f> &tri_list){
 void PointFeature::convTriangles3dToEqui(vector< vector<float> >&tri3d_list, Mat equi_img, vector< vector<Point2f> > *trieq_list){
     int tri_num = tri3d_list.size();
     int tri_size = 9;
-    bool debug_flag = true;
+    bool debug_flag = false;
       
     for(int i = 0;i < tri_num;i++){
       vector<float> vec = tri3d_list[i];
@@ -317,7 +328,7 @@ void PointFeature::convTriangles3dToEqui(vector< vector<float> >&tri3d_list, Mat
 	eq_points[k].x = (float)x;
 	eq_points[k].y = (float)y;
 	if(debug_flag){
-	  cout << "(x, y) = (" << x << ", " << y << "\n";
+	 // cout << "(x, y) = (" << x << ", " << y << "\n";
 	}
       }
 
@@ -354,7 +365,7 @@ vector<Vec6f> PointFeature::convTriangles3dToEqui(vector<Vec9f> tri3d_list, Mat 
 	eq_points[k] = (float)x;
 	eq_points[k+1] = (float)y;
 	if(debug_flag){
-	  cout << "(x, y) = (" << x << ", " << y << "\n";
+	 // cout << "(x, y) = (" << x << ", " << y << "\n";
 	}
       }
 

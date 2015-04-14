@@ -435,7 +435,7 @@ int main(int argc, char** argv)
 	vector<cv::Mat> images;
 	
 	//Test of multiple interpolated images 
-	//multipleInterpolateTest(ori,templ,nb_inter);	
+	//multipleInterpolateTest(ori,templ,2);	
 	
 
 	//Test of reading files from folder and making video
@@ -485,9 +485,9 @@ int main(int argc, char** argv)
  	
  	//Test writting 3D points
  	//delaunayInterpolateCubeMakeTriangles(ori,templ,1,0.5,"Txt_files/Points3D_test3_1.txt","Txt_files/Points3D_test4_1.txt");
- 	testTriangleWrite(allImages[0],allImages[1],1,0.5);
+ 	//testTriangleWrite(ori,templ,1,0.5);
  	//Testing reading
- 	//testTriangleRead(ori, templ, 1, 0.5, "Txt_files/trianglesPoints3D_test3.txt", "Txt_files/Points3D_test3_1.txt","Txt_files/Points3D_test4_1.txt" );
+ 	testTriangleRead(ori, templ, 1, 0.5, "Txt_files/trianglesPoints3D_test3_1.txt", "Txt_files/Points3D_test3_1.txt","Txt_files/Points3D_test4_1.txt" );
  	//randomTest();
  	
  	//testTrianglePerspective(templ);

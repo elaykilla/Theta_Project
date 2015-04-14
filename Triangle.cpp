@@ -150,23 +150,51 @@ PersCamera Triangle::getPersCamParamsTwo(cv::Mat equi_image, cv::Vec6f vertices1
  * radius of the circumcircle
  */
   PersCamera Triangle::getPersCamParamsBarycentric(cv::Mat equi_image, Vec9f vertices){
+  
+  	EquiTrans equi;
   	//First convert the triangle to get spheric coordinates of vertices
-  	cv::Vec6f triangle = triangle2SphericSacht(equi_image.rows, equi_image.cols,1,vertices);
-  	//Get the 3 Vertices as points 
+  	//cv::Vec6f triangle = triangle2SphericSacht(equi_image.rows, equi_image.cols,1,vertices);
+  	cv::Vec6f triangle = convToSphericTriangle(vertices);
+  	//Get the 3 Vertices as points in 3D then convert to angular position
+  	//Point3f p3d1,p3d2,p3d3;
+  	
+  	
   	Point2f p1,p2,p3;
   	
+
+  	
   	//First vertice
-  	p1.x = triangle[0];
-  	p1.y = triangle[1];
+  	//p3d1.x = triangle[0];
+  	//p3d1.y = triangle[1];
+  	//p3d1.z = triangle[2];
   	
   	//Second vertice
-  	p2.x = triangle[2];
-  	p2.y = triangle[3];
+  	//p3d2.x = triangle[3];
+  	//p3d2.y = triangle[4];
+  	//p3d2.z = triangle[5];
   	
   	//Theturn cam;ird vertice
+  	//p3d3.x = triangle[6];
+  	//p3d3.y = triangle[7];
+  	//p3d3.z = triangle[8];
+  	
+  	//double x=0.0,y=0.0;
+  	//equi.convSpherePointToAngles(p3d1, &x,&y);
+  	
+  	///equi.convSpherePointToAngles(p3d2, &x,&y);
+  	//p2.x = x;
+  	//p2.y = y;
+  	
+  	//equi.convSpherePointToAngles(p3d3, &x,&y);
+  	//p3.x = x;
+  	//p3.y = y;
+  	
+  	p1.x = triangle[0];
+  	p1.y = triangle[1];
+  	p2.x = triangle[2];
+  	p2.y = triangle[3];
   	p3.x = triangle[4];
   	p3.y = triangle[5];
-  	
   	
   	// Horizontal
   	// Get the maximum angular difference between the points in terms of theta (horizontal)
@@ -224,9 +252,15 @@ PersCamera Triangle::getPersCamParamsTwo(cv::Mat equi_image, cv::Vec6f vertices1
 * By using the associative property of the barycenter, we can get the barycenter of 2 triangles as the barrycenter of the barycenters of each triangle;
 */
   PersCamera Triangle::getPersCamParamsBarycentricTwo(cv::Mat equi_image, Vec9f triangle3D1, Vec9f triangle3D2){
+  
+  EquiTrans equi;
   	//First convert the triangle to get spheric coordinates of vertices
-  	cv::Vec6f triangle1 = triangle2SphericSacht(equi_image.rows, equi_image.cols,1,triangle3D1);
-  	cv::Vec6f triangle2 = triangle2SphericSacht(equi_image.rows, equi_image.cols,1,triangle3D2);
+  	
+  	//cv::Vec6f triangle1 = triangle2SphericSacht(equi_image.rows, equi_image.cols,1,triangle3D1);
+  	cv::Vec6f triangle1 = convToSphericTriangle(triangle3D1);
+  	
+  	//cv::Vec6f triangle2 = triangle2SphericSacht(equi_image.rows, equi_image.cols,1,triangle3D2);
+  	cv::Vec6f triangle2 = convToSphericTriangle(triangle3D2);
   	//Get the 3 Vertices as points 
   	Point2f p1,p2,p3,q1,q2,q3;
   	//Centers for each triangle
@@ -366,6 +400,49 @@ Vec6f Triangle::convToPersTriangle(Mat equi_image, PersCamera cam, Vec6f vertice
 
   return p_vertices;
 }
+
+  /**
+  * convert a triangle from coordinates given in 3D cartesian to spheric angular coordinates
+  */
+  cv::Vec6f Triangle::convToSphericTriangle(Vec9f triangle){
+  	EquiTrans equi;
+  
+  	//Get the 3 points that make the triangle
+  	Point3f p3d1,p3d2,p3d3;
+  	
+  	//Resulting triangle
+  	cv::Vec6f striangle;
+  	
+  	//First vertice
+  	p3d1.x = triangle[0];
+  	p3d1.y = triangle[1];
+  	p3d1.z = triangle[2];
+  	
+  	//Second vertice
+  	p3d2.x = triangle[3];
+  	p3d2.y = triangle[4];
+  	p3d2.z = triangle[5];
+  	
+  	//Theturn cam;ird vertice
+  	p3d3.x = triangle[6];
+  	p3d3.y = triangle[7];
+  	p3d3.z = triangle[8];
+  	
+  	double x=0.0,y=0.0;
+  	equi.convSpherePointToAngles(p3d1, &x,&y);
+  	striangle[0] = x;
+  	striangle[1] = y;
+  	
+  	equi.convSpherePointToAngles(p3d2, &x,&y);
+  	striangle[2] = x;
+  	striangle[3] = y;
+  	
+  	equi.convSpherePointToAngles(p3d3, &x,&y);
+  	striangle[4] = x;
+  	striangle[5] = y;
+  	
+  	return striangle;
+  }
 
  /** 
   * This function returns the intermediate camera parameters given 

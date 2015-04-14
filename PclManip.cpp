@@ -15,6 +15,7 @@
 int findPointInVector(PointXYZRGB p, vector<PointXYZRGB> points){
 
 	int pos = 0;
+	//double factor = 1000000;
 	while(pos<points.size() && 
 	((points[pos].x != p.x) ||(points[pos].y != p.y) || (points[pos].z != p.z))){
 		pos++;
@@ -633,23 +634,41 @@ void makeCorrespondingDelaunayTriangles3D(vector<PointXYZRGB> points3D1, vector<
 	
 	vector<Vec9f> newtriangles3D1,newtriangles3D2;
 	Vec9f t,t2;
-	//logFile.open("TrianglePoints.txt");
+	
+	ofstream logFile;
+	logFile.open("Txt_files/TrianglePointsNotFound.txt");
 	PointXYZRGB p1,p2,p3,pp1,pp2,pp3;
+	
+	//Define factor for rounding
+	double factor = 100000;
 	for(int i=0;i<triangles3D1.size();i++){
 		t = triangles3D1[i];
-		cout << "Triangle " << i << ": " << t << endl;
-		p1.x = round(10000*(t[0]))/10000.;
-		p1.y = round(10000*(t[1]))/10000.;
-		p1.z = round(10000*(t[2]))/10000.;
+		//cout << "Triangle " << i << ": " << t << endl;
+		p1.x = round(factor*(t[0]))/factor;
+		p1.y = round(factor*(t[1]))/factor;
+		p1.z = round(factor*(t[2]))/factor;
 		
 		
-		p2.x = round(10000*(t[3]))/10000.;
-		p2.y = round(10000*(t[4]))/10000.;
-		p2.z = round(10000*(t[5]))/10000.;
+		p2.x = round(factor*(t[3]))/factor;
+		p2.y = round(factor*(t[4]))/factor;
+		p2.z = round(factor*(t[5]))/factor;
 		
-		p3.x = round(10000*(t[6]))/10000.;
-		p3.y = round(10000*(t[7]))/10000.;
-		p3.z = round(10000*(t[8]))/10000.;
+		p3.x = round(factor*(t[6]))/factor;
+		p3.y = round(factor*(t[7]))/factor;
+		p3.z = round(factor*(t[8]))/factor;
+		
+		//p1.x = t[0];
+		//p1.y = t[1];
+		//p1.z = t[2];
+		
+		
+	//	p2.x = t[3];
+	//	p2.y = t[4];
+	//	p2.z = t[5];
+	//	
+	//	p3.x = t[6];
+	//	p3.y = t[7];
+	//	p3.z = t[8];
 
 		//logFile << p1 << "||" << p2 << "||" << p3 << endl;
 		//For each point in triangle 1 we search for the corresponding point in triangle 2
@@ -657,10 +676,10 @@ void makeCorrespondingDelaunayTriangles3D(vector<PointXYZRGB> points3D1, vector<
 		int ptPos2 = findPointInVector(p2, points3D1) ; 		
 		int ptPos3 = findPointInVector(p3, points3D1) ; 
 		
-		cout << "Triangle Points" << i << p1 << ";" << p2 << ";" << p3 << endl;
+		//cout << "Triangle Points" << i << p1 << ";" << p2 << ";" << p3 << endl;
 
 
-		if(ptPos1 < points3D1.size() && ptPos2 < points3D1.size() && ptPos3 < points3D1.size())	{			cout << "Triangle found" << endl;
+		if(ptPos1 < points3D1.size() && ptPos2 < points3D1.size() && ptPos3 < points3D1.size())	{			//cout << "Triangle found" << endl;
 			//Construct the second triangle and try to locate it in the trianglesList2
 			//We find the corresponding point in the second triangles list
 			pp1 = points3D2[ptPos1];
@@ -680,7 +699,13 @@ void makeCorrespondingDelaunayTriangles3D(vector<PointXYZRGB> points3D1, vector<
 			newtriangles3D1.push_back(t);
 			newtriangles3D2.push_back(t2);
 		}
+		else{
+			logFile << p1 << "," << p2 << "," << p3 << endl;
+		
+		}
 	}
+	
+	logFile << "Total Triangles: " << triangles3D1.size() << "||" << "Total triangles not found: " << triangles3D1.size()-newtriangles3D1.size() << endl;
 
 	//logFile.close();
 	triangles3D1 = newtriangles3D1;

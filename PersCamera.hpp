@@ -14,6 +14,8 @@ public:
   double fov_v;  // vertical fiedl of view angle
   double focal_length; // focal length in pixels 
   ViewDirection view_dir; // viewing direction represented by pan/tilt angles.
+  Mat rotPan; 
+  Mat rotTilt;
 
   PersCamera();
   void setCamera(Mat image, double h_fov, double v_fov, ViewDirection vd);

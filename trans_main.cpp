@@ -70,8 +70,8 @@ void get_pers(int argc, char** argv, Mat image1){
  */
 void verify_by_cube(Mat equi_img){
   // get cube perspective cameras.
-  double fov_h = M_PI/2.0; // 90.0 degrees
-  double fov_v = M_PI/2.0;
+  double fov_h = 91.0/180.0 *M_PI; // 90.0 degrees
+  double fov_v = 91.0/180.0 * M_PI;
   ViewDirection vd;
   double pan_deg = 0.0, tilt_deg = 0.0;
   PersCamera cam[6];
@@ -102,21 +102,39 @@ void verify_by_cube(Mat equi_img){
   pers_img[i] = trans.toPerspective(equi_img, cam[i]);
 
   // Show faces
-  for(int i = 0;i < 6;i++){
-    imshow("Cube face", cam[i].image);
-    waitKey(0);
+  bool show_faces = false;
+
+  if(show_faces){
+    for(int i = 0;i < 6;i++){
+      imshow("Cube face", cam[i].image);
+      waitKey(0);
+    }
   }
 
   // Coverting back to equirectangular image
   Mat equi_back = Mat::zeros(equi_img.rows, equi_img.cols, equi_img.type());
-  imshow("Initial", equi_back);
+  // imshow("Initial", equi_back);
+
 
 
   for(int i = 0;i < 6;i++){
     trans.toEquirectangular(cam[i], equi_back);
-    imshow("Equirectangular", equi_back);
-    waitKey(0);
   }
+
+    imshow("Original", equi_img);
+    imshow("Equirectangular", equi_back);
+   
+    
+    //Compute difference
+    Mat ori_gray, back_gray, diff;
+    cvtColor(equi_img,ori_gray,CV_BGR2GRAY);
+    cvtColor(equi_back,back_gray,CV_BGR2GRAY);
+    absdiff(ori_gray,back_gray,diff);
+    imshow("Difference", diff);
+    
+    //imwrite("../images/equi_back.png", equi_back);
+    
+     waitKey(0);
 }
 
 

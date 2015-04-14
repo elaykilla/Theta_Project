@@ -183,6 +183,8 @@ void EquiTrans::makeCubeFaces(Mat src, Mat faces[6]){
   faces[i++] = face;
 }
 
+
+
 void EquiTrans::makeCubeFaces2(Mat src, Mat faces[6], PersCamera cams[6]){
   double cube_fov = 90.0;
   double pan_deg = 0.0, tilt_deg = 0.0;
@@ -509,7 +511,7 @@ Point2f EquiTrans::toPersPoint(Mat equi_image, PersCamera cam, Point2f equi_poin
     }
 
     if(cam.view_dir.tilt != 0.0){
-      r_point = rotateTilt(-cam.view_dir.tilt, r_point);
+      r_point = rotateTilt(cam.rotTilt, r_point);
     }
 
     double scale = cam.focal_length / r_point.x;
@@ -630,10 +632,10 @@ Rect EquiTrans::getEquiRegionFull(PersCamera pers, Mat equi){
     }
   }
 
-  rect.x = min_x;
-  rect.y = min_y;
-  rect.width = max_x - min_x + 1.0;
-  rect.height = max_y - min_y + 1.0;
+  rect.x = (int)floor((double)min_x);
+  rect.y = (int)floor((double)min_y);
+  rect.width = (int)(ceil((double)max_x) - floor((double)min_x) + 1.0);
+  rect.height = (int)(ceil((double)max_y) - floor((double)min_y) + 1.0);
 
   return rect;
 }
@@ -818,11 +820,11 @@ void EquiTrans::toEquirectangular(PersCamera cam, Mat &equi){
   int max_i = rect.x + rect.width;
   int max_j = rect.y + rect.height;
 
-
   double max_x = (double)cam.image.cols - 1.0;
   double max_y = (double)cam.image.rows - 1.0;
-  for(int j= rect.y;j < rect.y + rect.height;j++){
-    for(int i = rect.x;i < rect.x + rect.width;i++){
+
+  for(int j= rect.y;j < max_j;j++){
+    for(int i = rect.x;i < max_i;i++){
       Point2f e_point;
       e_point.x = (float)i;
       e_point.y = (float)j;
@@ -831,11 +833,10 @@ void EquiTrans::toEquirectangular(PersCamera cam, Mat &equi){
       double x = p_point.x;
       double y = p_point.y;
       if(x < 0.0 || y < 0.0 || x > max_x || y > max_y){
-	continue;
-      }else{
-	warpI.at<float>(j, i) =  x;
-	warpJ.at<float>(j, i) =  y;
+	  continue;
       }
+      warpI.at<float>(j, i) =  x;
+      warpJ.at<float>(j, i) =  y;
     }
   }
   
@@ -967,6 +968,34 @@ Point3d EquiTrans::rotateTilt(double angle, Point3d point){
   r_p.x = dst.at<double>(0,0);
   r_p.y = dst.at<double>(1,0);
   r_p.z = dst.at<double>(2,0);
+
+  return r_p;
+}
+
+/*
+ * 3D rotation around the tilting axis. 
+ *    Y axis in Sacht's notation
+ *   
+ *    angle: rotational angle in radian
+ *    point: 3D point
+ */
+Point3d EquiTrans::rotateTilt(Mat RY, Point3d point){
+  Mat vec = Mat::zeros(3, 1, CV_64F);
+
+  vec.at<double>(0, 0) = point.x;
+  vec.at<double>(1, 0) = point.y;
+  vec.at<double>(2, 0) = point.z;
+
+  Mat dst = RY * vec;
+
+  Point3d r_p;
+  r_p.x = dst.at<double>(0,0);
+  r_p.y = dst.at<double>(1,0);
+  r_p.z = dst.at<double>(2,0);
+
+  vec.release();
+  dst.release();
+
 
   return r_p;
 }

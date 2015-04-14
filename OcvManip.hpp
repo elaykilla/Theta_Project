@@ -32,6 +32,11 @@ void showMat(Mat mat);
 
 
 /**
+* This function draws a triangle on an image
+*/
+cv::Mat drawTriangleOnImage(Mat image, Vec6f triangle);
+
+/**
 * This function takes a list of images and makes a video
 */
 void imageListToVideo(vector<cv::Mat> images, string fileName) ; 

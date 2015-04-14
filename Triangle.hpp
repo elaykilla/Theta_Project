@@ -93,6 +93,11 @@ public:
  */
   cv::Vec6f convToPersTriangle(cv::Mat equi_image, PersCamera pers_cam, cv::Vec6f vertices);
   
+  /**
+  * convert a triangle from coordinates given in 3D cartesian to spheric angular coordinates
+  */
+  cv::Vec6f convToSphericTriangle( Vec9f triangle);
+  
   /*
  * convert 6 element floating type to a set of points.
  */

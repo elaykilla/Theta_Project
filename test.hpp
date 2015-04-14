@@ -1632,13 +1632,14 @@ void multipleInterpolateTest(Mat ori, Mat templ, int nb_inter){
 	cv::Mat result;
 	for(int i=0;i<nb_inter;i++){
 		ostringstream nameWindow;
-		nameWindow << "temp/Interpolated Image_"<< i ;
+		//nameWindow << "temp/Interpolated Image_"<< i ;
+		nameWindow << "InterpolatedOmni";
 		cout << nameWindow.str() << endl;
 		cv::Mat result = delaunayInterpolate(ori,templ,1,i/(double)nb_inter);
 		//cv::Mat result = delaunayInterpolateSphere(ori,templ,1,i/(double)nb_inter);
 		//cv::Mat result = interpolated[i];
 		//cv::namedWindow(nameWindow.str(), 0);
-		//cv::imshow(nameWindow.str(), result);
+		cv::imshow(nameWindow.str(), result);
 		nameWindow << ".jpg" ;
 		cv::imwrite(nameWindow.str(),result);	
 		//images[i] = result;
@@ -1880,10 +1881,11 @@ void testTriangleRead(cv::Mat img1, cv::Mat img2, double dist, double pos, strin
 	vector<PointXYZRGB> points3D1, points3D2;
 	
 	
-	points1c = feat.readPoints3d(points1_file);
-	cout << "Points in Points1:" << points1c.size()<< endl;
+	
 	points2c = feat.readPoints3d(points2_file);
 	cout << "Points in Points2:" << points2c.size()<< endl;
+	points1c = feat.readPoints3d(points1_file);
+	cout << "Points in Points1:" << points1c.size()<< endl;
 	points3D1 = fromPoint3Dtoxyzrgb(points1c);
 	cout << "Points in Points1XYZ:" << points1c.size()<< endl;
 	points3D2 = fromPoint3Dtoxyzrgb(points2c);
@@ -1892,6 +1894,7 @@ void testTriangleRead(cv::Mat img1, cv::Mat img2, double dist, double pos, strin
 	//points3D2 = points2c;
 	result = delaunayInterpolateCubeFromTriangles(img1,img2, dist, pos, triangles_file,  points3D1,  points3D2);
 	
+	imwrite("InterpolatedPerspConv.jpg", result);
 	namedWindow("Result Equi",0);
 	imshow("Result Equi",result);
 	 
@@ -1970,8 +1973,9 @@ void testTriangleWrite(cv::Mat img1, cv::Mat img2, double dist, double pos){
 
 	
 	//Put points in matched order such that keypoints1[i] ~ keypoints2[i]
-	matched_keypoints = getMatchedCubeKeypoints(img1,img2);
-	
+	//matched_keypoints = getMatchedCubeKeypoints(img1,img2);
+	getKeypointsAndMatches(img1,img2,keypoints1,keypoints2,matches);
+	matched_keypoints = getMatchedKeypoints(keypoints1,keypoints2,matches);
 	//Matched Keypoints on OmniDirectional Images
 	
 	ofstream logFile;
