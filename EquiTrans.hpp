@@ -6,7 +6,7 @@
 #include "WarpImage.hpp"
 #include "PersCamera.hpp"
 
-using namespace cv;
+//using namespace cv;
 
 /*
  * Transform with Equirectangular form
@@ -31,9 +31,6 @@ private:
   
   void setCamera(int, int, double);
   
- 
-  
-  
   /*
  * Convert angles for a direction to images coordinates in equirectangular format.
  *    Coodinate system for angles:
@@ -45,12 +42,13 @@ private:
  *      y: vertical pixel coordinate
  */
   void convAnglesToEquiCoord(double pan, double tilt, Mat equi_img, double *x, double *y);
-  
+
   /*
- * Convert a point in equirectangular image coordinates to pan/tilt angles in radian
- *   pan/titl angles is in the coorinate system whose origin at the center.
- */
-  void convEquiToAngles(Mat iamge, Point2f point, double &pan, double &tilt);
+   * Convert a point in equirectangular image coordinates to pan/tilt angles in radian
+   *   pan/titl angles is in the coorinate system whose origin at the center.
+   */
+  void convEquiToAngles(Mat equi_image, Point2f equi_point, double &pan, double &tilt);
+  
   
   Rect getEquiRegionPoints(PersCamera cam, Mat image);
   
@@ -69,11 +67,24 @@ public:
   EquiTrans();
   EquiTrans(double);
 
-/*
- * make 6 cube face images from an image in equirectangular format.
- *    Starting from panning of 0.0 degree: 
- *    front, right, back, left, top-front, and bottom-front
- */
+ /*
+  * Convert a 3d point on the unit sphere to pan and tilt angles
+  *   Coordinate system is the same with  Sacht's MS thesis.
+  *
+  *  point: a 3D point on the unit sphere
+  *  pan, tilt: point angle from the center coordinate in radian.
+  * 
+  */
+  void convSpherePointToAngles(Point3f point, double *pan, double *tilt);
+
+  /* Convert a point in 3D unit sphere to that on the perspective camera. */
+  Point2d convSpherePointtoPersCoord(PersCamera cam, Point3d point);
+
+ /*
+  * make 6 cube face images from an image in equirectangular format.
+  *    Starting from panning of 0.0 degree: 
+  *    front, right, back, left, top-front, and bottom-front
+  */
   void makeCubeFaces(Mat, Mat[6]);
   
   /**
@@ -106,7 +117,7 @@ public:
  *  pan, tilt: point angle from the center coordinate in radian.
  * 
  */
-  void convSpherePointToAngles(Point3f point, double *pan, double *tilt);
+  void convSpherePointToAngles(Point3f point, double &pan, double &tilt);
   
 
   Mat toPerspective(Mat, double, double);

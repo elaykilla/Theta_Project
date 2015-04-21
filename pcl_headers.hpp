@@ -2,7 +2,13 @@
 
 #ifndef PCL_HEADERS_H
 #define PCL_HEADERS_H
+
+
 #include <iostream>
+
+//#include "all_indices.h"
+//#include "nn_index.h"
+
 #include <pcl/point_cloud.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/io/ply_io.h>
@@ -14,7 +20,6 @@
 #include <pcl/impl/point_types.hpp>
 #include <pcl/ModelCoefficients.h>
 #include <pcl/visualization/keyboard_event.h>
-
 #include <pcl/kdtree/kdtree_flann.h>
 #include <pcl/features/normal_3d.h>
 #include <pcl/surface/gp3.h>

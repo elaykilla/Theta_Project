@@ -6,7 +6,7 @@
 #define _VIEW_DIRECTION_HPP
 #include "cv_headers.hpp"
 
-using namespace cv;
+//using namespace cv;
 
 class ViewDirection {
 

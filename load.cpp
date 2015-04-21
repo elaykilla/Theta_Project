@@ -39,6 +39,24 @@ bool update;
 //	}
 //}
 
+void showInstructions(){
+	cout << "//////////////////////Load Usage //////////////////////////////////" << endl;
+	cout << "// Load must be called with a first argument int for each test:" << endl;
+	cout << "// load 0: Use with caution, this executes the code in main without regards to the arguments. " << endl;
+	cout << "// Usage: load 0" << endl;
+	cout << "// load 1: Reads 2 image files, computes keypoints and matches, writes corresponding points (3d format) into outfiles 1 and 2" << endl;
+	cout << "// Usage: load 1 image1 image2 outputfile1 outputfile2 " << endl;
+	cout << "// load 2: Takes 2 images, 3d txt files for each image and generated 3d triangles for first image.  " << endl;
+	cout << "// Usage: load 2 image1 image2 input3dtriangles inputpoints1 inputpoints2" << endl;
+	cout << "// load 3: Tests reconsctructing an equirectangular images from input triangles" << endl;
+	cout << "// Usage: load 3 image input3dtriangles" << endl;
+	cout << "// load 4: " << endl;
+	cout << "// load 5: " << endl;
+	cout << "// load 6: " << endl;
+	cout << "//////////////////////Load Usage //////////////////////////////////" << endl;
+
+}
+
 void setupClouds(string name, vector<cv::Mat> &images, vector<PointCloud<PointXYZRGB>::Ptr> &allPtClouds){
 	//cout << "k: " << k << endl;
 	cv::Mat ori;
@@ -87,22 +105,62 @@ void keyboardEventOccurred (const pcl::visualization::KeyboardEvent &event, void
 /***************************************************  Main  ***********************************************/
 int main(int argc, char** argv)
 {
-	//InitLog("load");
-	//BOOST_LOG_TRIVIAL(trace) << "Main Function Has begun" <<endl;
 
-	//clock_t t1;
-	//clock_t t;
-	//t = clock();
-	//Verify function call
-	string name = argv[1];
-	if(argc<2){
+	
+	if(argc<=1){
 		//cout << "Input image was not loaded, please verify: " << argv[1] << endl;
-		cout << "Application usage is not correc, please refer to usage" << endl;
-		cout << "path: is the folder for images, imagename: is the name of the images without the number" << endl;
-		cout << "Exemple for images called I1,I2,I3 etc.. in folder IMG: load IMG/I" << endl;
-		cout << "Usage: load path_to_images/imagename" << endl;
+		showInstructions();
 		return -1;
 	}
+	
+	int c = atoi(argv[1]);
+	cv::Mat templ, ori;
+	string img1_file, img2_file , inpoints1, inpoints2,outpoints1,outpoints2,input3dtriangles;
+	
+	switch ( c ) {
+	case 0: 
+		break;
+	case 1: {
+		if(argc<5){
+			cout << "Application usage is not correct, please refer to usage" << endl;
+			showInstructions();
+			return -1;
+		}
+ 		
+ 		
+ 		img1_file = argv[2];
+ 		img2_file = argv[3];
+ 		outpoints1 = argv[4];
+ 		outpoints2 = argv[5];
+ 		//Read image files
+ 		ori = imread(img1_file,1);
+ 		templ = imread(img2_file,1);
+ 		testTriangleWrite(ori,templ,1,0.5,outpoints1,outpoints2);
+ 		
+ 		}
+	case 2:
+	{
+		img1_file = argv[2];
+ 		img2_file = argv[3];
+ 		input3dtriangles = argv[4];
+ 		inpoints1 = argv[5];
+ 		inpoints2 = argv[6];
+ 		
+ 		//Test reading and interpolating image
+ 		testTriangleRead(ori, templ, 1, 0.5, input3dtriangles, inpoints1,inpoints2 );
+	
+	}
+	
+	case 3:
+	{
+	
+	}
+ 	 
+	default:
+	  showInstructions();
+ 	  return -1;
+	}
+	
 
 	//setupImageAndClouds(name,)
 	/********************************* Define parameters ***************************************/
@@ -156,7 +214,7 @@ int main(int argc, char** argv)
 	vector<PointCloud<PointXYZRGB>::Ptr> allVtClouds(nb_images);
 
 	// cv::Mat for original and spherical image
-	cv::Mat ori,top,bottom;
+	//cv::Mat ori,top,bottom;
 
 	//Number of lines to draw
 	int nbLines = 1000000;
@@ -170,28 +228,28 @@ int main(int argc, char** argv)
 
 
 	//Load first image to get size and data
-	int im_num = 0;
-	loadImagei(name,im_num+1,ori);
+	//int im_num = 0;
+	//loadImagei(name,im_num+1,ori);
 
 	//Verify image has content
-	if(!ori.data){
-		cout << "Input image was not loaded, please verify: " << argv[1] << im_num + 1 <<".jpg" << endl;
-		return -1;
-	}
+	//if(!ori.data){
+	//	cout << "Input image was not loaded, please verify: " << argv[1] << im_num + 1 <<".jpg" << endl;
+	//	return -1;
+	//}
 
 
-	allImages[im_num] = ori;
-	sphereCenter(alpha, im_num, dist_c, xc, zc);
+	//allImages[im_num] = ori;
+	//sphereCenter(alpha, im_num, dist_c, xc, zc);
 	//cout << "xc: "<< xc << endl;
-	cloud = EquiToSphere(ori, radius,xc,yc,zc);
+	//cloud = EquiToSphere(ori, radius,xc,yc,zc);
 
 
-	allPtClouds[im_num] = cloud;
-	im_num++;
+	//allPtClouds[im_num] = cloud;
+	//im_num++;
 	//recover cv::Mat props
-	cv::Size s = ori.size();
-	int rows = s.height;
-	int cols = s.width;
+	//cv::Size s = ori.size();
+	//int rows = s.height;
+	//int cols = s.width;
 	//cvResizeWindow("Original",rows,cols);
 	//cvNamedWindow("Keypoints 2D",0);
 	//imshow("Original",ori);
@@ -199,7 +257,7 @@ int main(int argc, char** argv)
 	//cvNamedWindow("SightMat",0);
 
 	//For testing
-	cv::Mat sph = cv::Mat::zeros(rows, cols, CV_8UC3);
+	//cv::Mat sph = cv::Mat::zeros(rows, cols, CV_8UC3);
 	//end for testing
 
 	//loadImagei(name,3,ori2);
@@ -209,41 +267,41 @@ int main(int argc, char** argv)
 	/**************************************************** End of Initiate ************************************************/	
 
 	//For testing in order not to load all images every time
-	int tempCount =atoi(argv[2]);
-	cout << "Images to be loaded: " << tempCount<< endl;
+	//int tempCount =atoi(argv[2]);
+	//cout << "Images to be loaded: " << tempCount<< endl;
 
-	for(int k=im_num; k<tempCount; k++){
+	//for(int k=im_num; k<tempCount; k++){
 		//cout << "k: " << k << endl;
-		loadImagei(name,k+1,ori);
-		allImages[k] = ori;
+		//loadImagei(name,k+1,ori);
+		//allImages[k] = ori;
 		//cout << "width: " << allImages[k].cols << endl;
 		//cout << "Height: " << allImages[k].rows << endl;
 		//Verify image has content
-		if(!ori.data){
-			cout << "Input image was not loaded, please verify: " << argv[1] << k+1 <<".jpg" << endl;
-			return -1;
-		}
+		//if(!ori.data){
+		//	cout << "Input image was not loaded, please verify: " << argv[1] << k+1 <<".jpg" << endl;
+		//	return -1;
+		//}
 
 		//Get the center of the Kth sphere in World Coordinates
-		sphereCenter(alpha, k, dist_c, xc, zc);
+		//sphereCenter(alpha, k, dist_c, xc, zc);
 
 		//Create Sphere from Equirectangular image and store in Point Cloud
-		yc=0;
-		cloud = EquiToSphere(ori, radius,xc,yc,zc);
-		allPtClouds[k] = cloud;	
+		//yc=0;
+		//cloud = EquiToSphere(ori, radius,xc,yc,zc);
+		//allPtClouds[k] = cloud;	
 
 		//Save the PCD files
-		ostringstream file;
-		file << "./theta_pcds/" ;
-		cloud->width = cols;
-		cloud->height = rows;
-		cloud->points.resize(cols*rows);
-		cloud->is_dense = true;
-		file << name <<k << ".pcd"; 
-		String s = file.str();
+		//ostringstream file;
+		//file << "./theta_pcds/" ;
+		//cloud->width = cols;
+		//cloud->height = rows;
+		//cloud->points.resize(cols*rows);
+		//cloud->is_dense = true;
+		//file << name <<k << ".pcd"; 
+		//String s = file.str();
 		//io::savePCDFileASCII(s,*cloud);	
 
-	}//End of K loop of image
+	//}//End of K loop of image
 
 	//If Top and Bottom given
 	//	string tb = argv[3];
@@ -268,8 +326,8 @@ int main(int argc, char** argv)
 
 	/******************************* Test Zone ******************************************************/
 	//=====================Testing space variables==================================//
-	cloud = allPtClouds[0];
-	ori = allImages[0];
+	//cloud = allPtClouds[0];
+	//ori = allImages[0];
 
 	int nbPoints = 10;
 	vector<PointXYZRGB> points;
@@ -302,30 +360,11 @@ int main(int argc, char** argv)
 
 
 	
-	//Image rotation test multiple
-	double ang = 20;
-	//for(int i=10;i<13;i++){
-	//	ostringstream filenameb, filenamea;
-		//filenameb << "ToRotate/Bottom (" << i << ").jpg" ; 
-		//filenamea << "Rotated/Bottom (" << i << ").jpg" ;
-	
-		//ori = cv::imread(filenameb.str(),1);
-		//ori = allImages[2];
-	
-		//cv::Mat templ = cv::imread("ToRotate/Bottom (14).JPG",1);
-	
-		//cv::imwrite(filenamea.str(), rotateImagey(ori,ang));
-		//ang += 20;
-	
-	//}
-	// Project to Sphere test 
-	//	projectToSphereTest(nbPoints,step,sight);
-
 
 
 
 	//Test of get plane function and project to Sphere with this plane
-	//	getPlaneAndProjectToSphere(PointXYZRGB u, PointXYZRGB v, PointCloud<PointXYZRGB>::Ptr sight)
+	//getPlaneAndProjectToSphere(PointXYZRGB u, PointXYZRGB v, PointCloud<PointXYZRGB>::Ptr sight)
 
 
 
@@ -334,7 +373,7 @@ int main(int argc, char** argv)
 
 
 
-	/////////////////////////////// end Test of viewing angle origin //////////////////////////////////
+/////////////////////////////// end Test of viewing angle origin //////////////////////////////////
 	//viewingAngleOriginTest( u,  v, radius,  rows, cols,cloud, sightFlat);
 	//int trows = round(2048*70/360);
 	//int tcols = round(1024*57/180);
@@ -342,7 +381,7 @@ int main(int argc, char** argv)
 	//cv::imshow("SightMat" , sph);
 //	cv::waitKey(0);
 	//Viewing angles
-	///////////////////////////////////////  Test point on ray ////////////////////////////////////////
+///////////////////////////////////////  Test point on ray ////////////////////////////////////////
 	//	iPoint.x = 0;
 	//	iPoint.y = 0;
 	//	iPoint.z = 0;
@@ -374,18 +413,18 @@ int main(int argc, char** argv)
 	//	}
 	//	
 	//	//for Top and Bottom
-	//////////////////////////////////////  end Test point on ray ////////////////////////////////////
+//////////////////////////////////////  end Test point on ray ////////////////////////////////////
 
 
 	//Test of 2D keypoints and Matches
 	//KeyPointAndMatchesTest(allImages[0], allImages[1]);
 	
 	//Test of image interpolation
-	ori = cv::imread("test3.JPG",1);
-	//ori = allImages[0];
+	ori = cv::imread("test3_1.JPG",1);
+
 	
-	cv::Mat templ = cv::imread("test4.JPG",1);
-	//cv::Mat templ = allImages[1];
+	templ = cv::imread("test4_1.JPG",1);
+
 //	interpolate2DTest(allImages[0], allImages[1], 8, 4);
 	
 	//Test of sphereInterpolate
@@ -406,15 +445,16 @@ int main(int argc, char** argv)
 //	cv::imshow("edges2", result2);
 	
 	
-	cv::Mat inter = cv::Mat::ones(ori.rows/2, ori.cols/2, ori.type());
-	cv::resize(ori,inter,inter.size(),0,0,INTER_CUBIC);
+	//cv::Mat inter = cv::Mat::ones(ori.rows/2, ori.cols/2, ori.type());
+	//cv::resize(ori,inter,inter.size(),0,0,INTER_CUBIC);
 	//cv::pyrDown(ori,inter,Size(ori.cols/2,ori.rows/2));
-	ori = inter;
+	//ori = inter;
 	
 	//cv::pyrDown(templ,inter,Size(ori.cols/2,ori.rows/2));
-	cv::Mat inter2 = cv::Mat::ones(ori.rows/2, ori.cols/2, ori.type());
-	cv::resize(templ,inter2,inter.size(),0,0,INTER_CUBIC);
-	templ = inter2;
+	//cv::Mat inter2 = cv::Mat::ones(ori.rows/2, ori.cols/2, ori.type());
+	//cv::resize(templ,inter2,inter.size(),0,0,INTER_CUBIC);
+	//templ = inter2;
+
 	
 	//Test of Delaunay Triangles
 	//delaunayTriangleTest(ori, "T1");
@@ -485,21 +525,25 @@ int main(int argc, char** argv)
  	
  	//Test writting 3D points
  	//delaunayInterpolateCubeMakeTriangles(ori,templ,1,0.5,"Txt_files/Points3D_test3_1.txt","Txt_files/Points3D_test4_1.txt");
- 	//testTriangleWrite(ori,templ,1,0.5);
+ 	//testTriangleWrite(ori,templ,1,0.5,"Txt_files/Points3D_test3.txt","Txt_files/Points3D_test4.txt");
  	//Testing reading
- 	testTriangleRead(ori, templ, 1, 0.5, "Txt_files/trianglesPoints3D_test3_1.txt", "Txt_files/Points3D_test3_1.txt","Txt_files/Points3D_test4_1.txt" );
- 	//randomTest();
+ 	testTriangleRead(ori, templ, 1, 0.5, "Txt_files/trianglesPoints3D_test3_1.txt", "Txt_files/Points3D_test3_1.txt","Txt_files/Points3D_test4_1.txt");
+ 	
  	
  	//testTrianglePerspective(templ);
  	//cloud = EquiToSphere(ori,1,0,0,0);
  	//testTriangleContent3D(ori, cloud,sightFlat);
  	
  	//testSingleTrianglePerspective(ori,templ,1,0.5);
+ 	//testMultipleTrianglePerspective(ori,"Txt_files/trianglesPoints3D_test3_1.txt");
 ///////////////////////End of 3D keypoints test ////////////////////////////
 
 	
 	//Test of 3D affine
+	//ThreeDAffineTransformTest();
 	
+	
+	//randomTest();
 	/******************************************* End of Test Zone ***************************************************************/
 
 

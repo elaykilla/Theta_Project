@@ -132,6 +132,19 @@ bool inTriangle3D(PointXYZRGB p, Vec9f triangle3D);
 bool inTriangle(cv::Point2f p, cv::Vec6f triangle);
 
 /**
+* Given a point p and an affine transform tWarp where p is the position of a given pixel in 
+* the interpolated image. This function returns the point on image 1 corresponding to the interpolated 
+* position.
+* P = (1-d)P' + dP'' where P' is the point in image 1, P'' in image 2 and P'' = tWarp*P' 
+*/
+cv::Point2f getInverseInterpPosition(cv::Point2f p, double dist, double pos, cv::Mat tWarp);
+
+/** 
+* returns the affine transformation between 2 triangles defined as a list of 6 floats
+*/
+cv::Mat getAffine2D(cv::Vec6f triangle1, cv::Vec6f triangle2);
+
+/**
 * Function returns interpolated triangles between 2 given triangles
 */
 cv::Vec6f getInterpolatedTriangle(cv::Vec6f triangle1, cv::Vec6f triangle2, cv::Mat &affine, double dist, double pos);
@@ -289,11 +302,27 @@ void SphericFromPixelCoordinatesSacht(float i, float j, int rows, int cols, doub
 vector<PointXYZRGB> sphereCoordinatesList(int rows, int cols, vector<cv::Point2f> points);
 
 
+/*
+* Applying sphereCoordinates to an array of points and returns a list of 3D points 
+* using Sacht notation
+*/
+vector<PointXYZRGB> sphereCoordinatesListSacht(int rows, int cols, vector<cv::Point2f> points);
+
+
 /**
 * This is the inverse of the previous functions. Given a point on the surface of the sphere, it gives its (i,j) pixel 
 * coordinates
 */
 void pixelCoordinates(double x, double y, double z, double r, int rows, int cols, int &i, int &j );
+
+
+/**
+* This is the inverse of the previous functions. Given a point on the surface of the sphere, it
+* gives its (i,j) pixel coordinates using Sacht notation
+* 
+*/
+void pixelCoordinatesSacht(double x, double y, double z, double r, int rows, int cols, int &i, int &j );
+
 
 /**This functions returns 2 points of intersection between 
 *	- the line passing by u parrallel to the the x axis

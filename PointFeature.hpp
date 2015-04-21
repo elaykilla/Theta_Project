@@ -9,7 +9,6 @@
 #include <fstream>
 #include <string>
 #include "EquiTrans.hpp"
-//#include "pcl_headers.hpp"
 
 using namespace cv;
 using namespace std; 
@@ -21,7 +20,10 @@ private:
   Method method;
   int minHessian; // for SURF
   vector< vector<Point2f> > convVec6fToPoint2f(vector<Vec6f> &tri_list);
-  
+  vector<Point2f> convVec6fToPoint2f(Vec6f vec);   
+  vector<Point3d> convVec6fToPoint3d(Vec6f p); 
+  Vec9f point3dToVec9f(vector<Point3d> p_list);
+
 public:
   PointFeature();
   bool detect(Mat image, vector<KeyPoint> &keypoints);
@@ -29,10 +31,13 @@ public:
   void showKeyPoints(Mat imge, vector<KeyPoint> &keypoints);
   void printPoints(vector<KeyPoint> &keypoints);
   void toSpherePoints(Mat image, vector<KeyPoint> &keypoints, vector<Point3d> &points);
+  Vec9f toSpherePoint(Mat image, Vec6f vec);
+  vector<Point3d> toSpherePoint(Mat image, vector<Point2f> vec);
   void printPoints3d(vector<Point3d> &points);
   void writePoints3d(vector<Point3d> &points, string filename); 
   vector<cv::Point3d> readPoints3d(string filename);
   void readTriangles3d(string filename, vector< vector<float> > *tri_list ); 
+  void writeTriangles3d(vector<Vec9f> triangles, string filename);
   vector<Vec9f> readTriangles3d(string filename);
   void deleteTriangles3d(vector< vector<float> > &tri_list);
   void printTriangles3d(vector< vector<float> > &tri_list);

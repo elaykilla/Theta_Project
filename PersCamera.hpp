@@ -9,16 +9,16 @@
 class PersCamera {
 
 public:
-  Mat image; // image
+  cv::Mat image; // image
   double fov_h;  // horizontal field of view angle
   double fov_v;  // vertical fiedl of view angle
   double focal_length; // focal length in pixels 
   ViewDirection view_dir; // viewing direction represented by pan/tilt angles.
-  Mat rotPan; 
-  Mat rotTilt;
+  cv::Mat rotPan; 
+  cv::Mat rotTilt;
 
   PersCamera();
-  void setCamera(Mat image, double h_fov, double v_fov, ViewDirection vd);
+  void setCamera(cv::Mat image, double h_fov, double v_fov, ViewDirection vd);
 
 };
 #endif

@@ -402,6 +402,66 @@ cv::Vec6f triangle2SphericSacht(int rows, int cols, double r, Vec9f triangle){
 	return new_triangle;
 }
 
+/**
+* Given a point p and an affine transform tWarp where p is the position of a given pixel in 
+* the interpolated image. This function returns the point on image 1 corresponding to the interpolated 
+* position.
+* P = (1-d)P' + dP'' where P' is the point in image 1, P'' in image 2 and P'' = tWarp*P' 
+*/
+cv::Point2f getInverseInterpPosition(cv::Point2f p, double dist, double pos, cv::Mat tWarp){
+
+	//define distance for interpol 
+	double d = pos/dist;
+	//Get the values of the matrix
+	double* uprow = tWarp.ptr<double>(0);
+	double* downrow = tWarp.ptr<double>(1);
+	double m00,m01,m02,m10,m11,m12;
+	m00 = uprow[0];
+	m01 = uprow[1];
+	m02 = uprow[2];
+	m10 = downrow[0];
+	m11 = downrow[1];
+	m12 = downrow[2];
+	
+	//Define new point
+	cv::Point2f pp;
+	
+	pp.x = (d*m01/(d*d*m10*m10 - (1-d+d*m00)*(1-d+d*m11))) * (p.y - ((1-d+d*m11)/d*m01)*(p.x + m02));
+	pp.y = p.x - m02 - ((1-d+d*m00)/d*m01)*pp.x;
+	
+	return pp;
+
+}
+/** 
+* returns the affine transformation between 2 triangles defined as a list of 6 floats
+*/
+cv::Mat getAffine2D(cv::Vec6f triangle1, cv::Vec6f triangle2){
+	//An affine transform matrix 
+	cv::Mat tWarp (2,3,CV_32FC1);
+
+	//Triangles defined by 3 points	
+	cv::Point2f tri1[3];
+	cv::Point2f tri2[3];
+	
+	//Recover the points in first triangle
+	cv::Vec6f t = triangle1;
+	//Recover the vertices of the triangle
+	tri1[0] = cv::Point2f(t[0], t[1]); 
+	tri1[1] = cv::Point2f(t[2], t[3]); 
+	tri1[2] = cv::Point2f(t[4], t[5]); 
+
+	//Recover the points in second triangle
+	t = triangle2;
+	tri2[0] = cv::Point2f(t[0], t[1]); 
+	tri2[1] = cv::Point2f(t[2], t[3]); 
+	tri2[2] = cv::Point2f(t[4], t[5]);
+	
+	/// Get the Affine Transform
+	tWarp = getAffineTransform( tri1, tri2 );
+	
+	return tWarp;
+}
+
 
 /**
  * Function returns interpolated triangles between 2 given triangles
@@ -532,9 +592,9 @@ cv::Mat getAffine3D(Vec9f t1, Vec9f t2){
 	float x1,x2,x3,y1,y2,y3,z1,z2,z3;
 
 	//Matrices
-	cv::Mat tri_map1(4,3,CV_32FC1), tri_map2(4,3,CV_32FC1);
-	cv::Mat tri_map1_t(3,4,CV_32FC1);
-	cv::Mat t1_t1t(4,4,CV_32FC1), t2_t1t(4,4,CV_32FC1), t1_t1t_invert(4,4,CV_32FC1),affine_transform(4,4,CV_32FC1);
+	cv::Mat tri_map1(3,3,CV_32FC1), tri_map2(3,3,CV_32FC1);
+	cv::Mat tri_map1_t(3,3,CV_32FC1);
+	cv::Mat t1_t1t(3,3,CV_32FC1), t2_t1t(3,3,CV_32FC1), t1_t1t_invert(3,3,CV_32FC1),affine_transform(3,3,CV_32FC1);
 
 	x1 = t1[0];
 	y1 = t1[1];
@@ -565,7 +625,7 @@ cv::Mat getAffine3D(Vec9f t1, Vec9f t2){
 	float* r0 = tri_map1.ptr<float>(0);
 	float* r1 = tri_map1.ptr<float>(1);
 	float* r2 = tri_map1.ptr<float>(2);
-	float* r3 = tri_map1.ptr<float>(3);
+	//float* r3 = tri_map1.ptr<float>(3);
 
 	r0[0] = x1;
 	r0[1] = x2;
@@ -579,16 +639,16 @@ cv::Mat getAffine3D(Vec9f t1, Vec9f t2){
 	r2[1] = z2;
 	r2[2] = z3;
 
-	r3[0] = 1;
-	r3[1] = 1;
-	r3[2] = 1;
+	//r3[0] = 1;
+	//r3[1] = 1;
+	//r3[2] = 1;
 
 
 	//Fill Tmap2
 	float* rt0 = tri_map2.ptr<float>(0);
 	float* rt1 = tri_map2.ptr<float>(1);
 	float* rt2 = tri_map2.ptr<float>(2);
-	float* rt3 = tri_map2.ptr<float>(3);
+	//float* rt3 = tri_map2.ptr<float>(3);
 
 	rt0[0] = xp1;
 	rt0[1] = xp2;
@@ -602,9 +662,9 @@ cv::Mat getAffine3D(Vec9f t1, Vec9f t2){
 	rt2[1] = zp2;
 	rt2[2] = zp3;
 
-	rt3[0] = 0;
-	rt3[1] = 0;
-	rt3[2] = 1;
+	//rt3[0] = 1;
+	//rt3[1] = 1;
+	//rt3[2] = 1;
 
 	//Get the transpose of T_map1
 	cv::transpose(tri_map1, tri_map1_t);
@@ -617,19 +677,21 @@ cv::Mat getAffine3D(Vec9f t1, Vec9f t2){
 
 	affine_transform = t2_t1t * t1_t1t_invert;
 
-	cout<< "T1:" << tri_map1 << endl;
-	cout<< "T1_transpose:" << tri_map1_t << endl;
-	cout<< "T1*T1_transpose:" << t1_t1t << endl;
-	cout<< "Inverse T1*T1_transpose:" << t1_t1t_invert << endl;
-	cout<< "T1*T1_transpose * Inverse T1*T1_transpose:" << t1_t1t * t1_t1t_invert << endl;
+	//cout<< "T1:" << tri_map1 << endl;
+	//cout<< "T1_transpose:" << tri_map1_t << endl;
+	//cout<< "T1*T1_transpose:" << t1_t1t << endl;
+	//cout << "T1*T1_transpose Determinant: " << cv::determinant(t1_t1t) << endl;
+	//cout<< "Inverse T1*T1_transpose:" << t1_t1t_invert << endl;
+	
+	//cout<< "T1*T1_transpose * Inverse T1*T1_transpose:" << t1_t1t * t1_t1t_invert << endl;
 
-	cout<< "Affine:" << affine_transform << endl;
+	//cout<< "Affine:" << affine_transform << endl;
 
-	cout<< "T2:" << tri_map2 << endl;
-	cout << "Verification: affine*t1:" << affine_transform * tri_map1 << endl;
+	//cout<< "T2:" << tri_map2 << endl;
+	//cout << "Verification: affine*t1:" << affine_transform * tri_map1 << endl;
 
-	cout<< "T2*T1_transpose:" << t2_t1t << endl;
-	cout << "Verification: affine*t1*t1_transpose:" << affine_transform * t1_t1t << endl;
+	//cout<< "T2*T1_transpose:" << t2_t1t << endl;
+	//cout << "Verification: affine*t1*t1_transpose:" << affine_transform * t1_t1t << endl;
 
 
 	return affine_transform;
@@ -1069,6 +1131,49 @@ vector<PointXYZRGB> sphereCoordinatesList(int rows, int cols, vector<cv::Point2f
 
 }
 
+/*
+* Applying sphereCoordinates to an array of points and returns a list of 3D points 
+* using Sacht notation
+*/
+vector<PointXYZRGB> sphereCoordinatesListSacht(int rows, int cols, vector<cv::Point2f> points){
+//Radius
+	double r = 1.;
+
+	//list of 3D points
+	vector<PointXYZRGB> points3D;
+
+	//3D point
+
+
+
+	//Image point in 2D
+	cv::Point2f p;
+	int i,j;
+
+	for(int k=0;k<points.size();k++){
+		//cout << "Point number: " << k << endl;
+		double x,y,z;
+		PointXYZRGB np;
+		p = points[k];
+		i = p.y;
+		j = p.x;
+
+		//cout << "Sphere Coordinates for: (i,j): (" << i << "," << j << ")" << endl; 
+		sphereCoordinatesSacht(i,j,r,rows,cols,x,y,z);
+		np.x = x;
+		np.y = y;
+		np.z = z;
+
+		//np.b = img.at<cv::Vec3b>(i,j)[0];
+		//np.g = img.at<cv::Vec3b>(i,j)[1];
+		//np.r = img.at<cv::Vec3b>(i,j)[2];
+
+		points3D.push_back(np);
+	}
+
+	return points3D;
+}
+
 /**
  * This is the inverse of the previous functions. Given a point on the surface of the sphere, it gives its (i,j) pixel 
  * coordinates
@@ -1085,6 +1190,24 @@ void pixelCoordinates(double x, double y, double z, double r, int rows, int cols
 	i  = theta * rows/PI;
 	j = phi * cols/(2*PI);
 }
+
+
+
+/**
+* This is the inverse of the previous functions. Given a point on the surface of the sphere, it
+* gives its (i,j) pixel coordinates using Sacht notation
+* 
+*/
+void pixelCoordinatesSacht(double x, double y, double z, double r, int rows, int cols, int &i, int &j ){
+	double theta,phi;
+	phi = asin(z);
+	theta = atan2(y,x);
+	
+	i  = theta * rows/PI;
+	j = phi * cols/(2*PI);
+
+}
+
 
 /**This functions returns 2 points of intersection between 
  *	- the line passing by u parrallel to the the x axis

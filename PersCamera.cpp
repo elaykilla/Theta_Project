@@ -2,6 +2,7 @@
  * Perspective Camera
  */
 #include "PersCamera.hpp"
+using namespace cv;
 
 PersCamera::PersCamera(){
   fov_h = -1.0;

@@ -36,30 +36,30 @@ void rotateImageTest(cv::Mat image, double y){
 
 ////////////////////////////////////////Test of 3D affine transformations
 void ThreeDAffineTransformTest(){
-//	Vec9f t1, t2; cv::Mat affine_transform(4,4,CV_32FC1);
+	Vec9f t1, t2; cv::Mat affine_transform(4,4,CV_32FC1);
 //	
-//	t1[0] = 1;
-//	t1[1] = 1;
-//	t1[2] = 0;
-//	t1[3] = -1;
-//	t1[4] = 1;
-//	t1[5] = 1;
-//	t1[6] = 1;
-//	t1[7] = 0;
-//	t1[8] = 1;
+	t1[0] = -0.29588;
+	t1[1] = -0.21377;
+	t1[2] = 0.931;
+	t1[3] = -0.24981;
+	t1[4] = -0.18937;
+	t1[5] = 0.9496;
+	t1[6] = -0.24941;
+	t1[7] = -0.18294;
+	t1[8] = 0.95096;
 //	
-//	t2[0] = 1; 
-//	t2[1] = 1;
-//	t2[2] = 0;
-//	t2[3] = -1;
-//	t2[4] = 1;
-//	t2[5] = 1;
-//	t2[6] = 1;
-//	t2[7] = 0;
-//	t2[8] = 1;
+	t2[0] = -0.6044;
+	t2[1] = -0.35185;
+	t2[2] = 0.71478;
+	t2[3] = -0.50759;
+	t2[4] = -0.38645;
+	t2[5] = 0.77007;
+	t2[6] = -0.62567;
+	t2[7] = -0.28667;
+	t2[8] = 0.7255;
 	
 	
-	//affine_transform = getAffine3D(t1,t2);
+	affine_transform = getAffine3D(t1,t2);
 	
 
 }
@@ -1894,13 +1894,14 @@ void testTriangleRead(cv::Mat img1, cv::Mat img2, double dist, double pos, strin
 	//points3D2 = points2c;
 	result = delaunayInterpolateCubeFromTriangles(img1,img2, dist, pos, triangles_file,  points3D1,  points3D2);
 	
+	//result = delaunaySphereInterpolateFromTriangles(img1,img2, dist, pos, triangles_file,  points3D1,  points3D2);
 	imwrite("InterpolatedPerspConv.jpg", result);
 	namedWindow("Result Equi",0);
 	imshow("Result Equi",result);
 	 
 }
 
-void testTriangleWrite(cv::Mat img1, cv::Mat img2, double dist, double pos){
+void testTriangleWrite(cv::Mat img1, cv::Mat img2, double dist, double pos, string outputfile1, string outputfile2){
 	
 	cv::Mat result;
 	
@@ -1976,6 +1977,7 @@ void testTriangleWrite(cv::Mat img1, cv::Mat img2, double dist, double pos){
 	//matched_keypoints = getMatchedCubeKeypoints(img1,img2);
 	getKeypointsAndMatches(img1,img2,keypoints1,keypoints2,matches);
 	matched_keypoints = getMatchedKeypoints(keypoints1,keypoints2,matches);
+	vector<vector<cv::Point2f> > matchedPts = getMatchedPoints(keypoints1, keypoints2, matches);
 	//Matched Keypoints on OmniDirectional Images
 	
 	ofstream logFile;
@@ -1986,6 +1988,10 @@ void testTriangleWrite(cv::Mat img1, cv::Mat img2, double dist, double pos){
 	cout << "testTriangleReadAndWrite Keypoints1 size after matching order : " << keypoints1.size() << endl;
 	cout << "testTriangleReadAndWrite Keypoints2 size after matching order: " << keypoints2.size() << endl;
 	
+	//Extracted points from the Keypoints
+	points1 = matchedPts[0];
+	points2 = matchedPts[1];
+	
 	//Write Keypoints in file
 	
 	
@@ -1994,15 +2000,19 @@ void testTriangleWrite(cv::Mat img1, cv::Mat img2, double dist, double pos){
 	vector<cv::Point3d> points3D1c(keypoints1.size()), points3D2c(keypoints2.size());
 	feat.toSpherePoints(img1,keypoints1,points3D1c);
 	feat.toSpherePoints(img2,keypoints2,points3D2c);
-	
+	//points3D1 = sphereCoordinatesList(img1.rows,img1.cols,points1);
+	//points3D2 = sphereCoordinatesList(img1.rows,img1.cols,points2);
 	
 	//points3D1c = fromxyzrgbtoPoint3D(points3D1);
 	//points3D2c = fromxyzrgbtoPoint3D(points3D2);
 	//Save to file 
 	cout << "testTriangleReadAndWrite Points3D1 size : " << points3D1c.size() << endl;
 	cout << "testTriangleReadAndWrite Points3D2 size : " << points3D2c.size() << endl;
-	feat.writePoints3d(points3D1c, "Txt_files/Points3D_test3_1.txt");
-	feat.writePoints3d(points3D2c, "Txt_files/Points3D_test4_1.txt");
+	//feat.writePoints3d(points3D1c, "Txt_files/Points3D_test3_1.txt");
+	//feat.writePoints3d(points3D2c, "Txt_files/Points3D_test4_1.txt");
+	
+	feat.writePoints3d(points3D1c, outputfile1);
+	feat.writePoints3d(points3D2c, outputfile2);
 	
 	//Testing the second part
 	string triangles_file1 = "Txt_files/trianglesPoints3D_test3.txt";
@@ -2223,32 +2233,152 @@ void testSingleTrianglePerspective(cv::Mat image1, cv::Mat image2, double dist, 
 	imshow("Equi Interpolated", equi);
 	imshow("Original", image1);
 }
+
+void testMultipleTrianglePerspective(Mat image, string triangles_file){
+	cout << "TestMultipleTrianglePerspective called" << endl;
+	//Classes needed
+	PointFeature feat;
+	Triangle tri_class;
+	EquiTrans trans_class;
+	
+	vector<Vec9f> triangles3D1c, triangles3D2c;
+	
+	//3D triangles
+	triangles3D1c = feat.readTriangles3d(triangles_file);
+	triangles3D2c = triangles3D1c;
+	cout << "Size Before Subdivide: " << triangles3D1c.size() << endl;
+	tri_class.subdivideMatched(triangles3D1c,triangles3D2c);
+	//cout << "Size After Subdivide: " << triangles3D1c.size() << endl;
+	//feat.writeTriangles3d(triangles3D1c, "Txt_files/TrianglePoints3D_test3_1_subdivide.txt");
+	
+	//Triangles in equi
+	vector<cv::Vec6f> triangles_list;
+	triangles_list = feat.convTriangles3dToEqui(triangles3D1c, image);
+	
+	//Variables needed
+	cv::Vec6f triangle2d, triangle_persp;
+	Vec9f triangle3d;
+	PersCamera cam;
+	cv::Mat persp, result = cv::Mat::zeros(image.rows, image.cols, image.type());;
+	for(int i=0;i<triangles3D1c.size();i++){
+		cout << "Triangle Number: " << i << endl;
+		ostringstream img_file;
+	
+		triangle2d = triangles_list[i];
+		triangle3d = triangles3D1c[i];
+		//triangle3d = feat.toSpherePoint(image,triangle2d);
+		cam = tri_class.getPersCamParams(image,triangle3d);
+		//cam = tri_class.getPersCamParamsBarycentric(image,triangle3d);		
+		if(cam.fov_h==0 || cam.fov_v==0){
+			continue;
+		}
+		
+		else{
+			//cam = tri_class.getPersCamParamsBarycentric(image,triangle3d);
+			persp = trans_class.toPerspective(image,cam);
+			cam.image = persp;
+		
+		
+			// Get perspective triangle
+			triangle_persp = tri_class.convToPersTriangle(image,cam,triangle2d);
+			trans_class.toEquirectangular(cam, triangle_persp, result);
+			result = drawTriangleOnImage(result,triangle2d);
+		
+			persp = drawTriangleOnImage(persp,triangle_persp);
+			img_file << "OldPerpResults/TestPersp/Img1 Perpspective " << i << ".JPG"; 
+			imwrite(img_file.str(), persp);
+		}
+	}
+	
+	cvNamedWindow("Original",0);
+	cvNamedWindow("Reconsctructed",0);
+	
+	imshow("Original", image);
+	imshow("Reconsctructed",result);
+	
+	cv::waitKey(0);
+
+}
  
 
 //////////////////////// End of Test of single triangle perspective ///////////////////////////////////
 void randomTest(){
-	double theta, phi,r;
-	r = 1;
-	int i,j, rows, cols;
-	i = 155;
-	j = 255;
-	rows = 160;
-	cols = 320;
 	
-	//Convert to spheric
-	//double x,y,z;
-	//sphereCoordinatesSacht(i,j,r,rows,cols,x,y,z);
 	
-	Vec6f triangle;
-	triangle[0] = -2.00893 * M_PI/180;
-	triangle[1] = -23.7054* M_PI/180;
-	triangle[2] = 42.1875* M_PI/180;
-	triangle[3] = 36.1607* M_PI/180;
-	triangle[4] = -10.8482* M_PI/180;
-	triangle[5] = 42.1875* M_PI/180;
+
 	
-	Point2f p = triangleCenter(triangle);
-	cout << "Calculated Mean: [" << (triangle[0] + triangle[2] + triangle[4]) / 3 << "," << (triangle[1] + triangle[3] + triangle[5]) / 3. << "]" << endl;
-	cout << "Triangle center: " << p << endl;	
+  cv::Point2f p1,p2,p3,pp1,pp2,pp3;
+  p1.x = 389.0; pp1.x = 380.0;
+  p1.y = 219.0; pp1.y = 216.0;
+
+  p2.x = 538.0; pp2.x = 530.0;
+  p2.y = 329.0; pp2.y = 320.0;
+
+  p3.x = 553.0; pp3.x = 540.0;
+  p3.y = 197.0; pp3.y = 190.0;
+	
+	Vec6f triangle,triangle1,triangle_inter;
+	triangle[0] = p1.x;
+	triangle[1] = p1.y;
+	triangle[2] = p2.x;
+	triangle[3] = p2.y;
+	triangle[4] = p3.x;
+	triangle[5] = p3.y;
+	
+	triangle1[0] = pp1.x;
+	triangle1[1] = pp1.y;
+	triangle1[2] = pp2.x;
+	triangle1[3] = pp2.y;
+	triangle1[4] = pp3.x;
+	triangle1[5] = pp3.y;
+	
+	cv::Mat tWarp,affine_inter_img1, affine_inter_img2;
+	triangle_inter = getInterpolatedTriangle( triangle, triangle1, tWarp,  1, 0.5);
+	affine_inter_img1 = getAffine2D(triangle_inter,triangle);
+	affine_inter_img2 = getAffine2D(triangle_inter,triangle1);
+	
+	//Test of affine
+	cout << "Testing affine transform!!! " << endl;
+	cout << "Point in triangle 1 " << p1 << endl;
+	cout << "Corresponding point in 2 " << pp1 << endl;
+	
+	 
+	
+	
+	double* uprow1 = affine_inter_img1.ptr<double>(0);
+	double* downrow1 = affine_inter_img1.ptr<double>(1);
+	double* uprow2 = affine_inter_img2.ptr<double>(0);
+	double* downrow2 =affine_inter_img2.ptr<double>(1);
+	//All triangles
+	cout << "Triangle 1: " << triangle << endl;
+	cout << "Triangle 2: " << triangle1 << endl;
+	cout << "Triangle Inter: " << triangle_inter << endl;
+	
+	//Test for all points in triangle intermediate
+	
+	cv::Point2f p,pinter;
+	for(int i=0;i<6;i=i+2){
+		pinter.x = triangle_inter[i];
+		pinter.y = triangle_inter[i+1];
+		
+		cout << "Interpolated Point position" << i << " : "<< pinter << endl;
+		
+		//Get the position of the point in image 1
+		p.x = uprow1[0]*pinter.x + uprow1[1]*pinter.y + uprow1[2];
+		p.x = downrow1[0]*pinter.x + downrow1[1]*pinter.y + downrow1[2];
+		
+		cout << "Calculated Point position in img1" << i << " : "<< p << endl;
+					
+        	//Get the position in image 2
+		p2.x = uprow2[0] * p.x + uprow2[1]* p.y + uprow2[2];
+		p2.y = downrow2[0] * p.x + downrow2[1]* p.y + downrow2[2];
+		
+		cout << "Calculated Point position in img2" << i << " : "<< p2 << endl;
+	
+	}
+	
+	
+	
+		
 }
 

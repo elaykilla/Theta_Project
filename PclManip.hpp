@@ -128,4 +128,10 @@ GreedyProjectionTriangulation<PointXYZRGBNormal> get3DTriangulation(PointCloud<P
 */
 void makeCorrespondingDelaunayTriangles3D(vector<PointXYZRGB> points3D1, vector<PointXYZRGB> points3D2, vector<Vec9f> &triangles3D1, vector<Vec9f> &triangles3D2); 
 
+
+/**
+* Interpolate directly using 3D points and 3D triangles on sphere
+*/
+
+cv::Mat delaunaySphereInterpolateFromTriangles(cv::Mat img1, cv::Mat img2, double dist, double pos, string triangles_file, vector<PointXYZRGB> points1c, vector<PointXYZRGB> points2c);
 #endif

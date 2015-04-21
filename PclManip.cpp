@@ -467,7 +467,7 @@ void multiKMeanValue(vector<PointXYZRGB> points, int id, int nbThreads, PointClo
 }
 
 
-PointCloud<PointXYZRGB>::Ptr  sphereInterpolate(cv::Mat image1, cv::Mat image2, double d, double pos){
+PointCloud<PointXYZRGB>::Ptr sphereInterpolate(cv::Mat image1, cv::Mat image2, double d, double pos){
 //	
 	//Output point cloud
 	PointCloud<PointXYZRGB>::Ptr match_cloud(new PointCloud<PointXYZRGB>); 
@@ -711,6 +711,112 @@ void makeCorrespondingDelaunayTriangles3D(vector<PointXYZRGB> points3D1, vector<
 	triangles3D1 = newtriangles3D1;
 	triangles3D2 = newtriangles3D2;
 
+
+}
+
+cv::Mat delaunaySphereInterpolateFromTriangles(cv::Mat img1,cv::Mat img2 , double dist, double pos, string triangles_file, vector<PointXYZRGB> points1c, vector<PointXYZRGB> points2c){
+	//Resulting image
+	cv::Mat result = cv::Mat::zeros(img1.rows, img1.cols, img1.type());
+	
+	PointCloud<PointXYZRGB>::Ptr sphere1, sphere2;
+	//PointCloud<PointXYZRGB>::Ptr result (new PointCloud<PointXYZRGB>); 
+	
+	//Required Classes 
+	PointFeature feat;
+	
+	//Required variables
+	Vec9f triangle3d1, triangle3d2;
+	PointXYZRGB a1,b1,c1,a2,b2,c2;
+	vector<Vec9f> triangles3D1c, triangles3D2c;
+	cv::Mat affine3d;
+	
+	//Make spheres from images
+	sphere1 = EquiToSphere(img1, 1,0,0,0);
+	sphere2 = EquiToSphere(img2, 1,0,0,0);
+	
+	//Get triangles from Image1
+	triangles3D1c = feat.readTriangles3d(triangles_file);
+	
+	//First get matched triangles
+	vector<cv::Vec6f> triangles_list1, triangles_list2;
+	
+	makeCorrespondingDelaunayTriangles3D(points1c, points2c, triangles3D1c, triangles3D2c);
+	
+	for(int i=0;i<triangles3D1c.size();i++){
+		//Get corresponding triangles
+		triangle3d1 = triangles3D1c[i];
+		triangle3d2 = triangles3D2c[i];
+		
+		//Get points from each triangle
+		a1.x = triangle3d1[0] ; b1.x = triangle3d1[3];c1.x = triangle3d1[6];
+		a1.y = triangle3d1[1] ; b1.y = triangle3d1[4]; c1.y = triangle3d1[7];
+		a1.z = triangle3d1[2]; b1.z = triangle3d1[5]; c1.z = triangle3d1[8];
+		
+		a2.x = triangle3d2[0] ; b2.x = triangle3d2[3];c2.x = triangle3d2[6];
+		a2.y = triangle3d2[1] ; b2.y = triangle3d2[4]; c2.y = triangle3d2[7];
+		a2.z = triangle3d2[2]; b2.z = triangle3d2[5]; c2.z = triangle3d2[8];
+		
+		//Get affine transformation
+		affine3d = getAffine3D(triangle3d1,triangle3d2);
+		float* rt0 = affine3d.ptr<float>(0);
+		float* rt1 = affine3d.ptr<float>(1);
+		float* rt2 = affine3d.ptr<float>(2);
+		
+		
+		//Get the bouding cube around the triangle
+		double xmax = max(a1.x, max(b1.x,c1.x));
+		double ymax = max(a1.y, max(b1.y,c1.y));
+		double zmax = max(a1.y, max(b1.y,c1.y));
+		
+		double xmin = min(a1.x, min(b1.x,c1.x));
+		double ymin = min(a1.y, min(b1.y,c1.y));
+		double zmin = min(a1.z, min(b1.z,c1.z));
+		
+		//Go through all the points in the cube
+		for(int k=0;k<sphere1->points.size();k++){
+			PointXYZRGB p = sphere1->points[k];
+			
+			//Verify if in triangle
+			
+			if(inTriangle3D(p,triangle3d1)){
+				uchar b,g,r = 0;
+				//Get the position in second image. This gives a position on the 					//surface of the sphere. This point will probably not correspond 					//directly to any point in the second point cloud
+				double x = rt0[0]*p.x + rt0[1]*p.y + rt0[2]*p.z;
+				double y = rt1[0]*p.x + rt1[1]*p.y + rt1[2]*p.z;
+				double z = rt2[0]*p.x + rt2[1]*p.y + rt2[2]*p.z;
+				
+				//Get the closest pixel coordinates for points in image1 and image2
+				int ip1, ip2, jp1, jp2;
+				pixelCoordinates(p.x,p.y,p.z,1,img1.rows,img1.cols,ip1,jp1);
+				pixelCoordinates(x,y,z,1,img2.rows,img2.cols,ip2,jp2);
+			
+				//Get interpolated position on sphere
+				double x_inter = (p.x*(dist-pos) + x*pos)/dist; 
+				double y_inter = (p.y*(dist-pos) + y*pos)/dist; 
+				double z_inter = (p.z*(dist-pos) + z*pos)/dist; 
+				
+				//Get interpolated pixel position
+				int i_inter,j_inter; 
+				pixelCoordinates(x_inter,y_inter,z_inter,1,img1.rows,img1.cols,i_inter,j_inter);
+				
+				if(jp1>0 && jp1<img1.cols && ip1>0 && ip1<img1.rows){
+					b = img1.at<Vec3b>(jp1,ip1)[0];
+					g = img1.at<Vec3b>(jp1,ip1)[1];
+					r = img1.at<Vec3b>(jp1,ip1)[2];
+				}
+				
+				if(j_inter%img1.cols>0 && j_inter%img1.cols<img1.cols && i_inter%img1.rows>0 && i_inter%img1.rows<img1.rows){
+					result.at<Vec3b>(j_inter%img1.cols,i_inter%img1.rows)[0] = b;
+					result.at<Vec3b>(j_inter%img1.cols,i_inter%img1.rows)[1] = g;
+					result.at<Vec3b>(j_inter%img1.cols,i_inter%img1.rows)[2] = r;
+				}
+		
+			}
+		
+		}
+	}
+	
+	return result;
 
 }
 

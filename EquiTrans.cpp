@@ -346,7 +346,7 @@ void EquiTrans::toEquirectCore(double i_c, double j_c, double focal_length, View
  * 
  */
 void EquiTrans::convSpherePointToAngles(Point3f point, double *pan, double *tilt){
-  *tilt = - asin((double)point.z);
+  *tilt =  asin((double)point.z);
 
   if(point.x >= 0.0){
     *pan= atan((double)point.y/(double)point.x);
@@ -360,6 +360,31 @@ void EquiTrans::convSpherePointToAngles(Point3f point, double *pan, double *tilt
   }
 }
 
+/*
+ * Convert a point in 3D unit sphere to that on the perspective camera
+ *  Perspective camera: center origin.
+ */
+Point2d EquiTrans::convSpherePointtoPersCoord(PersCamera cam, Point3d point){
+  double tilt = cam.view_dir.tilt;
+  double pan = cam.view_dir.pan;
+
+  // rotate
+  Point3d np = rotateTilt(-tilt, point);
+  np = rotatePan(-pan, np);
+
+  if(np.x > 0.0){
+    double scale = -1.0;
+    scale = cam.focal_length/np.x;
+    np.y = np.y * scale;
+    np.z = np.z * scale;
+  }
+  Point2d i_p; // image coordinates on the perspective camera.
+  i_p.x = np.y + cam.image.cols/2.0 - 0.5;
+  i_p.y = cam.image.rows/2.0 - np.z - 0.5;
+
+  return i_p;
+}
+
 
 /*
  * Convert angles for a direction to images coordinates in equirectangular format.
@@ -369,7 +394,7 @@ void EquiTrans::convSpherePointToAngles(Point3f point, double *pan, double *tilt
  *
  *    Coordinate system in eqirectangular format: top-left origin
  *      x: horizontal pixel coordinate
- *      y: vertical pixel coordinate
+ *      y: vertical pixel coordinate (top-bottom)
  */
 void EquiTrans::convAnglesToEquiCoord(double pan, double tilt, Mat equi_img, double *x, double *y){
   double width = (double)equi_img.cols;
@@ -379,7 +404,7 @@ void EquiTrans::convAnglesToEquiCoord(double pan, double tilt, Mat equi_img, dou
   double y_offset =  height/2.0 - 0.5;
 
   *x = width/(2.0*M_PI)*pan + x_offset;
-  *y = height/M_PI*tilt + y_offset;
+  *y = height/M_PI*-tilt + y_offset;
 }
 
 
@@ -636,6 +661,16 @@ Rect EquiTrans::getEquiRegionFull(PersCamera pers, Mat equi){
   rect.y = (int)floor((double)min_y);
   rect.width = (int)(ceil((double)max_x) - floor((double)min_x) + 1.0);
   rect.height = (int)(ceil((double)max_y) - floor((double)min_y) + 1.0);
+
+  // bound rect
+  if(rect.x < 0) rect.x = 0;
+  if(rect.y < 0) rect.y = 0;
+  if((rect.x + rect.width) > equi.cols){
+    rect.width = equi.cols  - rect.x;
+  }
+  if((rect.y + rect.height) > equi.rows){
+    rect.height = equi.rows - rect.y;
+  }
 
   return rect;
 }

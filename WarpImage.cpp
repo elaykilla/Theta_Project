@@ -28,18 +28,18 @@ void WarpImage::warpLinear(Mat src, Mat mapI, Mat mapJ, Mat &dst){
   bool ret = true;
   int nrows = dst.rows;
   int ncols = dst.cols;
-  int rmax = src.rows - 1;
-  int cmax = src.cols - 1;
-  float c_min = -1.0, r_min = -1.0;
-  float c_max = (float)src.cols;
-  float r_max = (float)src.rows;
+  int i_rmax = src.rows - 1;
+  int i_cmax = src.cols - 1;
+  float f_cmin = -1.0, f_rmin = -1.0;
+  float f_cmax = (float)src.cols;
+  float f_rmax = (float)src.rows;
 
   for(int r = 0;r < nrows;r++){
     for(int c = 0;c < ncols;c++){
       float wi = mapI.at<float>(r, c);
       float wj = mapJ.at<float>(r, c);
       
-      if(wi <= c_min ||  wj <= r_min || wi >= c_max || wj >= rmax){
+      if(wi <= f_cmin ||  wj <= f_rmin || wi >= f_cmax || wj >= f_rmax){
 	continue;
       }else{
 	int i_low = (int)floor(wi);
@@ -53,11 +53,11 @@ void WarpImage::warpLinear(Mat src, Mat mapI, Mat mapJ, Mat &dst){
 	int e_j = wj;
 	int e_i = wi;
 
-	if(wrapping){
-	  if(i_low < 0) i_low = c_max;
-	  if(j_low < 0) j_low = c_max;
-	  if(i_high > c_max) i_high = 0;
-	  if(j_high > r_max) j_high = 0;
+	if(wrapping){ // wrapping around the borders.
+	  if(i_low < 0) i_low = i_cmax;
+	  if(j_low < 0) j_low = i_rmax;
+	  if(i_high > i_cmax) i_high = 0;
+	  if(j_high > i_rmax) j_high = 0;
 	}
 	Vec3b pix_00, pix_01, pix_10, pix_11;
 	pix_00 = src.at<Vec3b>(j_low, i_low); 

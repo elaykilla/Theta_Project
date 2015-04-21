@@ -1357,20 +1357,25 @@ cv::Mat getInterpolatedTriangleContent(cv::Mat img1, cv::Mat img2, cv::Vec6f tri
 	cv::Mat result = cv::Mat::zeros(rows,cols,img1.type());
 	 
 	//Affine transform
-	cv::Mat tWarp;
+	cv::Mat tWarp, affine_inter_img1, affine_inter_img2;
 	
+	//Get all the affine transformations
 	triangle_inter =  getInterpolatedTriangle( triangle1, triangle2, tWarp,  dist, pos);
+	affine_inter_img1 = getAffine2D(triangle_inter,triangle1);
+	affine_inter_img2 = getAffine2D(triangle_inter,triangle2);
 	
-	double* uprow = tWarp.ptr<double>(0);
-	double* downrow = tWarp.ptr<double>(1);
+	double* uprow1 = affine_inter_img1.ptr<double>(0);
+	double* downrow1 = affine_inter_img1.ptr<double>(1);
+	double* uprow2 = affine_inter_img2.ptr<double>(0);
+	double* downrow2 =affine_inter_img2.ptr<double>(1);
 	
-	cv::Point2f a,b,c,a1,b1,c1; 
-	a.x = triangle1[0];
-	a.y = triangle1[1];
-	b.x = triangle1[2];
-	b.y = triangle1[3];
-	c.x = triangle1[4];
-	c.y = triangle1[5];
+	cv::Point2f a,b,c,a1,b1,c1,a_inter,b_inter,c_inter; 
+	a_inter.x = triangle_inter[0];
+	a_inter.y = triangle_inter[1];
+	b_inter.x = triangle_inter[2];
+	b_inter.y = triangle_inter[3];
+	c_inter.x = triangle_inter[4];
+	c_inter.y = triangle_inter[5];
 	
 	//Boolean to know which Image to use 
 	bool use_first, use_second;
@@ -1378,112 +1383,63 @@ cv::Mat getInterpolatedTriangleContent(cv::Mat img1, cv::Mat img2, cv::Vec6f tri
 	use_first = false;
 	use_second = false;
 		
-		
-		if(triangleDifference(triangle2,triangle_inter)==triangleDifference(triangle_inter,triangle1)){
-			use_first = false;
-			use_second = false;
-		}
-		else if(triangleDifference(triangle1,triangle_inter) > triangleDifference(triangle_inter,triangle2)){
-			//cout << "Triangle" << k << endl;
-			//cout << "Image1 difference: " << triangleDifference(triangle,triangle_inter) << "     " << "Image2 difference:" << triangleDifference(triangle2,triangle_inter) << endl;
-			use_first = false;
-			use_second = true;
-		}
-		else if (triangleDifference(triangle1,triangle_inter) < triangleDifference(triangle_inter,triangle2) ){
-			use_second =  false;
-			use_first = true;
-		}	
-		
-		//Get the bouding box around the triangle
-		int xmax = cvRound(max(a.x, max(b.x,c.x)));
-		int ymax = cvRound(max(a.y, max(b.y,c.y)));
-		int xmin = cvRound(min(a.x, min(b.x,c.x)));
-		int ymin = cvRound(min(a.y, min(b.y,c.y)));
 	
-		cv::Point2f p,pinter,p2;
-
-
-		//Point with color to stock content
-		cv::Scalar color;
-		PointWithColor pt_color;
-		for(int i=ymin;i<=ymax;i++){
-			for(int j=xmin;j<=xmax;j++){
-				p.x = j;
-				p.y = i;
-
-
-				if(i>0 && j>0 && j<img2.cols && i<img2.rows){
-					if(inTriangleArea(p,triangle1)){
-					//cout << "Point in triangle: " << p << endl;
-						//Get the position of the point in the first image
-						float x = uprow[0] * p.x + uprow[1]* p.y + uprow[2];
-						float y = downrow[0] * p.x + downrow[1]* p.y + downrow[2];
-						
-						//calculate the resulting position in intermediate image
-						float xinter = (x*(dist-pos) + p.x*pos)/dist; 
-						float yinter = (y*(dist-pos) + p.y*pos)/dist; 
-						
-						//
-						xinter = cvRound(xinter);
-						yinter = cvRound(yinter);
-						pinter.x = xinter;
-						pinter.y = yinter;
-						p2.x = cvRound(x);
-						p2.y = cvRound(y);
-							//Get interpolated pixel values
-							uchar b,g,r = 0;
-
-							if(!use_first & !use_second){
-								if(pos<dist/2){
-									use_second = true;
-								}
-								else{
-									use_first = true;
-								}
-							}
-							//use_first = use_second = false;
-							if(use_first){
-								b = img1.at<Vec3b>(p)[0];
-								g = img1.at<Vec3b>(p)[1];
-								r = img1.at<Vec3b>(p)[2];
-
-							}
-							
-							else if(use_second){
-								b = img2.at<Vec3b>(p2)[0];
-								g = img2.at<Vec3b>(p2)[1];
-								r = img2.at<Vec3b>(p2)[2];
-							}
-//							
-							else{				
-								b = (img2.at<Vec3b>(p2)[0]*pos + img1.at<Vec3b>(p)[0]*(dist-pos))/dist;
-								g = (img2.at<Vec3b>(p2)[1]*pos + img1.at<Vec3b>(p)[1]*(dist-pos))/dist;
-								r = (img2.at<Vec3b>(p2)[2]*pos + img1.at<Vec3b>(p)[2]*(dist-pos))/dist;
-								//b = img2.at<Vec3b>(p)[0];
-								//g = img2.at<Vec3b>(p)[1];
-								//r = img2.at<Vec3b>(p)[2];
-
-//							
-							}
-							
-							if(yinter>0 && xinter>0 && yinter<result.rows && xinter<result.cols){
-							//cout << "Point Position in interp: " << xinter << "," << yinter << endl;
-								color = cv::Scalar(b,g,r);
-								pt_color.x = xinter;
-								pt_color.y = yinter;
-								pt_color.color = color;
-								content.push_back(pt_color);
-								result.at<Vec3b>(yinter,xinter)[0] = b;
-								result.at<Vec3b>(yinter,xinter)[1] = g;
-								result.at<Vec3b>(yinter,xinter)[2] = r;
-							}
+		
+	//Get the bouding box around the triangle
+	int xmax = cvRound(max(a_inter.x, max(b_inter.x,c_inter.x)));
+	int ymax = cvRound(max(a_inter.y, max(b_inter.y,c_inter.y)));
+	int xmin = cvRound(min(a_inter.x, min(b_inter.x,c_inter.x)));
+	int ymin = cvRound(min(a_inter.y, min(b_inter.y,c_inter.y)));
 	
+	cv::Point2f p1,pinter,p2;
+
+	//Go through all the points in the intermediate triangle and find positions 
+	// in preceeding image
+	cv::Scalar color;
+	PointWithColor pt_color;
+	for(int i=ymin;i<=ymax;i++){
+		for(int j=xmin;j<=xmax;j++){
+			pinter.x = j;
+			pinter.y = i;
+			uchar b,g,r = 0;
+			if(inTriangleArea(pinter,triangle_inter)){
+				//Get the position of the point in image 1
+				p1.x = uprow1[0]*pinter.x + uprow1[1]*pinter.y + uprow1[2];
+				p1.y = downrow1[0]*pinter.x + downrow1[1]*pinter.y + downrow1[2];
+				
+				//Get the position in image 2
+				p2.x = uprow2[0] * p1.x + uprow2[1]* p1.y + uprow2[2];
+				p2.y = downrow2[0] * p1.x + downrow2[1]* p1.y + downrow2[2];
+						
+				if(p1.x>0 && p1.y>0 && p1.y<result.rows && p1.x<result.cols){
+						//cout << "Point Position in interp: " << xinter << "," << yinter << endl;			
+					if(use_first){
+						b = img1.at<Vec3b>(p1)[0];
+						g = img1.at<Vec3b>(p1)[1];
+						r = img1.at<Vec3b>(p1)[2];
 					}
+					else if(use_second){
+						b = img2.at<Vec3b>(p2)[0];
+						g = img2.at<Vec3b>(p2)[1];
+						r = img2.at<Vec3b>(p2)[2];
+					}
+					color = cv::Scalar(b,g,r);
+					//pt_color.x = xinter;
+					//pt_color.y = yinter;
+					//pt_color.color = color;
+					content.push_back(pt_color);
+					result.at<Vec3b>(pinter)[0] = b;
+					result.at<Vec3b>(pinter)[1] = g;
+					result.at<Vec3b>(pinter)[2] = r;
 				}
+	
 			}
+				
 		}
+	}
 		
-		return result;
+		
+	return result;
 }
 
 
@@ -1493,8 +1449,20 @@ cv::Mat getInterpolatedTriangleContent(cv::Mat img1, cv::Mat img2, cv::Vec6f tri
 * 
 */
 cv::Mat getInterpolatedTriangleContentDiffCam(PersCamera cam1, PersCamera cam2, cv::Vec6f triangle1, cv::Vec6f triangle2, cv::Vec6f &trianglesInter, vector<PointWithColor> &content, double dist, double pos){
+	//For function calling
+	Triangle tri_class;
+	EquiTrans trans_class;
+	
+
 	//Get perspective images
 	cv::Mat img1 = cam1.image, img2 = cam2.image;
+	
+	//Result image with only triangle
+	int rows, cols;
+	rows = img1.rows * (1-pos/dist) + img2.rows * pos/dist;
+	cols = img1.cols * (1-pos/dist) + img2.cols * pos/dist;
+	cv::Mat result = cv::Mat::zeros(rows,cols,img1.type());
+	
 	
 	//Affine transform
 	cv::Mat tWarp;
@@ -1504,6 +1472,68 @@ cv::Mat getInterpolatedTriangleContentDiffCam(PersCamera cam1, PersCamera cam2, 
 	
 	double* uprow = tWarp.ptr<double>(0);
 	double* downrow = tWarp.ptr<double>(1);
+	
+	//Get interpolate perspective cam
+	//PersCamera inter_cam = tri_class.getInterpolatedPersCamParams(cam1,cam2,dist,pos);
+	
+	
+	cv::Point2f a,b,c,a1,b1,c1,a_inter,b_inter,c_inter; 
+	a.x = triangle1[0];
+	a.y = triangle1[1];
+	b.x = triangle1[2];
+	b.y = triangle1[3];
+	c.x = triangle1[4];
+	c.y = triangle1[5];
+	
+	a_inter.x = triangle_inter[0];
+	a_inter.y = triangle_inter[1];
+	b_inter.x = triangle_inter[2];
+	b_inter.y = triangle_inter[3];
+	c_inter.x = triangle_inter[4];
+	c_inter.y = triangle_inter[5];
+	
+	//Get the bouding box around the triangle
+	int xmax = cvRound(max(a.x, max(b.x,c.x)));
+	int ymax = cvRound(max(a.y, max(b.y,c.y)));
+	int xmin = cvRound(min(a.x, min(b.x,c.x)));
+	int ymin = cvRound(min(a.y, min(b.y,c.y)));
+		
+	//Forward projection
+	//Go through all the points in the intermediate triangle and find positions 
+	// in preceeding image
+	cv::Point2f p1,p2,pinter;
+	cv::Scalar color;
+	PointWithColor pt_color;
+	for(int i=ymin;i<=ymax;i++){
+		for(int j=xmin;j<=xmax;j++){
+			p1.x = j;
+			p1.y = i;
+			
+			uchar b,g,r = 0;
+			if(inTriangleArea(p1,triangle1)){
+				//Get the position in image 2
+				p2.x = uprow[0] * p1.x + uprow[1]* p1.y + uprow[2];
+				p2.y = downrow[0] * p1.x + downrow[1]* p1.y + downrow[2];
+			
+				//Get interpolated position
+				pinter.x = (p1.x *(dist-pos) + p2.x*pos)/dist;
+				pinter.y = (p1.y *(dist-pos) + p2.y*pos)/dist;
+			
+				//if(pinter.x>0 && pinter.y>0 && pinter.x<result.cols && pinter.y < result.rows){
+					
+					b = img1.at<Vec3b>(p1)[0];
+					g = img1.at<Vec3b>(p1)[1];
+					r = img1.at<Vec3b>(p1)[2];
+				
+					result.at<Vec3b>(pinter)[0] = b;
+					result.at<Vec3b>(pinter)[1] = g; 
+					result.at<Vec3b>(pinter)[2] = r;  
+			}
+			//}
+		}
+	}
+	
+	return result;
 }
 
 /**
@@ -2650,7 +2680,7 @@ void delaunayInterpolateCubeMakeTriangles(cv::Mat img1, cv::Mat img2, double dis
 	//points3D2 = sphereCoordinatesList(img2.rows, img2.cols, points2);
 	
 	//Convert Keypoints from Omni to 3D euclidien based on Chiba's Function
-	 PointFeature feat;
+	PointFeature feat;
 	feat.toSpherePoints(img1,keypoints1,points3D1c);
 	feat.toSpherePoints(img2,keypoints2,points3D2c);
 	//Save to file 
@@ -2674,7 +2704,12 @@ cv::Mat delaunayInterpolateCubeFromTriangles(cv::Mat img1, cv::Mat img2, double 
 	//Resulting image
 	cv::Mat result = cv::Mat::zeros(img1.rows, img1.cols, img1.type());
 	
+	
+	//For calling functiona
+	EquiTrans trans_class;
 	 PointFeature feat;
+	 Triangle tri_class;
+	 
 	//3D Triangles
 	//vector<Vec9f> triangles3D1, triangles3D2;
 	
@@ -2691,6 +2726,14 @@ cv::Mat delaunayInterpolateCubeFromTriangles(cv::Mat img1, cv::Mat img2, double 
 	vector<cv::Vec6f> triangles_list1, triangles_list2;
 	
 	makeCorrespondingDelaunayTriangles3D(points1c, points2c, triangles3D1c, triangles3D2c);
+	
+	//Cut the bigger triangles into smaller triangles
+	tri_class.subdivideMatched(triangles3D1c,triangles3D2c);
+	
+	//Write Corresponding
+	feat.writeTriangles3d(triangles3D1c, "Txt_files/TrianglePoints3D_test3_1_matched.txt");
+	feat.writeTriangles3d(triangles3D2c, "Txt_files/TrianglePoints3D_test4_1_matched.txt");
+	
 	triangles_list1 = feat.convTriangles3dToEqui(triangles3D1c, img1);
 	triangles_list2 = feat.convTriangles3dToEqui(triangles3D2c, img2);
 	cout << "Triangles 2D size: " << triangles_list1.size() << endl;
@@ -2706,13 +2749,12 @@ cv::Mat delaunayInterpolateCubeFromTriangles(cv::Mat img1, cv::Mat img2, double 
 	
 	//Go through the triangles
 	Vec6f triangle1, triangle2, triangle_inter, triangle_persp1,triangle_persp2, triangle_inter_persp ;
+	Vec9f triangle3d1,triangle3d2;
 	PersCamera cam1, cam2, cam_inter;
 	cv::Mat persp1, persp2, inter, temp;
 	vector<PointWithColor> content;
 	
-	//For calling functiona
-	Triangle tri_class;
-	EquiTrans trans_class;
+	
 	
 	//Use boolean sameView to test using single view and multiple view
 	
@@ -2722,16 +2764,20 @@ cv::Mat delaunayInterpolateCubeFromTriangles(cv::Mat img1, cv::Mat img2, double 
 	for(int i=0;i<triangles_list1.size();i++){
 	//for(int i=0;i<10;i++){
 	ostringstream img1_file,img2_file,img_inter_file;
+		 //Equirectangular triangle
 		 triangle1 = triangles_list1[i];
 		 triangle2 = triangles_list2[i];
 		
-		
+		//3D triangle
+		 triangle3d1 = triangles3D1c[i];
+		 triangle3d2 = triangles3D2c[i];
 		
 		//Generate the perspective view for the given triangle using the same view for 
 		// both triangles
 		//inter = cv::Mat::zeros(img1.rows, img1.cols, img1.type());
 		//Image 1 and camera 1
-		cam1 = tri_class.getPersCamParamsTwo(img1,triangle1,triangle2);
+		//cam1 = tri_class.getPersCamParamsTwo(img1,triangle1,triangle2);
+		cam1 = tri_class.getPersCamParamsTwo(img1,triangle3d1,triangle3d2);
 		//cam1 = tri_class.getPersCamParamsBarycentricTwo(img1,triangles3D1c[i],triangles3D2c[i]);
 		persp1 = trans_class.toPerspective(img1,cam1);
 		cam1.image = persp1;
@@ -2739,7 +2785,8 @@ cv::Mat delaunayInterpolateCubeFromTriangles(cv::Mat img1, cv::Mat img2, double 
 		//imwrite(img1_file.str(), persp1);
 		
 		//Image 2 and camera 2
-		cam2 = tri_class.getPersCamParamsTwo(img2,triangle1,triangle2);
+		//cam2 = tri_class.getPersCamParamsTwo(img2,triangle1,triangle2);
+		cam2 = tri_class.getPersCamParamsTwo(img2,triangle3d1,triangle3d2);
 		//cam2 = tri_class.getPersCamParamsBarycentricTwo(img2,triangles3D1c[i],triangles3D2c[i]);
 		persp2 = trans_class.toPerspective(img2,cam2);
 		img2_file << "OldPerpResults/PerspImg2/Img2 Perpspective " << i << ".JPG"; 
@@ -2759,7 +2806,8 @@ cv::Mat delaunayInterpolateCubeFromTriangles(cv::Mat img1, cv::Mat img2, double 
 		imwrite(img2_file.str(), temp);
 		
 		//Interpolated camera
-		cam_inter = tri_class.getInterpolatedPersCamParams(cam1,cam2,dist,pos);
+		cam_inter = cam1;
+		//cam_inter = tri_class.getInterpolatedPersCamParams(cam1,cam2,dist,pos);
 		inter = getInterpolatedTriangleContent(persp1,persp2,triangle_persp1,triangle_persp2,triangle_inter_persp,content,dist,pos);
 		img_inter_file << "OldPerpResults/PerspInter/Img Inter Perpspective " << i << ".JPG"; 
 		//imwrite(img_inter_file.str(), inter);
@@ -2771,20 +2819,6 @@ cv::Mat delaunayInterpolateCubeFromTriangles(cv::Mat img1, cv::Mat img2, double 
 		//triangle_inter_persp = tri_class.convToPersTriangle(result,cam_inter,triangle_inter);
 		
 		trans_class.toEquirectangular(cam_inter, triangle_inter_persp, result);
-		//if(i%1==0){
-		//	inter_string << "Equi" ;
-		//	namedWindow(inter_string.str(),0);
-		//	imshow(inter_string.str(), result);
-		//}
-		//Convert the triangle content to Equirectangular image
-		//for(int j=0;j<content.size();j++){
-		//	cv::Point2f p (content[j].x, content[j].y);
-			//Find the position of each point in the equi and fill the content
-		//	double xi, yi;
-			//getposition
-			//result.at<Vec3b>(yi,xi)[0] = content[j].color[0];
-		//}
-		
 		
 		}
 	}
@@ -2794,16 +2828,24 @@ cv::Mat delaunayInterpolateCubeFromTriangles(cv::Mat img1, cv::Mat img2, double 
 		//for(int i=0;i<2;i++){
 		ostringstream img1_file,img2_file,img_inter_file;
 		
+		//Equirectangular image triangle
 		 triangle1 = triangles_list1[i];
 		 triangle2 = triangles_list2[i];
-		
+		 //
+		 
+		 
+		 //3D triangle
+		 triangle3d1 = triangles3D1c[i];
+		 triangle3d2 = triangles3D2c[i];
+		 
 	
 		
 		//Generate the perspective view for the given triangle using the same view for 
 		// both triangles
 		//inter = cv::Mat::zeros(img1.rows, img1.cols, img1.type());
 		//Image 1 and camera 1
-		cam1 = tri_class.getPersCamParams(img1,triangle1);
+		//cam1 = tri_class.getPersCamParams(img1,triangle1);
+		cam1 = tri_class.getPersCamParams(img1,triangle3d1);
 		//cam1 = tri_class.getPersCamParamsBarycentric(img1,triangles3D1c[i]);
 		persp1 = trans_class.toPerspective(img1,cam1);
 		cam1.image = persp1;
@@ -2812,7 +2854,8 @@ cv::Mat delaunayInterpolateCubeFromTriangles(cv::Mat img1, cv::Mat img2, double 
 		
 		
 		//Image 2 and camera 2
-		cam2 = tri_class.getPersCamParams(img2,triangle2);
+		//cam2 = tri_class.getPersCamParams(img2,triangle2);
+		cam2 = tri_class.getPersCamParams(img2,triangle3d2);
 		//cam2 = tri_class.getPersCamParamsBarycentric(img2,triangles3D2c[i]);
 		persp2 = trans_class.toPerspective(img2,cam2);
 		cam2.image = persp2;
@@ -2827,23 +2870,27 @@ cv::Mat delaunayInterpolateCubeFromTriangles(cv::Mat img1, cv::Mat img2, double 
 		
 		//Interpolated camera
 		cam_inter = tri_class.getInterpolatedPersCamParams(cam1,cam2,dist,pos);
-		//inter = getInterpolatedTriangleContentDiffCam(cam1,cam2,triangle_persp1,triangle_persp2,triangle_inter_persp,content,dist,pos);
-		inter = getInterpolatedTriangleContent(persp1,persp2,triangle_persp1,triangle_persp2,triangle_inter_persp,content,dist,pos);
+		inter = getInterpolatedTriangleContentDiffCam(cam1,cam2,triangle_persp1,triangle_persp2,triangle_inter_persp,content,dist,pos);
+		//inter = getInterpolatedTriangleContent(persp1,persp2,triangle_persp1,triangle_persp2,triangle_inter_persp,content,dist,pos);
 
 		img_inter_file << "OldPerpResults/PerspInter/Img Inter Perpspective " << i << ".JPG"; 
-		imwrite(img_inter_file.str(), persp2);
+		imwrite(img_inter_file.str(), inter);
 		cam_inter.image = inter;
 		
 		//Put the content in the resulting image...Iteratively fill the image
 		//cam_inter.image = inter;
 		trans_class.toEquirectangular(cam_inter, triangle_inter_persp, result);
 		
+		cvNamedWindow("Temp Result",0);
+		imshow("Temp Result", result);
+		waitKey(0);
 		
 		
 		}
 	}
 	
 	return result;
+	
 }
 
 

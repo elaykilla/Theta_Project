@@ -70,15 +70,15 @@ void PointFeature::printPoints(vector<KeyPoint> &keypoints){
 void PointFeature::toSpherePoints(Mat image, vector<KeyPoint> &keypoints, vector<Point3d> &points){
   int ncols = image.cols;
   int nrows = image.rows;
-  double pan_offset = (double)ncols/2.0 + 0.5;
-  double tilt_offset = (double)nrows/2.0 + 0.5;
+  double half_width = (double)ncols/2.0;
+  double half_height = (double)nrows/2.0;
   double rmax = (double)nrows - 1.0;
 
   vector<Point3d>::iterator it_3p = points.begin();
   for(vector<KeyPoint>::iterator it = keypoints.begin(); it != keypoints.end(); ++it, ++it_3p){
     // to center origin
-    double c_x = it->pt.x - pan_offset;
-    double c_y = rmax - it->pt.y - tilt_offset;
+    double c_x = it->pt.x - half_width + 0.5;
+    double c_y = half_height - it->pt.y - 0.5;
 
     // to radian
     double pan = c_x / ncols * M_PI *2.0;
@@ -90,6 +90,70 @@ void PointFeature::toSpherePoints(Mat image, vector<KeyPoint> &keypoints, vector
     it_3p->z = sin(tilt);          // height
 
   }
+}
+
+
+/*
+ * convert a point in equirectangular image to that in 3d unit sphere.
+ */
+vector<Point3d> PointFeature::toSpherePoint(Mat image, vector<Point2f> point_list){
+  int ncols = image.cols;
+  int nrows = image.rows;
+  double pan_offset = (double)ncols/2.0 + 0.5;
+  double tilt_offset = (double)nrows/2.0 + 0.5;
+  double rmax = (double)nrows - 1.0;
+
+  vector<Point3d> dp_list;
+
+  for(vector<Point2f>::iterator it = point_list.begin(); it != point_list.end(); ++it){
+    // to center origin
+    double c_x = (double)it->x - pan_offset;
+    double c_y = rmax - (double)it->y - tilt_offset;
+
+    // to radian
+    double pan = c_x / ncols * M_PI *2.0;
+    double tilt = c_y / nrows * M_PI;
+
+    Point3d dp;
+    // coodinate system is the same with Sachit's MS thesis.
+    dp.x = cos(tilt)*cos(pan); // depth
+    dp.y = cos(tilt)*sin(pan); // left-to-right
+    dp.z = sin(tilt);          // height
+
+    dp_list.push_back(dp);
+  }
+  
+  return dp_list;
+}
+
+/*
+ * Convert a point in Point3d to Vec9f
+ */
+Vec9f PointFeature::point3dToVec9f(vector<Point3d> p_list){
+  Vec9f vec;
+  int ele_num = 9;
+
+  if(p_list.size() == 3){
+    for(int i = 0, k = 0;i < 3;i++){
+      vec[k++] = p_list[i].x;
+      vec[k++] = p_list[i].y;
+      vec[k++] = p_list[i].z;
+    }
+  }
+
+  return vec;
+}
+
+
+/*
+ * convert a point in equirectangular image to that in 3d unit sphere.
+ */
+Vec9f PointFeature::toSpherePoint(Mat image, Vec6f vec){
+  vector<Point2f> point_list = convVec6fToPoint2f(vec);
+  vector<Point3d> p_list = toSpherePoint(image, point_list);
+  Vec9f vec9 = point3dToVec9f(p_list);
+  
+  return vec9;
 }
 
 /*
@@ -133,6 +197,7 @@ vector<Point3d> PointFeature::readPoints3d(string filename ){
   Point3d p;
   
   double factor = 100000;
+  bool debug_flag = false;
   while(infile.good()){
     string line;
     while(getline(infile, line)){
@@ -145,9 +210,9 @@ vector<Point3d> PointFeature::readPoints3d(string filename ){
 	    double dvalue = atof(value.c_str());
 	    logFile << "read value: " << dvalue << "||" << "Written value: " << round((float)dvalue*factor)/factor << endl;
 	    vec[i] = round((float)dvalue*factor)/factor;
-//	    if(debug_flag){
-	      //cout << dvalue << ", ";
-	   // }
+	    if(debug_flag){
+	      cout << dvalue << ", ";
+	    }
 	    i++;
 	}
 	
@@ -161,6 +226,29 @@ vector<Point3d> PointFeature::readPoints3d(string filename ){
 	return points3d;	
 }
 
+
+/**
+* Function to write 3d triangles into file in the following format:
+* p1.x ,p1.y, p1.z ,p2.x ,p2.y, p2.z, p3.x ,p3.y, p3.z
+*/
+void PointFeature::writeTriangles3d(vector<Vec9f> triangles, string filename){
+	Vec9f triangle;
+	ofstream logFile;
+	
+	//Open file
+	logFile.open(filename.c_str());
+	for(int i=0;i<triangles.size();i++){
+		triangle = triangles[i];
+		
+		for(int j=0;j<8;j++){
+			logFile << triangle[j] << ",";
+		}
+		logFile << triangle[8] << endl;
+	}
+	
+	logFile.close();
+
+}
 
 /*
  * read 3D triangles on the unit sphere.
@@ -328,7 +416,7 @@ void PointFeature::convTriangles3dToEqui(vector< vector<float> >&tri3d_list, Mat
 	eq_points[k].x = (float)x;
 	eq_points[k].y = (float)y;
 	if(debug_flag){
-	 // cout << "(x, y) = (" << x << ", " << y << "\n";
+	  cout << "(x, y) = (" << x << ", " << y << ")\n";
 	}
       }
 
@@ -343,7 +431,7 @@ void PointFeature::convTriangles3dToEqui(vector< vector<float> >&tri3d_list, Mat
 vector<Vec6f> PointFeature::convTriangles3dToEqui(vector<Vec9f> tri3d_list, Mat equi_img){
     cout << "convTriangles3dToEqui called with: " << tri3d_list.size() << " triangles" << endl;
     int tri_num = tri3d_list.size();
-    bool debug_flag = true;
+    bool debug_flag = false;
 
     vector<Vec6f> tri2d_list;  // Triangles in equirectangular image
       
@@ -365,7 +453,12 @@ vector<Vec6f> PointFeature::convTriangles3dToEqui(vector<Vec9f> tri3d_list, Mat 
 	eq_points[k] = (float)x;
 	eq_points[k+1] = (float)y;
 	if(debug_flag){
+
+	  cout << "(x, y) = (" << x << ", " << y << ")\n";
+
 	 // cout << "(x, y) = (" << x << ", " << y << "\n";
+
+
 	}
       }
 
@@ -392,6 +485,25 @@ vector< vector<Point2f> > PointFeature::convVec6fToPoint2f(vector<Vec6f> &tri_li
       points[k].y = vec[i+1];
     }
     point_list.push_back(points);
+  }
+
+  return point_list;
+}
+
+/*
+ * convert Vec6f to Point3d
+ */
+vector<Point2f> PointFeature::convVec6fToPoint2f(Vec6f vec){
+
+  int ele_num = 6;
+  size_t point_num = 3;
+  vector<Point2f> point_list; 
+
+  for(int i = 0, k = 0;i < ele_num; i += 2, k++){
+    Point2f p;
+    p.x = vec[i];
+    p.y = vec[i+1];
+    point_list.push_back(p);      
   }
 
   return point_list;

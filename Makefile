@@ -111,12 +111,26 @@ load/fast:
 	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/build
 .PHONY : load/fast
 
+#=============================================================================
+# Target rules for targets named tri
+
+# Build rule for target.
+tri: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 tri
+.PHONY : tri
+
+# fast build rule for target.
+tri/fast:
+	$(MAKE) -f CMakeFiles/tri.dir/build.make CMakeFiles/tri.dir/build
+.PHONY : tri/fast
+
 EquiTrans.o: EquiTrans.cpp.o
 .PHONY : EquiTrans.o
 
 # target to build an object file
 EquiTrans.cpp.o:
 	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/EquiTrans.cpp.o
+	$(MAKE) -f CMakeFiles/tri.dir/build.make CMakeFiles/tri.dir/EquiTrans.cpp.o
 .PHONY : EquiTrans.cpp.o
 
 EquiTrans.i: EquiTrans.cpp.i
@@ -125,6 +139,7 @@ EquiTrans.i: EquiTrans.cpp.i
 # target to preprocess a source file
 EquiTrans.cpp.i:
 	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/EquiTrans.cpp.i
+	$(MAKE) -f CMakeFiles/tri.dir/build.make CMakeFiles/tri.dir/EquiTrans.cpp.i
 .PHONY : EquiTrans.cpp.i
 
 EquiTrans.s: EquiTrans.cpp.s
@@ -133,6 +148,7 @@ EquiTrans.s: EquiTrans.cpp.s
 # target to generate assembly for a file
 EquiTrans.cpp.s:
 	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/EquiTrans.cpp.s
+	$(MAKE) -f CMakeFiles/tri.dir/build.make CMakeFiles/tri.dir/EquiTrans.cpp.s
 .PHONY : EquiTrans.cpp.s
 
 MathCalcs.o: MathCalcs.cpp.o
@@ -213,6 +229,7 @@ PersCamera.o: PersCamera.cpp.o
 # target to build an object file
 PersCamera.cpp.o:
 	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/PersCamera.cpp.o
+	$(MAKE) -f CMakeFiles/tri.dir/build.make CMakeFiles/tri.dir/PersCamera.cpp.o
 .PHONY : PersCamera.cpp.o
 
 PersCamera.i: PersCamera.cpp.i
@@ -221,6 +238,7 @@ PersCamera.i: PersCamera.cpp.i
 # target to preprocess a source file
 PersCamera.cpp.i:
 	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/PersCamera.cpp.i
+	$(MAKE) -f CMakeFiles/tri.dir/build.make CMakeFiles/tri.dir/PersCamera.cpp.i
 .PHONY : PersCamera.cpp.i
 
 PersCamera.s: PersCamera.cpp.s
@@ -229,6 +247,7 @@ PersCamera.s: PersCamera.cpp.s
 # target to generate assembly for a file
 PersCamera.cpp.s:
 	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/PersCamera.cpp.s
+	$(MAKE) -f CMakeFiles/tri.dir/build.make CMakeFiles/tri.dir/PersCamera.cpp.s
 .PHONY : PersCamera.cpp.s
 
 PointFeature.o: PointFeature.cpp.o
@@ -237,6 +256,7 @@ PointFeature.o: PointFeature.cpp.o
 # target to build an object file
 PointFeature.cpp.o:
 	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/PointFeature.cpp.o
+	$(MAKE) -f CMakeFiles/tri.dir/build.make CMakeFiles/tri.dir/PointFeature.cpp.o
 .PHONY : PointFeature.cpp.o
 
 PointFeature.i: PointFeature.cpp.i
@@ -245,6 +265,7 @@ PointFeature.i: PointFeature.cpp.i
 # target to preprocess a source file
 PointFeature.cpp.i:
 	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/PointFeature.cpp.i
+	$(MAKE) -f CMakeFiles/tri.dir/build.make CMakeFiles/tri.dir/PointFeature.cpp.i
 .PHONY : PointFeature.cpp.i
 
 PointFeature.s: PointFeature.cpp.s
@@ -253,6 +274,7 @@ PointFeature.s: PointFeature.cpp.s
 # target to generate assembly for a file
 PointFeature.cpp.s:
 	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/PointFeature.cpp.s
+	$(MAKE) -f CMakeFiles/tri.dir/build.make CMakeFiles/tri.dir/PointFeature.cpp.s
 .PHONY : PointFeature.cpp.s
 
 Triangle.o: Triangle.cpp.o
@@ -261,6 +283,7 @@ Triangle.o: Triangle.cpp.o
 # target to build an object file
 Triangle.cpp.o:
 	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/Triangle.cpp.o
+	$(MAKE) -f CMakeFiles/tri.dir/build.make CMakeFiles/tri.dir/Triangle.cpp.o
 .PHONY : Triangle.cpp.o
 
 Triangle.i: Triangle.cpp.i
@@ -269,6 +292,7 @@ Triangle.i: Triangle.cpp.i
 # target to preprocess a source file
 Triangle.cpp.i:
 	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/Triangle.cpp.i
+	$(MAKE) -f CMakeFiles/tri.dir/build.make CMakeFiles/tri.dir/Triangle.cpp.i
 .PHONY : Triangle.cpp.i
 
 Triangle.s: Triangle.cpp.s
@@ -277,6 +301,7 @@ Triangle.s: Triangle.cpp.s
 # target to generate assembly for a file
 Triangle.cpp.s:
 	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/Triangle.cpp.s
+	$(MAKE) -f CMakeFiles/tri.dir/build.make CMakeFiles/tri.dir/Triangle.cpp.s
 .PHONY : Triangle.cpp.s
 
 WarpImage.o: WarpImage.cpp.o
@@ -285,6 +310,7 @@ WarpImage.o: WarpImage.cpp.o
 # target to build an object file
 WarpImage.cpp.o:
 	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/WarpImage.cpp.o
+	$(MAKE) -f CMakeFiles/tri.dir/build.make CMakeFiles/tri.dir/WarpImage.cpp.o
 .PHONY : WarpImage.cpp.o
 
 WarpImage.i: WarpImage.cpp.i
@@ -293,6 +319,7 @@ WarpImage.i: WarpImage.cpp.i
 # target to preprocess a source file
 WarpImage.cpp.i:
 	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/WarpImage.cpp.i
+	$(MAKE) -f CMakeFiles/tri.dir/build.make CMakeFiles/tri.dir/WarpImage.cpp.i
 .PHONY : WarpImage.cpp.i
 
 WarpImage.s: WarpImage.cpp.s
@@ -301,6 +328,7 @@ WarpImage.s: WarpImage.cpp.s
 # target to generate assembly for a file
 WarpImage.cpp.s:
 	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/WarpImage.cpp.s
+	$(MAKE) -f CMakeFiles/tri.dir/build.make CMakeFiles/tri.dir/WarpImage.cpp.s
 .PHONY : WarpImage.cpp.s
 
 load.o: load.cpp.o
@@ -327,6 +355,30 @@ load.cpp.s:
 	$(MAKE) -f CMakeFiles/load.dir/build.make CMakeFiles/load.dir/load.cpp.s
 .PHONY : load.cpp.s
 
+tri_main.o: tri_main.cpp.o
+.PHONY : tri_main.o
+
+# target to build an object file
+tri_main.cpp.o:
+	$(MAKE) -f CMakeFiles/tri.dir/build.make CMakeFiles/tri.dir/tri_main.cpp.o
+.PHONY : tri_main.cpp.o
+
+tri_main.i: tri_main.cpp.i
+.PHONY : tri_main.i
+
+# target to preprocess a source file
+tri_main.cpp.i:
+	$(MAKE) -f CMakeFiles/tri.dir/build.make CMakeFiles/tri.dir/tri_main.cpp.i
+.PHONY : tri_main.cpp.i
+
+tri_main.s: tri_main.cpp.s
+.PHONY : tri_main.s
+
+# target to generate assembly for a file
+tri_main.cpp.s:
+	$(MAKE) -f CMakeFiles/tri.dir/build.make CMakeFiles/tri.dir/tri_main.cpp.s
+.PHONY : tri_main.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -336,6 +388,7 @@ help:
 	@echo "... edit_cache"
 	@echo "... load"
 	@echo "... rebuild_cache"
+	@echo "... tri"
 	@echo "... EquiTrans.o"
 	@echo "... EquiTrans.i"
 	@echo "... EquiTrans.s"
@@ -363,6 +416,9 @@ help:
 	@echo "... load.o"
 	@echo "... load.i"
 	@echo "... load.s"
+	@echo "... tri_main.o"
+	@echo "... tri_main.i"
+	@echo "... tri_main.s"
 .PHONY : help
 
 
