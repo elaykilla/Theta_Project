@@ -92,6 +92,27 @@ void PointFeature::toSpherePoints(Mat image, vector<KeyPoint> &keypoints, vector
   }
 }
 
+  /**
+  * Converts a list of 3d points into their equi corresponding points
+  */
+  vector<Point2f> PointFeature::toEquiPoints(Mat image, vector<Point3d> points3d){
+  	EquiTrans trans_class;
+  	vector<Point2f> points;
+  	
+  	double x,y;
+  	for(int i=0;i<points3d.size();i++){
+  		Point3d p = points3d[i];
+  		trans_class.convSpherePointToEquiCoord(p, image, &x, &y);
+  		
+  		Point2f p2;
+  		p2.x = x;
+  		p2.y = y;
+  		points.push_back(p2);
+  	}
+  	
+  	return points;
+  }
+
 
 /*
  * convert a point in equirectangular image to that in 3d unit sphere.
@@ -209,7 +230,8 @@ vector<Point3d> PointFeature::readPoints3d(string filename ){
 	while(getline(line_stream, value, ',')){
 	    double dvalue = atof(value.c_str());
 	    logFile << "read value: " << dvalue << "||" << "Written value: " << round((float)dvalue*factor)/factor << endl;
-	    vec[i] = round((float)dvalue*factor)/factor;
+	    //vec[i] = round((float)dvalue*factor)/factor;
+	    vec[i] = dvalue;
 	    if(debug_flag){
 	      cout << dvalue << ", ";
 	    }

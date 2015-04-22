@@ -544,6 +544,7 @@ int main(int argc, char** argv)
 	
 	
 	//randomTest();
+	//testKeypointConversion(ori,templ);
 	/******************************************* End of Test Zone ***************************************************************/
 
 

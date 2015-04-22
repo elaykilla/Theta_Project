@@ -1212,7 +1212,36 @@ vector<Vec9f> Triangle::forceSubdivide(Vec9f triangle){
       double max_angle1 = getMaxAngle(vec1);
       double max_angle2 = getMaxAngle(vec2);
       
-      if(max_angle1>m_MAX_ANGLE || max_angle2>m_MAX_ANGLE){
+      //Make a list of all points
+      vector<Point3d> points;
+      for(int n=0;n<9;n++){
+      	Point3d p1,p2,p3;
+      	p1.x = vec1[0];
+      	p1.y = vec1[1];
+      	p1.z = vec1[2];
+      	p2.x = vec1[3];
+      	p2.y = vec1[4];
+      	p2.z = vec1[5];
+      	p3.x = vec1[6];
+      	p3.y = vec1[7];
+      	p3.z = vec1[8];
+      	points.push_back(p1);points.push_back(p2);points.push_back(p3);
+      	
+      	p1.x = vec2[0];
+      	p1.y = vec2[1];
+      	p1.z = vec2[2];
+      	p2.x = vec2[3];
+      	p2.y = vec2[4];
+      	p2.z = vec2[5];
+      	p3.x = vec2[6];
+      	p3.y = vec2[7];
+      	p3.z = vec2[8];
+      	points.push_back(p1);points.push_back(p2);points.push_back(p3);
+      }
+      
+      double max_both = nPointsMaxAngle(points);
+      
+      if(max_angle1>m_MAX_ANGLE || max_angle2>m_MAX_ANGLE || max_both > m_MAX_ANGLE){
         exists_one = true;
       	tmp_new1 = forceSubdivide(vec1);
       	tmp_new2 = forceSubdivide(vec2);

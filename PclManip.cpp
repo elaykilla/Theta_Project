@@ -13,12 +13,32 @@
 //Function returns the index of a given point in an array, if not found it gives the size of the 
 //Vector
 int findPointInVector(PointXYZRGB p, vector<PointXYZRGB> points){
-
-	int pos = 0;
+	//
+	int pos=0;
+	
+	//Define a small epsilon for reading errors
+	double epsilon = 0.00001;
+	
+	
+	//Bools for interals
+	bool xinter,yinter,zinter;
+	
+	xinter = inInterval(points[pos].x,p.x-epsilon,p.x+epsilon);
+	yinter = inInterval(points[pos].y,p.y-epsilon,p.y+epsilon);
+	zinter = inInterval(points[pos].z,p.z-epsilon,p.z+epsilon);
+	
 	//double factor = 1000000;
-	while(pos<points.size() && 
-	((points[pos].x != p.x) ||(points[pos].y != p.y) || (points[pos].z != p.z))){
-		pos++;
+	while(pos<points.size()) {
+		xinter = inInterval(points[pos].x,p.x-epsilon,p.x+epsilon);
+		yinter = inInterval(points[pos].y,p.y-epsilon,p.y+epsilon);
+		zinter = inInterval(points[pos].z,p.z-epsilon,p.z+epsilon);
+	
+		if( !xinter|| !yinter || !zinter){
+			pos++;
+		}
+		else{
+			break;
+		}
 	} 
 	
 	return pos;
@@ -644,31 +664,31 @@ void makeCorrespondingDelaunayTriangles3D(vector<PointXYZRGB> points3D1, vector<
 	for(int i=0;i<triangles3D1.size();i++){
 		t = triangles3D1[i];
 		//cout << "Triangle " << i << ": " << t << endl;
-		p1.x = round(factor*(t[0]))/factor;
-		p1.y = round(factor*(t[1]))/factor;
-		p1.z = round(factor*(t[2]))/factor;
+		//p1.x = round(factor*(t[0]))/factor;
+		//p1.y = round(factor*(t[1]))/factor;
+		//p1.z = round(factor*(t[2]))/factor;
 		
 		
-		p2.x = round(factor*(t[3]))/factor;
-		p2.y = round(factor*(t[4]))/factor;
-		p2.z = round(factor*(t[5]))/factor;
+		//p2.x = round(factor*(t[3]))/factor;
+		//p2.y = round(factor*(t[4]))/factor;
+		//p2.z = round(factor*(t[5]))/factor;
 		
-		p3.x = round(factor*(t[6]))/factor;
-		p3.y = round(factor*(t[7]))/factor;
-		p3.z = round(factor*(t[8]))/factor;
+		//p3.x = round(factor*(t[6]))/factor;
+		//p3.y = round(factor*(t[7]))/factor;
+		//p3.z = round(factor*(t[8]))/factor;
 		
-		//p1.x = t[0];
-		//p1.y = t[1];
-		//p1.z = t[2];
+		p1.x = t[0];
+		p1.y = t[1];
+		p1.z = t[2];
 		
 		
-	//	p2.x = t[3];
-	//	p2.y = t[4];
-	//	p2.z = t[5];
-	//	
-	//	p3.x = t[6];
-	//	p3.y = t[7];
-	//	p3.z = t[8];
+		p2.x = t[3];
+		p2.y = t[4];
+		p2.z = t[5];
+		
+		p3.x = t[6];
+		p3.y = t[7];
+		p3.z = t[8];
 
 		//logFile << p1 << "||" << p2 << "||" << p3 << endl;
 		//For each point in triangle 1 we search for the corresponding point in triangle 2
@@ -718,7 +738,7 @@ cv::Mat delaunaySphereInterpolateFromTriangles(cv::Mat img1,cv::Mat img2 , doubl
 	//Resulting image
 	cv::Mat result = cv::Mat::zeros(img1.rows, img1.cols, img1.type());
 	
-	PointCloud<PointXYZRGB>::Ptr sphere1, sphere2;
+	PointCloud<PointXYZRGB>::Ptr sphere1, sphere2, sphere_inter;
 	//PointCloud<PointXYZRGB>::Ptr result (new PointCloud<PointXYZRGB>); 
 	
 	//Required Classes 
@@ -785,6 +805,10 @@ cv::Mat delaunaySphereInterpolateFromTriangles(cv::Mat img1,cv::Mat img2 , doubl
 				double y = rt1[0]*p.x + rt1[1]*p.y + rt1[2]*p.z;
 				double z = rt2[0]*p.x + rt2[1]*p.y + rt2[2]*p.z;
 				
+				
+				
+				
+				
 				//Get the closest pixel coordinates for points in image1 and image2
 				int ip1, ip2, jp1, jp2;
 				pixelCoordinates(p.x,p.y,p.z,1,img1.rows,img1.cols,ip1,jp1);
@@ -795,27 +819,40 @@ cv::Mat delaunaySphereInterpolateFromTriangles(cv::Mat img1,cv::Mat img2 , doubl
 				double y_inter = (p.y*(dist-pos) + y*pos)/dist; 
 				double z_inter = (p.z*(dist-pos) + z*pos)/dist; 
 				
+				//Get the interpolated pixel value
+				PointXYZRGB u;
+				u.x = x_inter;
+				u.y = y_inter;
+				u.z = z_inter;
+				
+				pixelInterpolate(u, 1, img1);
+				
+				//Add to interpolated sphere
+				sphere_inter->points.push_back(u);
+				
 				//Get interpolated pixel position
 				int i_inter,j_inter; 
 				pixelCoordinates(x_inter,y_inter,z_inter,1,img1.rows,img1.cols,i_inter,j_inter);
 				
-				if(jp1>0 && jp1<img1.cols && ip1>0 && ip1<img1.rows){
-					b = img1.at<Vec3b>(jp1,ip1)[0];
-					g = img1.at<Vec3b>(jp1,ip1)[1];
-					r = img1.at<Vec3b>(jp1,ip1)[2];
-				}
+				//if(jp1>0 && jp1<img1.cols && ip1>0 && ip1<img1.rows){
+				//	b = img1.at<Vec3b>(jp1,ip1)[0];
+				//	g = img1.at<Vec3b>(jp1,ip1)[1];
+				//	r = img1.at<Vec3b>(jp1,ip1)[2];
+				//}
 				
-				if(j_inter%img1.cols>0 && j_inter%img1.cols<img1.cols && i_inter%img1.rows>0 && i_inter%img1.rows<img1.rows){
-					result.at<Vec3b>(j_inter%img1.cols,i_inter%img1.rows)[0] = b;
-					result.at<Vec3b>(j_inter%img1.cols,i_inter%img1.rows)[1] = g;
-					result.at<Vec3b>(j_inter%img1.cols,i_inter%img1.rows)[2] = r;
-				}
+				//if(j_inter%img1.cols>0 && j_inter%img1.cols<img1.cols && i_inter%img1.rows>0 && i_inter%img1.rows<img1.rows){
+				//	result.at<Vec3b>(j_inter%img1.cols,i_inter%img1.rows)[0] = b;
+				//	result.at<Vec3b>(j_inter%img1.cols,i_inter%img1.rows)[1] = g;
+				//	result.at<Vec3b>(j_inter%img1.cols,i_inter%img1.rows)[2] = r;
+				//}
 		
 			}
 		
 		}
 	}
 	
+	//Convert sphere_inter into omni image
+	sphereToEqui(sphere_inter, 1, result.rows, result.cols, result);
 	return result;
 
 }

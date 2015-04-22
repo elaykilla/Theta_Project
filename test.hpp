@@ -1867,6 +1867,56 @@ void twoDToThreeDkeypoints(Mat img){
 //		boost::this_thread::sleep (boost::posix_time::microseconds (10000));
 	}
 }
+
+void testKeypointConversion(cv::Mat image1, cv::Mat image2){
+	vector<cv::KeyPoint> keypoints1, keypoints2;
+	
+	keypoints1 = getSiftKeypoints(image1);
+	keypoints2 = getSiftKeypoints(image2);
+
+	vector<cv::DMatch> matches;
+	getKeypointsAndMatches(image1,image2,keypoints1,keypoints2,matches);
+	vector<vector<cv::Point2f> > matchedPts = getMatchedPoints(keypoints1, keypoints2, matches);
+	
+	//Extracted points from the Keypoints
+	vector<cv::Point2f> points1 = matchedPts[0];
+	vector<cv::Point2f> points2 = matchedPts[1];
+	//Draw points on image
+	int radius = 5;
+	for(int i=0;i<points1.size();i++){
+		Point2f p1,p2;
+		p1 = points1[i];
+		p2 = points2[i];
+		circle(image1,p1,radius,CV_RGB(100,0,0),1,8,0);
+		circle(image2,p2,radius,CV_RGB(100,0,0),1,8,0);
+	}
+	
+	
+	//Convert Keypoints from Omni to 3D euclidien based on Chiba's Function
+	PointFeature feat;
+	vector<cv::Point3d> points3D1c(keypoints1.size()), points3D2c(keypoints2.size());
+	feat.toSpherePoints(image1,keypoints1,points3D1c);
+	feat.toSpherePoints(image2,keypoints2,points3D2c);
+	
+	//Convert back to Equi points and compare
+	points1 = feat.toEquiPoints(image1,points3D1c);
+	points2 = feat.toEquiPoints(image1,points3D2c);
+	for(int i=0;i<points1.size();i++){
+		Point2f p1,p2;
+		p1 = points1[i];
+		p2 = points2[i];
+		//circle(image1,p1,radius,CV_RGB(0,100,0),1,8,0);
+		//circle(image2,p2,radius,CV_RGB(000,100,0),1,8,0);
+	}
+	namedWindow("Image1", 0);
+	namedWindow("Image2",0);
+	imshow("Image1", image1);
+	imshow("Image2",image2);
+	waitKey(0);
+	
+	
+	
+}
 //////////////////////////////////// end of Test of 2D to 3D keypoints ///////////////////////////////////
 
 //////////////////////// Test of 3D triangle reading and writting ///////////////////////////////////
@@ -2282,7 +2332,7 @@ void testMultipleTrianglePerspective(Mat image, string triangles_file){
 			// Get perspective triangle
 			triangle_persp = tri_class.convToPersTriangle(image,cam,triangle2d);
 			trans_class.toEquirectangular(cam, triangle_persp, result);
-			result = drawTriangleOnImage(result,triangle2d);
+			//result = drawTriangleOnImage(result,triangle2d);
 		
 			persp = drawTriangleOnImage(persp,triangle_persp);
 			img_file << "OldPerpResults/TestPersp/Img1 Perpspective " << i << ".JPG"; 

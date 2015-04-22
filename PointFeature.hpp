@@ -31,6 +31,11 @@ public:
   void showKeyPoints(Mat imge, vector<KeyPoint> &keypoints);
   void printPoints(vector<KeyPoint> &keypoints);
   void toSpherePoints(Mat image, vector<KeyPoint> &keypoints, vector<Point3d> &points);
+  
+  /**
+  * Converts a list of 3d points into their equi corresponding points
+  */
+  vector<Point2f> toEquiPoints(Mat image, vector<Point3d> points3d);
   Vec9f toSpherePoint(Mat image, Vec6f vec);
   vector<Point3d> toSpherePoint(Mat image, vector<Point2f> vec);
   void printPoints3d(vector<Point3d> &points);

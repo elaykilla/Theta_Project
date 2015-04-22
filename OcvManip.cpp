@@ -68,7 +68,7 @@ void imageListToVideo(vector<cv::Mat> images , string fileName) {
 		name << fileName << ".mpeg";
 	
 		//Define framerate
-		double fps = 20;
+		double fps = 40;
 	
 		//Define frame size
 		Size fSize = img.size();
@@ -1355,6 +1355,7 @@ cv::Mat getInterpolatedTriangleContent(cv::Mat img1, cv::Mat img2, cv::Vec6f tri
 	cols = img1.cols * (1-pos/dist) + img2.cols * pos/dist;
 	
 	cv::Mat result = cv::Mat::zeros(rows,cols,img1.type());
+	cv::Mat bi_result =  cv::Mat::zeros(rows,cols,img1.type());
 	 
 	//Affine transform
 	cv::Mat tWarp, affine_inter_img1, affine_inter_img2;
@@ -1378,11 +1379,11 @@ cv::Mat getInterpolatedTriangleContent(cv::Mat img1, cv::Mat img2, cv::Vec6f tri
 	c_inter.y = triangle_inter[5];
 	
 	//Boolean to know which Image to use 
-	bool use_first, use_second;
+	bool use_first, use_second, use_both;
 		
-	use_first = false;
+	use_first = true;
 	use_second = false;
-		
+	use_both = false;
 	
 		
 	//Get the bouding box around the triangle
@@ -1396,11 +1397,13 @@ cv::Mat getInterpolatedTriangleContent(cv::Mat img1, cv::Mat img2, cv::Vec6f tri
 	//Go through all the points in the intermediate triangle and find positions 
 	// in preceeding image
 	cv::Scalar color;
+	cv::Vec3b icolor,icolor1,icolor2;
 	PointWithColor pt_color;
 	for(int i=ymin;i<=ymax;i++){
 		for(int j=xmin;j<=xmax;j++){
 			pinter.x = j;
 			pinter.y = i;
+			
 			uchar b,g,r = 0;
 			if(inTriangleArea(pinter,triangle_inter)){
 				//Get the position of the point in image 1
@@ -1417,11 +1420,22 @@ cv::Mat getInterpolatedTriangleContent(cv::Mat img1, cv::Mat img2, cv::Vec6f tri
 						b = img1.at<Vec3b>(p1)[0];
 						g = img1.at<Vec3b>(p1)[1];
 						r = img1.at<Vec3b>(p1)[2];
+						icolor = bilinearInterpolate(img1,p1.y,p1.x);
 					}
 					else if(use_second){
 						b = img2.at<Vec3b>(p2)[0];
 						g = img2.at<Vec3b>(p2)[1];
 						r = img2.at<Vec3b>(p2)[2];
+						icolor = bilinearInterpolate(img2,p2.y,p2.x);
+					}
+					else if(use_both){
+						icolor1 = bilinearInterpolate(img1,p1.y,p1.x);
+						icolor2 = bilinearInterpolate(img2,p2.y,p2.x);
+						
+						icolor[0] = (icolor1[0]*(dist-pos) + icolor2[0]*pos)/dist;
+						icolor[1] = (icolor1[1]*(dist-pos) + icolor2[1]*pos)/dist;
+						icolor[2] = (icolor1[2]*(dist-pos) + icolor2[2]*pos)/dist;
+						
 					}
 					color = cv::Scalar(b,g,r);
 					//pt_color.x = xinter;
@@ -1431,6 +1445,10 @@ cv::Mat getInterpolatedTriangleContent(cv::Mat img1, cv::Mat img2, cv::Vec6f tri
 					result.at<Vec3b>(pinter)[0] = b;
 					result.at<Vec3b>(pinter)[1] = g;
 					result.at<Vec3b>(pinter)[2] = r;
+					
+					bi_result.at<Vec3b>(pinter)[0] = icolor[0];
+					bi_result.at<Vec3b>(pinter)[1] = icolor[1];
+					bi_result.at<Vec3b>(pinter)[2] = icolor[2];
 				}
 	
 			}
@@ -1439,7 +1457,7 @@ cv::Mat getInterpolatedTriangleContent(cv::Mat img1, cv::Mat img2, cv::Vec6f tri
 	}
 		
 		
-	return result;
+	return bi_result;
 }
 
 
@@ -2703,7 +2721,9 @@ cv::Mat delaunayInterpolateCubeFromTriangles(cv::Mat img1, cv::Mat img2, double 
 	cout << "delaunayInterpolateCubeFromTriangles Called" << endl;
 	//Resulting image
 	cv::Mat result = cv::Mat::zeros(img1.rows, img1.cols, img1.type());
-	
+	//Orignals reconstructed
+	cv::Mat result1 = result.clone();
+	cv::Mat result2 = result.clone();
 	
 	//For calling functiona
 	EquiTrans trans_class;
@@ -2760,8 +2780,11 @@ cv::Mat delaunayInterpolateCubeFromTriangles(cv::Mat img1, cv::Mat img2, double 
 	
 	bool sameView = true;
 	
+	//Define list to make video
+	vector<cv::Mat> images;
 	if(sameView){
 	for(int i=0;i<triangles_list1.size();i++){
+	cout << "Processing Triangle " << i << endl;
 	//for(int i=0;i<10;i++){
 	ostringstream img1_file,img2_file,img_inter_file;
 		 //Equirectangular triangle
@@ -2779,8 +2802,12 @@ cv::Mat delaunayInterpolateCubeFromTriangles(cv::Mat img1, cv::Mat img2, double 
 		//cam1 = tri_class.getPersCamParamsTwo(img1,triangle1,triangle2);
 		cam1 = tri_class.getPersCamParamsTwo(img1,triangle3d1,triangle3d2);
 		//cam1 = tri_class.getPersCamParamsBarycentricTwo(img1,triangles3D1c[i],triangles3D2c[i]);
+		
+		
 		persp1 = trans_class.toPerspective(img1,cam1);
 		cam1.image = persp1;
+		
+		
 		img1_file << "OldPerpResults/PerspImg1/Img1 Perpspective " << i << ".JPG"; 
 		//imwrite(img1_file.str(), persp1);
 		
@@ -2799,28 +2826,55 @@ cv::Mat delaunayInterpolateCubeFromTriangles(cv::Mat img1, cv::Mat img2, double 
 		triangle_persp1 = tri_class.convToPersTriangle(img1,cam1,triangle1);
 		triangle_persp2 = tri_class.convToPersTriangle(img2,cam2,triangle2);
 		
+		
+		
 		//Output images with drawn triangles
-		temp = drawTriangleOnImage(persp1,triangle_persp1);
-		imwrite(img1_file.str(), temp);
-		temp = drawTriangleOnImage(persp2,triangle_persp2);
-		imwrite(img2_file.str(), temp);
+		//temp = drawTriangleOnImage(persp1,triangle_persp1);
+		//imwrite(img1_file.str(), temp);
+		//temp = drawTriangleOnImage(persp2,triangle_persp2);
+		//imwrite(img2_file.str(), temp);
 		
 		//Interpolated camera
 		cam_inter = cam1;
 		//cam_inter = tri_class.getInterpolatedPersCamParams(cam1,cam2,dist,pos);
 		inter = getInterpolatedTriangleContent(persp1,persp2,triangle_persp1,triangle_persp2,triangle_inter_persp,content,dist,pos);
+		
+		
+		//For drawing purposes
+		//inter = drawTriangleOnImage(inter,triangle_inter_persp);
+		
 		img_inter_file << "OldPerpResults/PerspInter/Img Inter Perpspective " << i << ".JPG"; 
 		//imwrite(img_inter_file.str(), inter);
 		cam_inter.image = inter;
 		
 		//Draw inter with triangle
-		temp = drawTriangleOnImage(inter,triangle_inter_persp);
-		imwrite(img_inter_file.str(), temp);
+		
+		//imwrite(img_inter_file.str(), temp);
 		//triangle_inter_persp = tri_class.convToPersTriangle(result,cam_inter,triangle_inter);
 		
-		trans_class.toEquirectangular(cam_inter, triangle_inter_persp, result);
 		
+		//For testing purposes
+		persp1 = drawTriangleOnImage(persp1,triangle_persp1);
+		cam1.image = persp1;
+		persp2 = drawTriangleOnImage(persp2,triangle_persp2);
+		cam2.image = persp2;
+		//Reconstruct original images using 
+		trans_class.toEquirectangular(cam1, triangle_persp1, result1);
+		trans_class.toEquirectangular(cam2, triangle_persp2, result2);
+		//result1 = drawTriangleOnImage(result1,triangle1);
+		//result2 = drawTriangleOnImage(result2,triangle2);
+		
+		//End of testing
+		
+		
+		
+		trans_class.toEquirectangular(cam_inter, triangle_inter_persp, result);
+			temp = result.clone();
+			images.push_back(temp);
 		}
+		
+		imageListToVideo(images,"OldPerpResults/triangle_formation.mpeg");
+		
 	}
 	
 	else{
@@ -2888,6 +2942,10 @@ cv::Mat delaunayInterpolateCubeFromTriangles(cv::Mat img1, cv::Mat img2, double 
 		
 		}
 	}
+	
+	//Write Originals 
+	imwrite("OldPerpResults/Image1Reconstructed.JPG", result1);
+	imwrite("OldPerpResults/Image2Reconstructed.JPG", result2);
 	
 	return result;
 	

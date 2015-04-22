@@ -229,7 +229,7 @@ double triangleDifference(cv::Vec6f t1, cv::Vec6f t2){
 
 bool inTriangleArea(cv::Point2f p, cv::Vec6f triangle){
 	cv::Point2f p1,p2,p3; 
-	double epsilon = 0.01;
+	double epsilon = 0.1;
 
 	p1.x = triangle[0];
 	p1.y = triangle[1];
@@ -1720,7 +1720,7 @@ void pixelInterpolate(PointXYZRGB &u, int r, cv::Mat image){
 	double rtemp1,rtemp2,btemp1,btemp2,gtemp1,gtemp2;
 	//vector<int [2]> points;
 	//int point [2];
-	cv::Vec3b color1,color2,color3,color4;
+	cv::Vec3b color, color1,color2,color3,color4;
 
 	//Convert (x,y,z) cartesian values from to (theta,phi) geographic values
 	double theta,phi;
@@ -1732,12 +1732,73 @@ void pixelInterpolate(PointXYZRGB &u, int r, cv::Mat image){
 	i  = theta * image.rows/PI;
 	j = phi * image.cols/(2*PI);
 
+	
+	//Get interpolated (biliear) value
+	color = bilinearInterpolate(image,i,j);
+	
+	//Pixel interpolation points on image
+	//imin = floor(i);
+	//imax = ceil(i);
+	//jmin = floor(j);
+	//jmax = ceil(j);
+
+	//Pixel R,B,G values at each of those 4 points
+	//color1 = image.at<cv::Vec3b>(imin, jmin);
+	//color2 = image.at<cv::Vec3b>(imin, jmax);
+	//color3 = image.at<cv::Vec3b>(imax, jmin);
+	//color4 = image.at<cv::Vec3b>(imax, jmax);
+
+	//bij1 = color1[0];
+	//gij1 = color1[1];
+	//rij1 = color1[2];
+
+	//bij2 = color2[0];
+	//gij2 = color2[1];
+	//rij2 = color2[2];
+
+	//bij3 = color3[0];
+	//gij3 = color3[1];
+	//rij3 = color3[2];
+
+	//bij4 = color4[0];
+	//gij4 = color4[1];
+	//rij4 = color4[2];
+
+	//btemp1 = (imax-i)*bij1 + (i-imin)*bij2;
+	//gtemp1 = (imax-i)*gij1 + (i-imin)*gij2;
+	//rtemp1 = (imax-i)*rij1 + (i-imin)*rij2;
+
+	//btemp2 = (imax-i)*bij3 + (i-imin)*bij4;
+	//gtemp2 = (imax-i)*gij3 + (i-imin)*gij4;
+	//rtemp2 = (imax-i)*rij3 + (i-imin)*rij4;
+
+	//u.b = (jmax-j)*btemp1 + (j-jmin)*btemp2;
+	//u.g = (jmax-j)*gtemp1 + (j-jmin)*gtemp2;
+	//u.r = (jmax-j)*rtemp1 + (j-jmin)*rtemp2;
+	
+	u.b = color[0];
+	u.g = color[1];
+	u.r = color[2];
+}
+
+
+cv::Vec3b bilinearInterpolate(cv::Mat image, double i, double j){
+	
+	int imin,imax,jmin,jmax;
+	int rij1,rij2,rij3,rij4,bij1,bij2,bij3,bij4,gij1,gij2,gij3,gij4;
+	uchar b,g,r,rtemp1,rtemp2,btemp1,btemp2,gtemp1,gtemp2;
+	cv::Vec3b color, color1,color2,color3,color4;
+	
 	//Pixel interpolation points on image
 	imin = floor(i);
+	imin = max(0,imin);
 	imax = ceil(i);
+	imax = min(image.rows,imax);
 	jmin = floor(j);
+	jmin = max(0,jmin);
 	jmax = ceil(j);
-
+	jmax = min(image.cols,jmax);
+	
 	//Pixel R,B,G values at each of those 4 points
 	color1 = image.at<cv::Vec3b>(imin, jmin);
 	color2 = image.at<cv::Vec3b>(imin, jmax);
@@ -1759,7 +1820,7 @@ void pixelInterpolate(PointXYZRGB &u, int r, cv::Mat image){
 	bij4 = color4[0];
 	gij4 = color4[1];
 	rij4 = color4[2];
-
+	
 	btemp1 = (imax-i)*bij1 + (i-imin)*bij2;
 	gtemp1 = (imax-i)*gij1 + (i-imin)*gij2;
 	rtemp1 = (imax-i)*rij1 + (i-imin)*rij2;
@@ -1767,10 +1828,19 @@ void pixelInterpolate(PointXYZRGB &u, int r, cv::Mat image){
 	btemp2 = (imax-i)*bij3 + (i-imin)*bij4;
 	gtemp2 = (imax-i)*gij3 + (i-imin)*gij4;
 	rtemp2 = (imax-i)*rij3 + (i-imin)*rij4;
-
-	u.b = (jmax-j)*btemp1 + (j-jmin)*btemp2;
-	u.g = (jmax-j)*gtemp1 + (j-jmin)*gtemp2;
-	u.r = (jmax-j)*rtemp1 + (j-jmin)*rtemp2;
+	
+	b = (jmax-j)*btemp1 + (j-jmin)*btemp2;
+	g = (jmax-j)*gtemp1 + (j-jmin)*gtemp2;
+	r = (jmax-j)*rtemp1 + (j-jmin)*rtemp2;
+	
+	//color.push_back(b);
+	//color.push_back(g);
+	//color.push_back(r);
+	color[0] = b;
+	color[1] = g;
+	color[2] = r;
+	
+	return color;
 }
 
 /**

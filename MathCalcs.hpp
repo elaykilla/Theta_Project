@@ -428,6 +428,10 @@ void viewingLimits(PointXYZRGB u, PointXYZRGB v, double v_angle, double h_angle,
 void pixelInterpolate(PointXYZRGB &u, int r, cv::Mat image);
 
 /**
+* Given a floating point in 2d, this function returns the bilinear interpolation of the pixel values * around
+*/
+cv::Vec3b bilinearInterpolate(cv::Mat image, double i, double j);
+/**
 * Given a point p, this function verifies wether or not this point is on the ray with a direction of v and passing through o.
 */
 bool isOnRay(PointXYZRGB p, PointXYZRGB o, PointXYZRGB v);
