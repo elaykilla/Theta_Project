@@ -420,10 +420,10 @@ int main(int argc, char** argv)
 	//KeyPointAndMatchesTest(allImages[0], allImages[1]);
 	
 	//Test of image interpolation
-	ori = cv::imread("test3_1.JPG",1);
+	ori = cv::imread("Bottom/Bottom3.jpg",1);
 
 	
-	templ = cv::imread("test4_1.JPG",1);
+	templ = cv::imread("Bottom/Bottom4.jpg",1);
 
 //	interpolate2DTest(allImages[0], allImages[1], 8, 4);
 	
@@ -525,9 +525,9 @@ int main(int argc, char** argv)
  	
  	//Test writting 3D points
  	//delaunayInterpolateCubeMakeTriangles(ori,templ,1,0.5,"Txt_files/Points3D_test3_1.txt","Txt_files/Points3D_test4_1.txt");
- 	//testTriangleWrite(ori,templ,1,0.5,"Txt_files/Points3D_test3.txt","Txt_files/Points3D_test4.txt");
+ 	//testTriangleWrite(ori,templ,1,0.5,"Txt_files/Zenkoji3.txt","Txt_files/Zenkoji4.txt");
  	//Testing reading
- 	testTriangleRead(ori, templ, 1, 0.5, "Txt_files/trianglesPoints3D_test3_1.txt", "Txt_files/Points3D_test3_1.txt","Txt_files/Points3D_test4_1.txt");
+ 	testTriangleRead(ori, templ, 1, 0.5, "Txt_files/trianglesZenkoji3.txt", "Txt_files/Zenkoji3.txt","Txt_files/Zenkoji4.txt");
  	
  	
  	//testTrianglePerspective(templ);

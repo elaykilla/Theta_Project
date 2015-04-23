@@ -1346,8 +1346,8 @@ cv::Mat getDiffPerspInterpolate(cv::Mat img1, cv::Mat img2, PersCamera cam1, Per
 
 
 
-cv::Mat getInterpolatedTriangleContent(cv::Mat img1, cv::Mat img2, cv::Vec6f triangle1, cv::Vec6f triangle2, cv::Vec6f &triangle_inter, vector<PointWithColor> &content, double dist, double pos){
-	
+cv::Mat getInterpolatedTriangleContent(cv::Mat img1, cv::Mat img2, cv::Vec6f triangle1, cv::Vec6f triangle2, cv::Vec6f &triangle_inter, vector<PointWithColor> &content, double dist, double pos, int method){
+	//Method represents wether to use just image1, just image2, both or triangle blend
 	
 	//Result image with only triangle
 	int rows, cols;
@@ -1379,12 +1379,32 @@ cv::Mat getInterpolatedTriangleContent(cv::Mat img1, cv::Mat img2, cv::Vec6f tri
 	c_inter.y = triangle_inter[5];
 	
 	//Boolean to know which Image to use 
-	bool use_first, use_second, use_both;
+	bool use_first, use_second, use_both, mixed;
 		
-	use_first = true;
-	use_second = false;
-	use_both = false;
+	use_first = method==1;
+	use_second = method==2;
+	use_both = method==3;
+	mixed = method==4;
 	
+	
+	if(mixed){
+		if(triangleDifference(triangle2,triangle_inter)==triangleDifference(triangle_inter,triangle1)){
+			use_first = false;
+			use_second = false;
+			use_both = true;
+		}
+		else if(triangleDifference(triangle1,triangle_inter) > triangleDifference(triangle_inter,triangle2)){
+			//cout << "Triangle" << k << endl;
+			//cout << "Image1 difference: " << triangleDifference(triangle,triangle_inter) << "     " << "Image2 difference:" << triangleDifference(triangle2,triangle_inter) << endl;
+			use_first = false;
+			use_second = true;
+		}
+		else if (triangleDifference(triangle1,triangle_inter) < triangleDifference(triangle_inter,triangle2) ){
+			use_second =  false;
+			use_first = true;
+		}
+	
+	}
 		
 	//Get the bouding box around the triangle
 	int xmax = cvRound(max(a_inter.x, max(b_inter.x,c_inter.x)));
@@ -1436,7 +1456,8 @@ cv::Mat getInterpolatedTriangleContent(cv::Mat img1, cv::Mat img2, cv::Vec6f tri
 						icolor[1] = (icolor1[1]*(dist-pos) + icolor2[1]*pos)/dist;
 						icolor[2] = (icolor1[2]*(dist-pos) + icolor2[2]*pos)/dist;
 						
-					}
+					} 
+					
 					color = cv::Scalar(b,g,r);
 					//pt_color.x = xinter;
 					//pt_color.y = yinter;
@@ -2717,13 +2738,10 @@ void delaunayInterpolateCubeMakeTriangles(cv::Mat img1, cv::Mat img2, double dis
 *	triangles_file: file name for triangles from img1 in 3D
 *	
 */
-cv::Mat delaunayInterpolateCubeFromTriangles(cv::Mat img1, cv::Mat img2, double dist, double pos, string triangles_file, vector<PointXYZRGB> points1c, vector<PointXYZRGB> points2c){
+cv::Mat delaunayInterpolateCubeFromTriangles(cv::Mat img1, cv::Mat img2, double dist, double pos, string triangles_file, vector<PointXYZRGB> points1c, vector<PointXYZRGB> points2c, int nb_inter, int method){
 	cout << "delaunayInterpolateCubeFromTriangles Called" << endl;
-	//Resulting image
-	cv::Mat result = cv::Mat::zeros(img1.rows, img1.cols, img1.type());
-	//Orignals reconstructed
-	cv::Mat result1 = result.clone();
-	cv::Mat result2 = result.clone();
+	cout << "delaunayInterpolateCubeFromTriangles: Making" << nb_inter << " Interpolated images" << endl ;
+	
 	
 	//For calling functiona
 	EquiTrans trans_class;
@@ -2782,171 +2800,194 @@ cv::Mat delaunayInterpolateCubeFromTriangles(cv::Mat img1, cv::Mat img2, double 
 	
 	//Define list to make video
 	vector<cv::Mat> images;
-	if(sameView){
-	for(int i=0;i<triangles_list1.size();i++){
-	cout << "Processing Triangle " << i << endl;
-	//for(int i=0;i<10;i++){
-	ostringstream img1_file,img2_file,img_inter_file;
-		 //Equirectangular triangle
-		 triangle1 = triangles_list1[i];
-		 triangle2 = triangles_list2[i];
-		
-		//3D triangle
-		 triangle3d1 = triangles3D1c[i];
-		 triangle3d2 = triangles3D2c[i];
-		
-		//Generate the perspective view for the given triangle using the same view for 
-		// both triangles
-		//inter = cv::Mat::zeros(img1.rows, img1.cols, img1.type());
-		//Image 1 and camera 1
-		//cam1 = tri_class.getPersCamParamsTwo(img1,triangle1,triangle2);
-		cam1 = tri_class.getPersCamParamsTwo(img1,triangle3d1,triangle3d2);
-		//cam1 = tri_class.getPersCamParamsBarycentricTwo(img1,triangles3D1c[i],triangles3D2c[i]);
-		
-		
-		persp1 = trans_class.toPerspective(img1,cam1);
-		cam1.image = persp1;
-		
-		
-		img1_file << "OldPerpResults/PerspImg1/Img1 Perpspective " << i << ".JPG"; 
-		//imwrite(img1_file.str(), persp1);
-		
-		//Image 2 and camera 2
-		//cam2 = tri_class.getPersCamParamsTwo(img2,triangle1,triangle2);
-		cam2 = tri_class.getPersCamParamsTwo(img2,triangle3d1,triangle3d2);
-		//cam2 = tri_class.getPersCamParamsBarycentricTwo(img2,triangles3D1c[i],triangles3D2c[i]);
-		persp2 = trans_class.toPerspective(img2,cam2);
-		img2_file << "OldPerpResults/PerspImg2/Img2 Perpspective " << i << ".JPG"; 
-		//imwrite(img2_file.str(), persp2);
-		cam2.image = persp2;
-		
-		
-		
-		//Get perspective triangle locations
-		triangle_persp1 = tri_class.convToPersTriangle(img1,cam1,triangle1);
-		triangle_persp2 = tri_class.convToPersTriangle(img2,cam2,triangle2);
-		
-		
-		
-		//Output images with drawn triangles
-		//temp = drawTriangleOnImage(persp1,triangle_persp1);
-		//imwrite(img1_file.str(), temp);
-		//temp = drawTriangleOnImage(persp2,triangle_persp2);
-		//imwrite(img2_file.str(), temp);
-		
-		//Interpolated camera
-		cam_inter = cam1;
-		//cam_inter = tri_class.getInterpolatedPersCamParams(cam1,cam2,dist,pos);
-		inter = getInterpolatedTriangleContent(persp1,persp2,triangle_persp1,triangle_persp2,triangle_inter_persp,content,dist,pos);
-		
-		
-		//For drawing purposes
-		//inter = drawTriangleOnImage(inter,triangle_inter_persp);
-		
-		img_inter_file << "OldPerpResults/PerspInter/Img Inter Perpspective " << i << ".JPG"; 
-		//imwrite(img_inter_file.str(), inter);
-		cam_inter.image = inter;
-		
-		//Draw inter with triangle
-		
-		//imwrite(img_inter_file.str(), temp);
-		//triangle_inter_persp = tri_class.convToPersTriangle(result,cam_inter,triangle_inter);
-		
-		
-		//For testing purposes
-		persp1 = drawTriangleOnImage(persp1,triangle_persp1);
-		cam1.image = persp1;
-		persp2 = drawTriangleOnImage(persp2,triangle_persp2);
-		cam2.image = persp2;
-		//Reconstruct original images using 
-		trans_class.toEquirectangular(cam1, triangle_persp1, result1);
-		trans_class.toEquirectangular(cam2, triangle_persp2, result2);
-		//result1 = drawTriangleOnImage(result1,triangle1);
-		//result2 = drawTriangleOnImage(result2,triangle2);
-		
-		//End of testing
-		
-		
-		
-		trans_class.toEquirectangular(cam_inter, triangle_inter_persp, result);
-			temp = result.clone();
-			images.push_back(temp);
+	cv::Mat result;
+	
+	cout << "*******Brace yourself, this will take about: " << nb_inter*triangles3D1c.size() << " seconds " << endl;
+	for(int internum=0; internum<nb_inter; internum++){
+	
+		result = cv::Mat::zeros(img1.rows, img1.cols, img1.type());
+		//Orignals reconstructed
+		cv::Mat result1 = result.clone();
+		cv::Mat result2 = result.clone();
+	
+		//Get position 
+		if(nb_inter!=0){
+			pos = internum/nb_inter;
 		}
+		cout << "Interpolating position: " << pos << endl;
+		ostringstream result_file; 
+		result_file << "TestResultsZenk/Interpolated_Image" << internum << ".jpg" ;
 		
-		imageListToVideo(images,"OldPerpResults/triangle_formation.mpeg");
+		if(sameView){
+			for(int i=0;i<triangles_list1.size();i++){
+				cout << "Processing Triangle " << i << endl;
+				//for(int i=0;i<10;i++){
+				ostringstream img1_file,img2_file,img_inter_file;
+				 //Equirectangular triangle
+				 triangle1 = triangles_list1[i];
+				 triangle2 = triangles_list2[i];
 		
-	}
+				//3D triangle
+				 triangle3d1 = triangles3D1c[i];
+				 triangle3d2 = triangles3D2c[i];
+		
+				//Generate the perspective view for the given triangle using the same view for 
+				// both triangles
+				//inter = cv::Mat::zeros(img1.rows, img1.cols, img1.type());
+				//Image 1 and camera 1
+				//cam1 = tri_class.getPersCamParamsTwo(img1,triangle1,triangle2);
+				cam1 = tri_class.getPersCamParamsTwo(img1,triangle3d1,triangle3d2);
+				//cam1 = tri_class.getPersCamParamsBarycentricTwo(img1,triangles3D1c[i],triangles3D2c[i]);
+		
+		
+				persp1 = trans_class.toPerspective(img1,cam1);
+				cam1.image = persp1;
+		
+		
+				img1_file << "OldPerpResults/PerspImg1/Img1 Perpspective " << i << ".JPG"; 
+				//imwrite(img1_file.str(), persp1);
+		
+				//Image 2 and camera 2
+				//cam2 = tri_class.getPersCamParamsTwo(img2,triangle1,triangle2);
+				cam2 = tri_class.getPersCamParamsTwo(img2,triangle3d1,triangle3d2);
+				//cam2 = tri_class.getPersCamParamsBarycentricTwo(img2,triangles3D1c[i],triangles3D2c[i]);
+				persp2 = trans_class.toPerspective(img2,cam2);
+				img2_file << "OldPerpResults/PerspImg2/Img2 Perpspective " << i << ".JPG"; 
+				//imwrite(img2_file.str(), persp2);
+				cam2.image = persp2;
+		
+		
+		
+				//Get perspective triangle locations
+				triangle_persp1 = tri_class.convToPersTriangle(img1,cam1,triangle1);
+				triangle_persp2 = tri_class.convToPersTriangle(img2,cam2,triangle2);
+		
+		
+		
+				//Output images with drawn triangles
+				//temp = drawTriangleOnImage(persp1,triangle_persp1);
+				//imwrite(img1_file.str(), temp);
+				//temp = drawTriangleOnImage(persp2,triangle_persp2);
+				//imwrite(img2_file.str(), temp);
+		
+				//Interpolated camera
+				cam_inter = cam1;
+				//cam_inter = tri_class.getInterpolatedPersCamParams(cam1,cam2,dist,pos);
+				inter = getInterpolatedTriangleContent(persp1,persp2,triangle_persp1,triangle_persp2,triangle_inter_persp,content,dist,pos,method);
+		
+		
+				//For drawing purposes
+				//inter = drawTriangleOnImage(inter,triangle_inter_persp);
+		
+				img_inter_file << "OldPerpResults/PerspInter/Img Inter Perpspective " << i << ".JPG"; 
+				//imwrite(img_inter_file.str(), inter);
+				cam_inter.image = inter;
+		
+				//Draw inter with triangle
+		
+				//imwrite(img_inter_file.str(), temp);
+				//triangle_inter_persp = tri_class.convToPersTriangle(result,cam_inter,triangle_inter);
+		
+		
+				//For testing purposes
+				//persp1 = drawTriangleOnImage(persp1,triangle_persp1);
+				//cam1.image = persp1;
+				//persp2 = drawTriangleOnImage(persp2,triangle_persp2);
+				//cam2.image = persp2;
+				//Reconstruct original images using 
+				//trans_class.toEquirectangular(cam1, triangle_persp1, result1);
+				//trans_class.toEquirectangular(cam2, triangle_persp2, result2);
+				//result1 = drawTriangleOnImage(result1,triangle1);
+				//result2 = drawTriangleOnImage(result2,triangle2);
+		
+				//End of testing
+		
+		
+		
+				trans_class.toEquirectangular(cam_inter, triangle_inter_persp, result);
+				//	temp = result.clone();
+				//	images.push_back(temp);
+			}
+		
+			//imageListToVideo(images,"OldPerpResults/triangle_formation.mpeg");
+		
+		}
 	
-	else{
-		for(int i=0;i<triangles_list1.size();i++){
-		//for(int i=0;i<2;i++){
-		ostringstream img1_file,img2_file,img_inter_file;
+		else{
+			for(int i=0;i<triangles_list1.size();i++){
+				//for(int i=0;i<2;i++){
+				ostringstream img1_file,img2_file,img_inter_file;
 		
-		//Equirectangular image triangle
-		 triangle1 = triangles_list1[i];
-		 triangle2 = triangles_list2[i];
-		 //
-		 
-		 
-		 //3D triangle
-		 triangle3d1 = triangles3D1c[i];
-		 triangle3d2 = triangles3D2c[i];
-		 
+				//Equirectangular image triangle
+				 triangle1 = triangles_list1[i];
+				 triangle2 = triangles_list2[i];
+				 //
+				 
+				 
+				 //3D triangle
+				 triangle3d1 = triangles3D1c[i];
+				 triangle3d2 = triangles3D2c[i];
+				 
 	
 		
-		//Generate the perspective view for the given triangle using the same view for 
-		// both triangles
-		//inter = cv::Mat::zeros(img1.rows, img1.cols, img1.type());
-		//Image 1 and camera 1
-		//cam1 = tri_class.getPersCamParams(img1,triangle1);
-		cam1 = tri_class.getPersCamParams(img1,triangle3d1);
-		//cam1 = tri_class.getPersCamParamsBarycentric(img1,triangles3D1c[i]);
-		persp1 = trans_class.toPerspective(img1,cam1);
-		cam1.image = persp1;
-		img1_file << "OldPerpResults/PerspImg1/Img1 Perpspective " << i << ".JPG"; 
-		imwrite(img1_file.str(), persp1);
+				//Generate the perspective view for the given triangle using the same view for 
+				// both triangles
+				//inter = cv::Mat::zeros(img1.rows, img1.cols, img1.type());
+				//Image 1 and camera 1
+				//cam1 = tri_class.getPersCamParams(img1,triangle1);
+				cam1 = tri_class.getPersCamParams(img1,triangle3d1);
+				//cam1 = tri_class.getPersCamParamsBarycentric(img1,triangles3D1c[i]);
+				persp1 = trans_class.toPerspective(img1,cam1);
+				cam1.image = persp1;
+				img1_file << "OldPerpResults/PerspImg1/Img1 Perpspective " << i << ".JPG"; 
+				imwrite(img1_file.str(), persp1);
 		
 		
-		//Image 2 and camera 2
-		//cam2 = tri_class.getPersCamParams(img2,triangle2);
-		cam2 = tri_class.getPersCamParams(img2,triangle3d2);
-		//cam2 = tri_class.getPersCamParamsBarycentric(img2,triangles3D2c[i]);
-		persp2 = trans_class.toPerspective(img2,cam2);
-		cam2.image = persp2;
-		img2_file << "OldPerpResults/PerspImg2/Img2 Perpspective " << i << ".JPG";
+				//Image 2 and camera 2
+				//cam2 = tri_class.getPersCamParams(img2,triangle2);
+				cam2 = tri_class.getPersCamParams(img2,triangle3d2);
+				//cam2 = tri_class.getPersCamParamsBarycentric(img2,triangles3D2c[i]);
+				persp2 = trans_class.toPerspective(img2,cam2);
+				cam2.image = persp2;
+				img2_file << "OldPerpResults/PerspImg2/Img2 Perpspective " << i << ".JPG";
 		
-		imwrite(img2_file.str(), persp2);
+				imwrite(img2_file.str(), persp2);
 		
 		
-		//Get perspective triangle locations
-		triangle_persp1 = tri_class.convToPersTriangle(img1,cam1,triangle1);
-		triangle_persp2 = tri_class.convToPersTriangle(result,cam2,triangle2);
+				//Get perspective triangle locations
+				triangle_persp1 = tri_class.convToPersTriangle(img1,cam1,triangle1);
+				triangle_persp2 = tri_class.convToPersTriangle(result,cam2,triangle2);
 		
-		//Interpolated camera
-		cam_inter = tri_class.getInterpolatedPersCamParams(cam1,cam2,dist,pos);
-		inter = getInterpolatedTriangleContentDiffCam(cam1,cam2,triangle_persp1,triangle_persp2,triangle_inter_persp,content,dist,pos);
-		//inter = getInterpolatedTriangleContent(persp1,persp2,triangle_persp1,triangle_persp2,triangle_inter_persp,content,dist,pos);
+				//Interpolated camera
+				cam_inter = tri_class.getInterpolatedPersCamParams(cam1,cam2,dist,pos);
+				inter = getInterpolatedTriangleContentDiffCam(cam1,cam2,triangle_persp1,triangle_persp2,triangle_inter_persp,content,dist,pos);
+				//inter = getInterpolatedTriangleContent(persp1,persp2,triangle_persp1,triangle_persp2,triangle_inter_persp,content,dist,pos);
 
-		img_inter_file << "OldPerpResults/PerspInter/Img Inter Perpspective " << i << ".JPG"; 
-		imwrite(img_inter_file.str(), inter);
-		cam_inter.image = inter;
+				img_inter_file << "OldPerpResults/PerspInter/Img Inter Perpspective " << i << ".JPG"; 
+				imwrite(img_inter_file.str(), inter);
+				cam_inter.image = inter;
 		
-		//Put the content in the resulting image...Iteratively fill the image
-		//cam_inter.image = inter;
-		trans_class.toEquirectangular(cam_inter, triangle_inter_persp, result);
+				//Put the content in the resulting image...Iteratively fill the image
+				//cam_inter.image = inter;
+				trans_class.toEquirectangular(cam_inter, triangle_inter_persp, result);
 		
-		cvNamedWindow("Temp Result",0);
-		imshow("Temp Result", result);
-		waitKey(0);
+				cvNamedWindow("Temp Result",0);
+				imshow("Temp Result", result);
+				waitKey(0);
 		
 		
+			}
 		}
+	
+		//Write Results 
+		imwrite(result_file.str(),result);
+		temp = result.clone();
+		images.push_back(temp);
+		//imwrite("OldPerpResults/Image1Reconstructed.JPG", result1);
+		//imwrite("OldPerpResults/Image2Reconstructed.JPG", result2);
 	}
 	
-	//Write Originals 
-	imwrite("OldPerpResults/Image1Reconstructed.JPG", result1);
-	imwrite("OldPerpResults/Image2Reconstructed.JPG", result2);
-	
+	imageListToVideo(images,"TestResultsZenk/Interpolated_Video.mpeg");
 	return result;
 	
 }

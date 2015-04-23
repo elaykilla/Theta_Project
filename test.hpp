@@ -1942,10 +1942,11 @@ void testTriangleRead(cv::Mat img1, cv::Mat img2, double dist, double pos, strin
 	cout << "Points in Points2XYZ:" << points2c.size()<< endl;
 	//points3D1 = points1c;
 	//points3D2 = points2c;
-	result = delaunayInterpolateCubeFromTriangles(img1,img2, dist, pos, triangles_file,  points3D1,  points3D2);
+	result = delaunayInterpolateCubeFromTriangles(img1,img2, dist, pos, triangles_file,  points3D1,  points3D2, 100,2);
 	
 	//result = delaunaySphereInterpolateFromTriangles(img1,img2, dist, pos, triangles_file,  points3D1,  points3D2);
-	imwrite("InterpolatedPerspConv.jpg", result);
+	//imwrite("InterpolatedPerspConv.jpg", result);
+	//imwrite("TestResultsZenk/InterpolatedBlended.JPG", result);
 	namedWindow("Result Equi",0);
 	imshow("Result Equi",result);
 	 
@@ -2269,7 +2270,7 @@ void testSingleTrianglePerspective(cv::Mat image1, cv::Mat image2, double dist, 
 	cv::Vec6f tri_inter_pers;
 	vector<PointWithColor> content;
 	cout<<"testSingleTrianglePerspective: Interpolating Content" << endl;
-	cv::Mat inter_image = getInterpolatedTriangleContent(cam1.image, cam2.image, tri_pers1, tri_pers2, tri_inter_pers, content,  dist, pos);
+	cv::Mat inter_image = getInterpolatedTriangleContent(cam1.image, cam2.image, tri_pers1, tri_pers2, tri_inter_pers, content,  dist, pos,3);
 	cam_inter.image = inter_image;
 	
 	//Put back on equi

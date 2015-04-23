@@ -156,9 +156,13 @@ cv::Mat delaunayInterpolate(cv::Mat image1, cv::Mat image2, double dist, double 
 /**
 * Function to retrieve only interpolated content. Given 2 images with their respective triangle positions,
 * this function interpolates the content of the intermediate triangle. 
+* @inputs
+*	- Images 1 and 2
+*	- Triangles 1 and 2 belonging respectively to images 1 and 2
+*	- Pos and dist: dist the distance between images and pos position to interpolate
 * 
 */
-cv::Mat getInterpolatedTriangleContent(cv::Mat image1, cv::Mat image2, cv::Vec6f triangle1, cv::Vec6f triangle2, cv::Vec6f &trianglesInter, vector<PointWithColor> &content, double dist, double pos);
+cv::Mat getInterpolatedTriangleContent(cv::Mat image1, cv::Mat image2, cv::Vec6f triangle1, cv::Vec6f triangle2, cv::Vec6f &trianglesInter, vector<PointWithColor> &content, double dist, double pos, int method);
 
 
 /**
@@ -205,8 +209,14 @@ void delaunayInterpolateCubeMakeTriangles(cv::Mat img1, cv::Mat img2, double dis
 
 /** 
 * Function to interpolate between 2 images using Delaunay triangulation using triangles on the surface of the sphere and cube faces. This is the 2nd part of the previous function. Supposes the 3D triangles have been interpolated
+* @Inputs:
+*	- Method {1,2,3,4} defines which method to use to interpolate
+*		1: only content from image1
+*		2: only content from image2
+*		3: a blending of image1 and image2
+*		4: mixed method determined based on triangle size
 */
-cv::Mat delaunayInterpolateCubeFromTriangles(cv::Mat img1, cv::Mat img2, double dist, double pos, string triangles_file, vector<PointXYZRGB> points1c, vector<PointXYZRGB> points2c);
+cv::Mat delaunayInterpolateCubeFromTriangles(cv::Mat img1, cv::Mat img2, double dist, double pos, string triangles_file, vector<PointXYZRGB> points1c, vector<PointXYZRGB> points2c, int nb_inter, int method);
 /**
 * Function calculates the optical flow map between 2 images
 */
