@@ -41,6 +41,10 @@ cv::Mat drawTriangleOnImage(Mat image, Vec6f triangle);
 */
 void imageListToVideo(vector<cv::Mat> images, string fileName) ; 
 
+/**
+* This function takes a list of images and makes a video
+*/
+void imageListToVideo(string folder, string basename, int number, string fileName) ; 
 
 /**
 * This function returns an array of the 3 color histograms of the given image
@@ -153,6 +157,17 @@ cv::Mat linearInterpolate(cv::Mat image1, cv::Mat image2, double dist, double po
 cv::Mat delaunayInterpolate(cv::Mat image1, cv::Mat image2, double dist, double pos);
 
 
+/** 
+* Function to interpolate between 2 images using Delaunay triangulation.
+* Full function using bilinear interpolation
+*	- First extracts and matches keypoints
+*	- Compute affine transformations
+*	- Generate interpolated image by interpolating individual trianges
+*
+*/
+cv::Mat delaunayInterpolateBilinear(cv::Mat image1, cv::Mat image2, double dist, double pos);
+
+
 /**
 * Function to retrieve only interpolated content. Given 2 images with their respective triangle positions,
 * this function interpolates the content of the intermediate triangle. 
@@ -216,7 +231,7 @@ void delaunayInterpolateCubeMakeTriangles(cv::Mat img1, cv::Mat img2, double dis
 *		3: a blending of image1 and image2
 *		4: mixed method determined based on triangle size
 */
-cv::Mat delaunayInterpolateCubeFromTriangles(cv::Mat img1, cv::Mat img2, double dist, double pos, string triangles_file, vector<PointXYZRGB> points1c, vector<PointXYZRGB> points2c, int nb_inter, int method);
+cv::Mat delaunayInterpolateCubeFromTriangles(cv::Mat img1, cv::Mat img2, double dist, double pos, string triangles_file, vector<PointXYZRGB> points1c, vector<PointXYZRGB> points2c, int nb_inter, int method, string outfile);
 /**
 * Function calculates the optical flow map between 2 images
 */

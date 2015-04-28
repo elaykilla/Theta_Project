@@ -30,7 +30,7 @@ const double theta1 = PI;
 
 bool update;
 /************************************************* Setup **************************************************/
-//void initOptions(agrv,argv){
+//void initOptions(argv,argv){
 //	while((c=getopt(argc,argv))!=-1){
 //		switch (c){
 //			case 'init'
@@ -46,11 +46,13 @@ void showInstructions(){
 	cout << "// Usage: load 0" << endl;
 	cout << "// load 1: Reads 2 image files, computes keypoints and matches, writes corresponding points (3d format) into outfiles 1 and 2" << endl;
 	cout << "// Usage: load 1 image1 image2 outputfile1 outputfile2 " << endl;
-	cout << "// load 2: Takes 2 images, 3d txt files for each image and generated 3d triangles for first image.  " << endl;
-	cout << "// Usage: load 2 image1 image2 input3dtriangles inputpoints1 inputpoints2" << endl;
-	cout << "// load 3: Tests reconsctructing an equirectangular images from input triangles" << endl;
-	cout << "// Usage: load 3 image input3dtriangles" << endl;
-	cout << "// load 4: " << endl;
+	cout << "// load 2: Takes 2 images, 3d txt files for each image and generated 3d triangles for first image." ;
+	cout << "It then computes the interpolated images and saves into output image  " << endl;
+	cout << "// Usage: load 2 image1 image2 input3dtriangles inputpoints1 inputpoints2 nb_images output_image" << endl;
+	cout << "// load 3: Tests reconsctructing an equirectangular images from input triangles and saves to output file" << endl;
+	cout << "// Usage: load 3 image input3dtriangles outputfile" << endl;
+	cout << "// load 4: Takes 2 input images img1 and img2 and generates nb_inter interpolated images between the 2 images using triangulation and content from Equirectangular images and saves in out_folder" << endl;
+	cout << "// Usage: load 4 image1 image2 nb_interpolation out_folder" << endl;
 	cout << "// load 5: " << endl;
 	cout << "// load 6: " << endl;
 	cout << "//////////////////////Load Usage //////////////////////////////////" << endl;
@@ -114,8 +116,8 @@ int main(int argc, char** argv)
 	}
 	
 	int c = atoi(argv[1]);
-	cv::Mat templ, ori;
-	string img1_file, img2_file , inpoints1, inpoints2,outpoints1,outpoints2,input3dtriangles;
+	cv::Mat templ, ori, result;
+	string img1_file, img2_file , inpoints1, inpoints2,outpoints1,outpoints2,input3dtriangles, result_image;
 	
 	switch ( c ) {
 	case 0: 
@@ -137,22 +139,79 @@ int main(int argc, char** argv)
  		templ = imread(img2_file,1);
  		testTriangleWrite(ori,templ,1,0.5,outpoints1,outpoints2);
  		
+ 		cout << "Load Points successfully written in files: " << outpoints1 << " and " << outpoints2 << endl;
+ 		return 1;
+ 		
  		}
 	case 2:
 	{
+	
+		if(argc<8){
+			cout << "Application usage is not correct, please refer to usage" << endl;
+			showInstructions();
+			return -1;
+		}
 		img1_file = argv[2];
  		img2_file = argv[3];
  		input3dtriangles = argv[4];
  		inpoints1 = argv[5];
  		inpoints2 = argv[6];
+ 		int img_number = atoi(argv[7]);
+ 		result_image = argv[8];
+ 		
+ 		//Read image files
+ 		ori = imread(img1_file,1);
+ 		templ = imread(img2_file,1);
  		
  		//Test reading and interpolating image
- 		testTriangleRead(ori, templ, 1, 0.5, input3dtriangles, inpoints1,inpoints2 );
-	
+ 		result = testTriangleRead(ori, templ, 1, 0.5, input3dtriangles, inpoints1,inpoints2, img_number, result_image );
+		
+		//Save image
+		//imwrite(result_image,result);
+		cout<< "Load image interpolated and saved in file: " << result_image << endl;
+		return 1;
 	}
 	
 	case 3:
 	{
+		if(argc<4){
+			cout << "Application usage is not correct, please refer to usage" << endl;
+			showInstructions();
+			return -1;
+		}
+		img1_file = argv[2];
+		input3dtriangles = argv[3];
+		result_image = argv[4];
+		
+		//Read image files
+ 		ori = imread(img1_file,1);
+ 		
+ 		result = testMultipleTrianglePerspective(ori,input3dtriangles);
+ 		
+ 		imwrite(result_image,result);
+ 		cout << "Load 3 successfully reconstructed image from input triangles" << endl;
+ 		return 1;
+	}
+	
+	case 4: 
+	{
+	
+		if(argc<5){
+			cout << "Application usage is not correct, please refer to usage" << endl;
+			showInstructions();
+			return -1;
+		}
+		img1_file = argv[2];
+ 		img2_file = argv[3];
+ 		int nb_inter = atoi(argv[4]);
+ 		string folder = argv[5];
+ 		
+ 		//Read image files
+ 		ori = imread(img1_file,1);
+ 		templ = imread(img2_file,1);
+ 		
+ 		multipleInterpolateTest(ori,templ,nb_inter,folder);
+ 		return 1;
 	
 	}
  	 
@@ -420,10 +479,10 @@ int main(int argc, char** argv)
 	//KeyPointAndMatchesTest(allImages[0], allImages[1]);
 	
 	//Test of image interpolation
-	ori = cv::imread("Bottom/Bottom3.jpg",1);
+	ori = cv::imread("Bottom/Bottom5.jpg",1);
 
 	
-	templ = cv::imread("Bottom/Bottom4.jpg",1);
+	templ = cv::imread("Bottom/Bottom6.jpg",1);
 
 //	interpolate2DTest(allImages[0], allImages[1], 8, 4);
 	
@@ -525,9 +584,15 @@ int main(int argc, char** argv)
  	
  	//Test writting 3D points
  	//delaunayInterpolateCubeMakeTriangles(ori,templ,1,0.5,"Txt_files/Points3D_test3_1.txt","Txt_files/Points3D_test4_1.txt");
- 	//testTriangleWrite(ori,templ,1,0.5,"Txt_files/Zenkoji3.txt","Txt_files/Zenkoji4.txt");
+ 	//testTriangleWrite(ori,templ,1,0.5,"Txt_files/Zenkoji5_6.txt","Txt_files/Zenkoji6.txt");
  	//Testing reading
- 	testTriangleRead(ori, templ, 1, 0.5, "Txt_files/trianglesZenkoji3.txt", "Txt_files/Zenkoji3.txt","Txt_files/Zenkoji4.txt");
+ 	//testTriangleRead(ori, templ, 1, 0.5, "Txt_files/trianglesZenkoji4_5.txt", "Txt_files/Zenkoji4_5.txt","Txt_files/Zenkoji5.txt", 100);
+ 	
+ 	
+ 	
+ 	//ori = cv::imread("Bottom/Bottom4.jpg",1);
+	//templ = cv::imread("Bottom/Bottom5.jpg",1);
+ 	//testTriangleRead(ori, templ, 1, 0.5, "Txt_files/trianglesZenkoji4_5.txt", "Txt_files/Zenkoji4_5.txt","Txt_files/Zenkoji5.txt", 100);
  	
  	
  	//testTrianglePerspective(templ);
@@ -545,6 +610,23 @@ int main(int argc, char** argv)
 	
 	//randomTest();
 	//testKeypointConversion(ori,templ);
+	
+	//Make video from images
+	//string folder = "";
+	imageListToVideo("TestResultsZenk/Equi4_5", "InterpolatedOmni", 48,"TestResultsZenk/Equi4_5/InterpolatedVideo");
+	
+	imageListToVideo("TestResultsZenk/Equi5_6", "InterpolatedOmni", 48,"TestResultsZenk/Equi5_6/InterpolatedVideo");
+	
+	//Test 2 images video
+	//vector<cv::Mat> images;
+	//for(int i=0;i<24;i++){
+	//	images.push_back(ori);
+	//}
+	//for(int i=24;i<48;i++){
+	//	images.push_back(templ);
+	//}
+	//imageListToVideo(images,"TestResultsZenk/Originals5_6/NonInterpolatedVideo");
+	
 	/******************************************* End of Test Zone ***************************************************************/
 
 

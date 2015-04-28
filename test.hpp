@@ -1628,22 +1628,30 @@ void delaunayMatchedTrianglesBoundTest(cv::Mat img1, cv::Mat img2, PointCloud<Po
 //} 
 
 ////////////////////////////////////Test Multiple Interpolation /////////////////////////////////////
-void multipleInterpolateTest(Mat ori, Mat templ, int nb_inter){
-	cv::Mat result;
+void multipleInterpolateTest(Mat ori, Mat templ, int nb_inter, string out_folder){
+	cout << "MultipleInterpolateTest called" << endl;
+	cv::Mat result, temp;
+	vector<cv::Mat> images;
 	for(int i=0;i<nb_inter;i++){
-		ostringstream nameWindow;
+		ostringstream nameWindow, output;
 		//nameWindow << "temp/Interpolated Image_"<< i ;
+		output << out_folder << "/" << "InterpolatedOmni" << i ;
 		nameWindow << "InterpolatedOmni";
-		cout << nameWindow.str() << endl;
+		//cout << nameWindow.str() << endl;
 		cv::Mat result = delaunayInterpolate(ori,templ,1,i/(double)nb_inter);
+		
+		//Bilinear
+		//cv::Mat result = delaunayInterpolateBilinear(ori,templ,1,i/(double)nb_inter);
 		//cv::Mat result = delaunayInterpolateSphere(ori,templ,1,i/(double)nb_inter);
 		//cv::Mat result = interpolated[i];
 		//cv::namedWindow(nameWindow.str(), 0);
-		cv::imshow(nameWindow.str(), result);
-		nameWindow << ".jpg" ;
-		cv::imwrite(nameWindow.str(),result);	
+		//cv::imshow(nameWindow.str(), result);
+		output << ".JPG" ;
+		cv::imwrite(output.str(),result);	
+		
 		//images[i] = result;
-		//images.push_back(result);
+		temp = result.clone();
+		images.push_back(temp);
 	}
 	
 	
@@ -1661,8 +1669,8 @@ void multipleInterpolateTest(Mat ori, Mat templ, int nb_inter){
 	//		images.push_back(image);
 	//	}
 	//}
-	//string videoName = "temp/Interpolated Video" ;
-	//imageListToVideo(images,videoName);
+	string videoName = "temp/Interpolated Video" ;
+	imageListToVideo(images,videoName);
 }
 
 ////////////////////////////////////End Test Multiple Interpolation ////////////////////////////////
@@ -1920,7 +1928,7 @@ void testKeypointConversion(cv::Mat image1, cv::Mat image2){
 //////////////////////////////////// end of Test of 2D to 3D keypoints ///////////////////////////////////
 
 //////////////////////// Test of 3D triangle reading and writting ///////////////////////////////////
-void testTriangleRead(cv::Mat img1, cv::Mat img2, double dist, double pos, string triangles_file, string points1_file, string points2_file){
+cv::Mat testTriangleRead(cv::Mat img1, cv::Mat img2, double dist, double pos, string triangles_file, string points1_file, string points2_file, int nb_inter, string outfile){
 
 	PointFeature feat;
 	//vector<Vec9f > triangles = readTriangles3D(filename) ;
@@ -1942,13 +1950,14 @@ void testTriangleRead(cv::Mat img1, cv::Mat img2, double dist, double pos, strin
 	cout << "Points in Points2XYZ:" << points2c.size()<< endl;
 	//points3D1 = points1c;
 	//points3D2 = points2c;
-	result = delaunayInterpolateCubeFromTriangles(img1,img2, dist, pos, triangles_file,  points3D1,  points3D2, 100,2);
+	result = delaunayInterpolateCubeFromTriangles(img1,img2, dist, pos, triangles_file,  points3D1,  points3D2, nb_inter,3, outfile);
 	
 	//result = delaunaySphereInterpolateFromTriangles(img1,img2, dist, pos, triangles_file,  points3D1,  points3D2);
 	//imwrite("InterpolatedPerspConv.jpg", result);
 	//imwrite("TestResultsZenk/InterpolatedBlended.JPG", result);
-	namedWindow("Result Equi",0);
-	imshow("Result Equi",result);
+	//namedWindow("Result Equi",0);
+	//imshow("Result Equi",result);
+	//return result;
 	 
 }
 
@@ -2066,7 +2075,7 @@ void testTriangleWrite(cv::Mat img1, cv::Mat img2, double dist, double pos, stri
 	feat.writePoints3d(points3D2c, outputfile2);
 	
 	//Testing the second part
-	string triangles_file1 = "Txt_files/trianglesPoints3D_test3.txt";
+	//string triangles_file1 = "Txt_files/trianglesPoints3D_test3.txt";
 	//testTriangleRead(img1,img2,dist,pos,triangles_file1,points3D1c,points3D2c);
 
 }
@@ -2285,7 +2294,7 @@ void testSingleTrianglePerspective(cv::Mat image1, cv::Mat image2, double dist, 
 	imshow("Original", image1);
 }
 
-void testMultipleTrianglePerspective(Mat image, string triangles_file){
+cv::Mat testMultipleTrianglePerspective(Mat image, string triangles_file){
 	cout << "TestMultipleTrianglePerspective called" << endl;
 	//Classes needed
 	PointFeature feat;
@@ -2342,13 +2351,14 @@ void testMultipleTrianglePerspective(Mat image, string triangles_file){
 	}
 	
 	cvNamedWindow("Original",0);
-	cvNamedWindow("Reconsctructed",0);
+	cvNamedWindow("Reconstructed",0);
 	
 	imshow("Original", image);
-	imshow("Reconsctructed",result);
+	imshow("Reconstructed",result);
 	
 	cv::waitKey(0);
-
+	
+	return result;
 }
  
 
