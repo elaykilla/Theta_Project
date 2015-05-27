@@ -7,8 +7,8 @@
 
 
 
-#ifndef MathCalcs
-#define MathCalcs
+#ifndef MATHCALCS_H
+#define MATHCALCS_H
 
 #include "standard_headers.hpp"
 #include "cv_headers.hpp"
@@ -26,6 +26,7 @@
 
 //	return floor(x + 0.5);
 //}
+
 
 double findMin(float numbers[], int size);
 

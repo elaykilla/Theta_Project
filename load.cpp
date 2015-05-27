@@ -1,3 +1,7 @@
+/**
+@file main.cpp
+*/
+
 /*
  * @author: ELay Maiga
  * This class contains all the methods related to calculating coordinates and making projections
@@ -47,7 +51,8 @@ void showInstructions(){
 	cout << "// load 1: Reads 2 image files, computes keypoints and matches, writes corresponding points (3d format) into outfiles 1 and 2" << endl;
 	cout << "// Usage: load 1 image1 image2 outputfile1 outputfile2 " << endl;
 	cout << "// load 2: Takes 2 images, 3d txt files for each image and generated 3d triangles for first image." ;
-	cout << "It then computes the interpolated images and saves into output image  " << endl;
+	cout << "It then computes the interpolated images using Perspective triangle content"<< endl;
+	cout << "and saves into output image  " << endl;
 	cout << "// Usage: load 2 image1 image2 input3dtriangles inputpoints1 inputpoints2 nb_images output_image" << endl;
 	cout << "// load 3: Tests reconsctructing an equirectangular images from input triangles and saves to output file" << endl;
 	cout << "// Usage: load 3 image input3dtriangles outputfile" << endl;
@@ -479,10 +484,10 @@ int main(int argc, char** argv)
 	//KeyPointAndMatchesTest(allImages[0], allImages[1]);
 	
 	//Test of image interpolation
-	ori = cv::imread("Bottom/Bottom5.jpg",1);
+	ori = cv::imread("Bottom/Bottom3.jpg",1);
 
 	
-	templ = cv::imread("Bottom/Bottom6.jpg",1);
+	templ = cv::imread("Bottom/Bottom4.jpg",1);
 
 //	interpolate2DTest(allImages[0], allImages[1], 8, 4);
 	
@@ -586,13 +591,13 @@ int main(int argc, char** argv)
  	//delaunayInterpolateCubeMakeTriangles(ori,templ,1,0.5,"Txt_files/Points3D_test3_1.txt","Txt_files/Points3D_test4_1.txt");
  	//testTriangleWrite(ori,templ,1,0.5,"Txt_files/Zenkoji5_6.txt","Txt_files/Zenkoji6.txt");
  	//Testing reading
- 	//testTriangleRead(ori, templ, 1, 0.5, "Txt_files/trianglesZenkoji4_5.txt", "Txt_files/Zenkoji4_5.txt","Txt_files/Zenkoji5.txt", 100);
+ 	//testTriangleRead(ori, templ, 1, 0.5, "Txt_files/trianglesZenkoji4_5.txt", "Txt_files/Zenkoji4_5.txt","Txt_files/Zenkoji5.txt", 48);
  	
  	
  	
- 	//ori = cv::imread("Bottom/Bottom4.jpg",1);
-	//templ = cv::imread("Bottom/Bottom5.jpg",1);
- 	//testTriangleRead(ori, templ, 1, 0.5, "Txt_files/trianglesZenkoji4_5.txt", "Txt_files/Zenkoji4_5.txt","Txt_files/Zenkoji5.txt", 100);
+ 	ori = cv::imread("Bottom/Bottom4.jpg",1);
+	templ = cv::imread("Bottom/Bottom5.jpg",1);
+ 	//testTriangleRead(ori, templ, 1, 0.5, "Txt_files/trianglesZenkoji4_5.txt", "Txt_files/Zenkoji4_5.txt","Txt_files/Zenkoji5.txt", 48, "TestResultsZenk/InterPersp4_5_");
  	
  	
  	//testTrianglePerspective(templ);
@@ -608,14 +613,13 @@ int main(int argc, char** argv)
 	//ThreeDAffineTransformTest();
 	
 	
-	//randomTest();
+	
 	//testKeypointConversion(ori,templ);
 	
 	//Make video from images
 	//string folder = "";
-	imageListToVideo("TestResultsZenk/Equi4_5", "InterpolatedOmni", 48,"TestResultsZenk/Equi4_5/InterpolatedVideo");
+	//imageListToVideo("TestResultsZenk/Equi4_5", "InterpolatedOmni", 48,"TestResultsZenk/Equi4_5/InterpolatedVideo");
 	
-	imageListToVideo("TestResultsZenk/Equi5_6", "InterpolatedOmni", 48,"TestResultsZenk/Equi5_6/InterpolatedVideo");
 	
 	//Test 2 images video
 	//vector<cv::Mat> images;
@@ -627,6 +631,8 @@ int main(int argc, char** argv)
 	//}
 	//imageListToVideo(images,"TestResultsZenk/Originals5_6/NonInterpolatedVideo");
 	
+	
+	randomTest();
 	/******************************************* End of Test Zone ***************************************************************/
 
 

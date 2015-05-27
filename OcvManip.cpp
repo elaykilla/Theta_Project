@@ -2095,10 +2095,10 @@ cv::Mat delaunayInterpolate(cv::Mat img1, cv::Mat img2, double dist, double pos)
 							uchar b,g,r = 0;
 
 							if(!use_first & !use_second){
-								if(pos<dist/2){
+								if(pos<dist/3){
 									use_second = true;
 								}
-								else{
+								else if(pos>dist*2/3){
 									use_first = true;
 								}
 							}
@@ -2133,10 +2133,7 @@ cv::Mat delaunayInterpolate(cv::Mat img1, cv::Mat img2, double dist, double pos)
 								b = (img2.at<Vec3b>(p2)[0]*pos + img1.at<Vec3b>(p)[0]*(dist-pos))/dist;
 								g = (img2.at<Vec3b>(p2)[1]*pos + img1.at<Vec3b>(p)[1]*(dist-pos))/dist;
 								r = (img2.at<Vec3b>(p2)[2]*pos + img1.at<Vec3b>(p)[2]*(dist-pos))/dist;
-//								result.at<Vec3b>(yinter,xinter)[0] = b;
-//								result.at<Vec3b>(yinter,xinter)[1] = g;
-//								result.at<Vec3b>(yinter,xinter)[2] = r;
-//							
+						
 							}
 							
 							result.at<Vec3b>(pinter)[0] = b;
@@ -2279,6 +2276,7 @@ cv::Mat delaunayInterpolateBilinear(cv::Mat img1, cv::Mat img2, double dist, dou
 		affine_inter_img1 = getAffine2D(triangle_inter,triangle1);
 		affine_inter_img2 = getAffine2D(triangle_inter,triangle2);
 	
+		
 		double* uprow1 = affine_inter_img1.ptr<double>(0);
 		double* downrow1 = affine_inter_img1.ptr<double>(1);
 		double* uprow2 = affine_inter_img2.ptr<double>(0);
@@ -2334,35 +2332,51 @@ cv::Mat delaunayInterpolateBilinear(cv::Mat img1, cv::Mat img2, double dist, dou
 				pinter.y = i;
 			
 				if(inTriangleArea(pinter,triangle_inter)){
+					
+					
+					
 					//Get the position of the point in image 1
 					p1.x = uprow1[0]*pinter.x + uprow1[1]*pinter.y + uprow1[2];
 					p1.y = downrow1[0]*pinter.x + downrow1[1]*pinter.y + downrow1[2];
 				
 					//Get the position in image 2
-					p2.x = uprow2[0] * p1.x + uprow2[1]* p1.y + uprow2[2];
-					p2.y = downrow2[0] * p1.x + downrow2[1]* p1.y + downrow2[2];
+					p2.x = uprow2[0] * pinter.x + uprow2[1]* pinter.y + uprow2[2];
+					p2.y = downrow2[0] * pinter.x + downrow2[1]* pinter.y + downrow2[2];
 						
 					if(p1.x>0 && p1.y>0 && p1.y<result.rows && p1.x<result.cols){
-							//cout << "Point Position in interp: " << xinter << "," << yinter << endl;			
-						if(use_first){
+						//cout << "Point pinter:" << pinter << endl;
+						//cout << "affine_inter_img1: " << affine_inter_img1 << endl;
+						//cout << "affine_inter_img2: " << affine_inter_img2 << endl;			
+						//if(use_first){
 							icolor = bilinearInterpolate(img1,p1.y,p1.x);
-						}
-						else if(use_second){
+						//}
+						//else if(use_second){
 							icolor = bilinearInterpolate(img2,p2.y,p2.x);
-						}
-						else{
+						//}
+						//else{
+							//cout << "Point p1:" << p1 << endl;
 							icolor1 = bilinearInterpolate(img1,p1.y,p1.x);
+							//cout << "P1 color:" << icolor1 << endl; 
+
+							
+							//cout << "Point p2:" << p2 << endl;
 							icolor2 = bilinearInterpolate(img2,p2.y,p2.x);
+							//cout << "P1 color:" << icolor1 << endl; 
+							
+							
 						
 							icolor[0] = (icolor1[0]*(dist-pos) + icolor2[0]*pos)/dist;
 							icolor[1] = (icolor1[1]*(dist-pos) + icolor2[1]*pos)/dist;
 							icolor[2] = (icolor1[2]*(dist-pos) + icolor2[2]*pos)/dist;
 						
-						} 
-					
-						result.at<Vec3b>(pinter)[0] = icolor[0];
-						result.at<Vec3b>(pinter)[1] = icolor[1];
-						result.at<Vec3b>(pinter)[2] = icolor[2];
+						//} 
+						
+						//cout << "Color: " << icolor << endl;
+						//cout << "----------------------------------------" << endl;
+						result.at<Vec3b>(pinter) = icolor;
+						//result.at<Vec3b>(pinter)[0] = icolor[0];
+						//result.at<Vec3b>(pinter)[1] = icolor[1];
+						//result.at<Vec3b>(pinter)[2] = icolor[2];
 					}
 	
 				}

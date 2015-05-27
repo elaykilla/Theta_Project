@@ -4,13 +4,17 @@
 * from 2D to 3D or vice-versa.
 */
 
-#ifndef PclManip
-#define PclMnip
+#ifndef _PCLMANIP
+#define _PCLMANIP
 
 #include"MathCalcs.hpp"
 #include"OcvManip.hpp"
 //#include "boost_headers.hpp"
 
+
+//class PclManip{
+
+//public:
 /***************************************************Simple Functions **************************************/
 //Function returns the index of a given point in an array, if not found it gives the size of the 
 //Vector
@@ -44,14 +48,17 @@ void get3DKepoints(PointCloud<PointXYZRGB>::Ptr &points, float min_scale, int nr
 *This function takes an input image in Equirectangular pixel coordinates (i,j) cv::Mat and returns 
 * a Point cloud. The point cloud is the Spherical projection of this image onto a sphere of
 * radius r and centered in (xc,zc);
-* @Inputs
+* @Input
 * Cv::cv::Mat ori: the input image
+* @Input
 * double r : the radius of the sphere
+* @Input
 * double xc and zc: the (x,z) coordinates of the center of the Sphere
 *
 *
 * @Output
 * Ptr cloud : a point cloud of the sphere
+* @Output
 * Ptr VctCloud: A vector cloud of vectors (Sc,Pt) with Sc being the center of the sphere.
 */
 PointCloud<PointXYZRGB>::Ptr EquiToSphere(cv::Mat ori, double radius, double xc, double yc, double zc);
@@ -134,4 +141,6 @@ void makeCorrespondingDelaunayTriangles3D(vector<PointXYZRGB> points3D1, vector<
 */
 
 cv::Mat delaunaySphereInterpolateFromTriangles(cv::Mat img1, cv::Mat img2, double dist, double pos, string triangles_file, vector<PointXYZRGB> points1c, vector<PointXYZRGB> points2c);
+
+//};
 #endif

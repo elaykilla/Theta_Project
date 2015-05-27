@@ -1785,7 +1785,7 @@ void pixelInterpolate(PointXYZRGB &u, int r, cv::Mat image){
 cv::Vec3b bilinearInterpolate(cv::Mat image, double i, double j){
 	
 	int imin,imax,jmin,jmax;
-	int rij1,rij2,rij3,rij4,bij1,bij2,bij3,bij4,gij1,gij2,gij3,gij4;
+	uchar rij1,rij2,rij3,rij4,bij1,bij2,bij3,bij4,gij1,gij2,gij3,gij4;
 	uchar b,g,r,rtemp1,rtemp2,btemp1,btemp2,gtemp1,gtemp2;
 	cv::Vec3b color, color1,color2,color3,color4;
 	
@@ -1805,6 +1805,12 @@ cv::Vec3b bilinearInterpolate(cv::Mat image, double i, double j){
 	color3 = image.at<cv::Vec3b>(imax, jmin);
 	color4 = image.at<cv::Vec3b>(imax, jmax);
 
+	//cout << "	Surrounding colors" << endl;
+	//cout << "	Color1: " << color1 << endl;
+	//cout << "	Color2: " << color2 << endl;
+	//cout << "	Color3: " << color3 << endl;
+	//cout << "	Color4: " << color4 << endl;
+	
 	bij1 = color1[0];
 	gij1 = color1[1];
 	rij1 = color1[2];
@@ -1821,18 +1827,27 @@ cv::Vec3b bilinearInterpolate(cv::Mat image, double i, double j){
 	gij4 = color4[1];
 	rij4 = color4[2];
 	
-	btemp1 = (imax-i)*bij1 + (i-imin)*bij2;
-	gtemp1 = (imax-i)*gij1 + (i-imin)*gij2;
-	rtemp1 = (imax-i)*rij1 + (i-imin)*rij2;
+	if(imin==imax && jmin==jmax){
+		b = bij1;
+		g = gij1;
+		r = rij1;
+	}
+	
+	else{
+	
+	
+		btemp1 = (imax-i)*bij1 + (i-imin)*bij2;
+		gtemp1 = (imax-i)*gij1 + (i-imin)*gij2;
+		rtemp1 = (imax-i)*rij1 + (i-imin)*rij2;
 
-	btemp2 = (imax-i)*bij3 + (i-imin)*bij4;
-	gtemp2 = (imax-i)*gij3 + (i-imin)*gij4;
-	rtemp2 = (imax-i)*rij3 + (i-imin)*rij4;
+		btemp2 = (imax-i)*bij3 + (i-imin)*bij4;
+		gtemp2 = (imax-i)*gij3 + (i-imin)*gij4;
+		rtemp2 = (imax-i)*rij3 + (i-imin)*rij4;
 	
-	b = (jmax-j)*btemp1 + (j-jmin)*btemp2;
-	g = (jmax-j)*gtemp1 + (j-jmin)*gtemp2;
-	r = (jmax-j)*rtemp1 + (j-jmin)*rtemp2;
-	
+		b = (jmax-j)*btemp1 + (j-jmin)*btemp2;
+		g = (jmax-j)*gtemp1 + (j-jmin)*gtemp2;
+		r = (jmax-j)*rtemp1 + (j-jmin)*rtemp2;
+	}
 	//color.push_back(b);
 	//color.push_back(g);
 	//color.push_back(r);
@@ -1840,6 +1855,8 @@ cv::Vec3b bilinearInterpolate(cv::Mat image, double i, double j){
 	color[1] = g;
 	color[2] = r;
 	
+	
+	//cout << "	Final Color: " << color << endl;
 	return color;
 }
 

@@ -14,6 +14,7 @@
 //#include"Triangle.hpp"
 
 
+//class test {
 //////////////////////////////////////Rotate Image Test /////////////////////////////////
 
 void rotateImageTest(cv::Mat image, double y){
@@ -1638,10 +1639,10 @@ void multipleInterpolateTest(Mat ori, Mat templ, int nb_inter, string out_folder
 		output << out_folder << "/" << "InterpolatedOmni" << i ;
 		nameWindow << "InterpolatedOmni";
 		//cout << nameWindow.str() << endl;
-		cv::Mat result = delaunayInterpolate(ori,templ,1,i/(double)nb_inter);
+		//cv::Mat result = delaunayInterpolate(ori,templ,1,i/(double)nb_inter);
 		
 		//Bilinear
-		//cv::Mat result = delaunayInterpolateBilinear(ori,templ,1,i/(double)nb_inter);
+		cv::Mat result = delaunayInterpolateBilinear(ori,templ,1,i/(double)nb_inter);
 		//cv::Mat result = delaunayInterpolateSphere(ori,templ,1,i/(double)nb_inter);
 		//cv::Mat result = interpolated[i];
 		//cv::namedWindow(nameWindow.str(), 0);
@@ -1669,7 +1670,9 @@ void multipleInterpolateTest(Mat ori, Mat templ, int nb_inter, string out_folder
 	//		images.push_back(image);
 	//	}
 	//}
-	string videoName = "temp/Interpolated Video" ;
+	ostringstream video;
+	video << out_folder << "/Interpolated Video" ;
+	string videoName = video.str() ;
 	imageListToVideo(images,videoName);
 }
 
@@ -2249,6 +2252,10 @@ void testTriangleContent3D(cv::Mat image1, PointCloud<PointXYZRGB>::Ptr sphere, 
 }
 
 /////////////////////////////Test of single triangle perspective interpolate////////////////////////////
+/** 
+*
+* 
+*/
 void testSingleTrianglePerspective(cv::Mat image1, cv::Mat image2, double dist, double pos){
 //Function to test the perspective interpolation between 2 triangles taken from omnidirectional image,
 //The projected back to Equiformat
@@ -2294,6 +2301,9 @@ void testSingleTrianglePerspective(cv::Mat image1, cv::Mat image2, double dist, 
 	imshow("Original", image1);
 }
 
+/**
+*
+*/
 cv::Mat testMultipleTrianglePerspective(Mat image, string triangles_file){
 	cout << "TestMultipleTrianglePerspective called" << endl;
 	//Classes needed
@@ -2346,7 +2356,7 @@ cv::Mat testMultipleTrianglePerspective(Mat image, string triangles_file){
 		
 			persp = drawTriangleOnImage(persp,triangle_persp);
 			img_file << "OldPerpResults/TestPersp/Img1 Perpspective " << i << ".JPG"; 
-			imwrite(img_file.str(), persp);
+			//imwrite(img_file.str(), persp);
 		}
 	}
 	
@@ -2364,82 +2374,36 @@ cv::Mat testMultipleTrianglePerspective(Mat image, string triangles_file){
 
 //////////////////////// End of Test of single triangle perspective ///////////////////////////////////
 void randomTest(){
+	cv::Mat image = cv::imread("../walkthrough/OmniImage1.jpg",1);
+	cv::Mat image2 = cv::imread("../walkthrough/OmniImage2.jpg",1);
 	
+	//Get bottom image and display
+	EquiTrans equi;
+	Cube cube;
+	Mat faces[6];
+	PersCamera cams[6];
 	
 
-	
-  cv::Point2f p1,p2,p3,pp1,pp2,pp3;
-  p1.x = 389.0; pp1.x = 380.0;
-  p1.y = 219.0; pp1.y = 216.0;
 
-  p2.x = 538.0; pp2.x = 530.0;
-  p2.y = 329.0; pp2.y = 320.0;
-
-  p3.x = 553.0; pp3.x = 540.0;
-  p3.y = 197.0; pp3.y = 190.0;
-	
-	Vec6f triangle,triangle1,triangle_inter;
-	triangle[0] = p1.x;
-	triangle[1] = p1.y;
-	triangle[2] = p2.x;
-	triangle[3] = p2.y;
-	triangle[4] = p3.x;
-	triangle[5] = p3.y;
-	
-	triangle1[0] = pp1.x;
-	triangle1[1] = pp1.y;
-	triangle1[2] = pp2.x;
-	triangle1[3] = pp2.y;
-	triangle1[4] = pp3.x;
-	triangle1[5] = pp3.y;
-	
-	cv::Mat tWarp,affine_inter_img1, affine_inter_img2;
-	triangle_inter = getInterpolatedTriangle( triangle, triangle1, tWarp,  1, 0.5);
-	affine_inter_img1 = getAffine2D(triangle_inter,triangle);
-	affine_inter_img2 = getAffine2D(triangle_inter,triangle1);
-	
-	//Test of affine
-	cout << "Testing affine transform!!! " << endl;
-	cout << "Point in triangle 1 " << p1 << endl;
-	cout << "Corresponding point in 2 " << pp1 << endl;
-	
-	 
+	//Extract Cube faces
+	equi.setFOV(90.0, 90.0);
+	cout << "getCubeKeypoints: Making Cube Faces" << endl;
+	equi.makeCubeFaces2(image,cube,cams);
+	cvNamedWindow("Bottom",0);
+	cvNamedWindow("Top",0);
+	cv::imshow("Bottom",cube[5]);
+	cv::imshow("Top",cube[4]);
 	
 	
-	double* uprow1 = affine_inter_img1.ptr<double>(0);
-	double* downrow1 = affine_inter_img1.ptr<double>(1);
-	double* uprow2 = affine_inter_img2.ptr<double>(0);
-	double* downrow2 =affine_inter_img2.ptr<double>(1);
-	//All triangles
-	cout << "Triangle 1: " << triangle << endl;
-	cout << "Triangle 2: " << triangle1 << endl;
-	cout << "Triangle Inter: " << triangle_inter << endl;
-	
-	//Test for all points in triangle intermediate
-	
-	cv::Point2f p,pinter;
-	for(int i=0;i<6;i=i+2){
-		pinter.x = triangle_inter[i];
-		pinter.y = triangle_inter[i+1];
-		
-		cout << "Interpolated Point position" << i << " : "<< pinter << endl;
-		
-		//Get the position of the point in image 1
-		p.x = uprow1[0]*pinter.x + uprow1[1]*pinter.y + uprow1[2];
-		p.x = downrow1[0]*pinter.x + downrow1[1]*pinter.y + downrow1[2];
-		
-		cout << "Calculated Point position in img1" << i << " : "<< p << endl;
-					
-        	//Get the position in image 2
-		p2.x = uprow2[0] * p.x + uprow2[1]* p.y + uprow2[2];
-		p2.y = downrow2[0] * p.x + downrow2[1]* p.y + downrow2[2];
-		
-		cout << "Calculated Point position in img2" << i << " : "<< p2 << endl;
-	
-	}
-	
-	
+	equi.makeCubeFaces2(image2,cube,cams);
+	cvNamedWindow("Bottom2",0);
+	cvNamedWindow("Top2",0);
+	cv::imshow("Top2",cube[4]);
+	cv::imshow("Bottom2",cube[5]);
 	
 		
 }
+
+
+//};
 
