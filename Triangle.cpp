@@ -130,6 +130,7 @@ vector<Point3d> Triangle::convVec9fToPoint3d(Vec9f vertices){
   return points;
 }
 
+
 /*
  * Covnert a trinagle in Point3d list to Vec9f
  */

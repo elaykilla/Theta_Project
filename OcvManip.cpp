@@ -1376,8 +1376,8 @@ cv::Mat getInterpolatedTriangleContent(cv::Mat img1, cv::Mat img2, cv::Vec6f tri
 	
 	//Result image with only triangle
 	int rows, cols;
-	rows = img1.rows * (1-pos/dist) + img2.rows * pos/dist;
-	cols = img1.cols * (1-pos/dist) + img2.cols * pos/dist;
+	rows = ceil(img1.rows * (1-pos/dist) + img2.rows * pos/dist);
+	cols = ceil(img1.cols * (1-pos/dist) + img2.cols * pos/dist);
 	
 	cv::Mat result = cv::Mat::zeros(rows,cols,img1.type());
 	cv::Mat bi_result =  cv::Mat::zeros(rows,cols,img1.type());
@@ -1386,7 +1386,7 @@ cv::Mat getInterpolatedTriangleContent(cv::Mat img1, cv::Mat img2, cv::Vec6f tri
 	cv::Mat tWarp, affine_inter_img1, affine_inter_img2;
 	
 	//Get all the affine transformations
-	triangle_inter =  getInterpolatedTriangle( triangle1, triangle2, tWarp,  dist, pos);
+	//triangle_inter =  getInterpolatedTriangle( triangle1, triangle2, tWarp,  dist, pos);
 	affine_inter_img1 = getAffine2D(triangle_inter,triangle1);
 	affine_inter_img2 = getAffine2D(triangle_inter,triangle2);
 	
@@ -1432,10 +1432,15 @@ cv::Mat getInterpolatedTriangleContent(cv::Mat img1, cv::Mat img2, cv::Vec6f tri
 	}
 		
 	//Get the bouding box around the triangle
-	int xmax = cvRound(max(a_inter.x, max(b_inter.x,c_inter.x)));
-	int ymax = cvRound(max(a_inter.y, max(b_inter.y,c_inter.y)));
-	int xmin = cvRound(min(a_inter.x, min(b_inter.x,c_inter.x)));
-	int ymin = cvRound(min(a_inter.y, min(b_inter.y,c_inter.y)));
+	//int xmax = cvRound(max(a_inter.x, max(b_inter.x,c_inter.x)));
+	//int ymax = cvRound(max(a_inter.y, max(b_inter.y,c_inter.y)));
+	//int xmin = cvRound(min(a_inter.x, min(b_inter.x,c_inter.x)));
+	//int ymin = cvRound(min(a_inter.y, min(b_inter.y,c_inter.y)));
+	
+	int xmax = (int)ceil(max(a_inter.x, max(b_inter.x,c_inter.x)));
+	int ymax = (int)ceil(max(a_inter.y, max(b_inter.y,c_inter.y)));
+	int xmin = (int)floor(min(a_inter.x, min(b_inter.x,c_inter.x)));
+	int ymin = (int)floor(min(a_inter.y, min(b_inter.y,c_inter.y)));
 	
 	cv::Point2f p1,pinter,p2;
 
@@ -3062,7 +3067,7 @@ void delaunayInterpolateCubeMakeTriangles(cv::Mat img1, cv::Mat img2, double dis
 */
 cv::Mat delaunayInterpolateCubeFromTriangles(cv::Mat img1, cv::Mat img2, double dist, double pos, string triangles_file, vector<PointXYZRGB> points1c, vector<PointXYZRGB> points2c, int nb_inter, int method, string outfile){
 	cout << "delaunayInterpolateCubeFromTriangles Called" << endl;
-	cout << "delaunayInterpolateCubeFromTriangles: Making" << nb_inter << " Interpolated images" << endl ;
+	cout << "delaunayInterpolateCubeFromTriangles: Making " << nb_inter << " Interpolated images" << endl ;
 	
 	
 	//For calling functiona
@@ -3109,7 +3114,7 @@ cv::Mat delaunayInterpolateCubeFromTriangles(cv::Mat img1, cv::Mat img2, double 
 	
 	//Go through the triangles
 	Vec6f triangle1, triangle2, triangle_inter, triangle_persp1,triangle_persp2, triangle_inter_persp ;
-	Vec9f triangle3d1,triangle3d2;
+	Vec9f triangle3d1,triangle3d2, triangle3d_inter;
 	PersCamera cam1, cam2, cam_inter;
 	cv::Mat persp1, persp2, inter, temp;
 	vector<PointWithColor> content;
@@ -3148,14 +3153,24 @@ cv::Mat delaunayInterpolateCubeFromTriangles(cv::Mat img1, cv::Mat img2, double 
 				cout << "Processing Triangle " << i << endl;
 				//for(int i=0;i<10;i++){
 				ostringstream img1_file,img2_file,img_inter_file;
-				 //Equirectangular triangle
-				 triangle1 = triangles_list1[i];
-				 triangle2 = triangles_list2[i];
-		
+				 
+				 
 				//3D triangle
 				 triangle3d1 = triangles3D1c[i];
 				 triangle3d2 = triangles3D2c[i];
-		
+				 cout << "3D Triangle1 : " << triangle3d1 << endl;
+				 cout << "3D Triangle2 : " << triangle3d2 << endl;
+				 
+				 //Get interpolated 3D triangle
+				 triangle3d_inter = getInterpolatedTriangle3D(triangle3d1, triangle3d2, dist,pos);
+				 triangle3d_inter = projectTriangle2Sphere(triangle3d_inter,1);
+				 cout << "Interpolated 3D Triangle: " << triangle3d_inter << endl;
+				
+				//Equirectangular triangle
+				 triangle1 = triangles_list1[i];
+				 triangle2 = triangles_list2[i];
+				 triangle_inter = tri_class.convVec9fToVec6f(img1,triangle3d_inter);
+				
 				//Generate the perspective view for the given triangle using the same view for 
 				// both triangles
 				//inter = cv::Mat::zeros(img1.rows, img1.cols, img1.type());
@@ -3186,7 +3201,8 @@ cv::Mat delaunayInterpolateCubeFromTriangles(cv::Mat img1, cv::Mat img2, double 
 				//Get perspective triangle locations
 				triangle_persp1 = tri_class.convToPersTriangle(img1,cam1,triangle1);
 				triangle_persp2 = tri_class.convToPersTriangle(img2,cam2,triangle2);
-		
+				triangle_inter_persp = tri_class.convToPersTriangle(img1,cam1,triangle_inter);
+				expandTriangle(img1, triangle_inter, 4);
 		
 		
 				//Output images with drawn triangles
@@ -3198,7 +3214,12 @@ cv::Mat delaunayInterpolateCubeFromTriangles(cv::Mat img1, cv::Mat img2, double 
 				//Interpolated camera
 				cam_inter = cam1;
 				//cam_inter = tri_class.getInterpolatedPersCamParams(cam1,cam2,dist,pos);
+				
+				
 				clock_t t_int = clock();
+				//Get inter triangle on given perspective camera
+				//triangle_inter_persp = trans_class.conv3DTriangletoPers(tri_class.convVec9fToPoint3d(triangle3d_inter), cam_inter);
+				cout << "Triangle Inter Perspective: " << triangle_inter_persp << endl;
 				inter = getInterpolatedTriangleContent(persp1,persp2,triangle_persp1,triangle_persp2,triangle_inter_persp,content,dist,pos,method);
 				printf("Single Triangle Execution Time: %.2fs\n", (double)(clock() - t_int)/CLOCKS_PER_SEC);
 		
@@ -3333,11 +3354,13 @@ cv::Mat delaunayInterpolateCubeFromTriangles(cv::Mat img1, cv::Mat img2, double 
 		
 	
 	}
+	bool video_flag = false;
 	
-	ostringstream video_file;
-	video_file << outfile << ".mpeg";
-	imageListToVideo(images,video_file.str());
-	
+	if(video_flag){
+		ostringstream video_file;
+		video_file << outfile << ".mpeg";
+		imageListToVideo(images,video_file.str());
+	}
 	
     	
     	//EquiTrans trans_class;
@@ -3350,4 +3373,44 @@ cv::Mat delaunayInterpolateCubeFromTriangles(cv::Mat img1, cv::Mat img2, double 
 	return result;
 }
 
+/*
+ * set the background to gray for debugging.
+ */
+void setBackground(cv::Mat &src, cv::Scalar color){
+  src = color;
+}
+
+/*
+ * expand triangle to fill the gaps.
+ */
+void expandTriangle(Mat image, cv::Vec6f &triangle, int width){
+  PointFeature feat;
+  vector<Point2f> points = feat.convVec6fToPoint2f(triangle);
+  vector<Point2f> ex_list;
+
+  // find center;
+  double cx = 0.0, cy = 0.0;
+
+  for(int i = 0;i < 3; i++){
+    cx += (double)points[i].x;
+    cy += (double)points[i].y;
+  }
+  
+  cx /= 3.0;
+  cy /= 3.0;
+
+  for(int i = 0;i < 3;i++){
+    Point2f ex_p;
+    double dx = (double)points[i].x - cx;
+    double dy = (double)points[i].y - cy;
+    double len = sqrt(dx * dx + dy + dy);
+
+    ex_p.x = points[i].x + (float)(dx/len)*(float)(width);
+    ex_p.y = points[i].y + (float)(dy/len)*(float)(width);
+    
+    ex_list.push_back(ex_p);
+  }
+
+  Vec6f ex_p6f = feat.convPoint2fToVec6f(ex_list);
+}
 

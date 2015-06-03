@@ -309,4 +309,15 @@ bool onSameCubicFaceRaw(int rows, int cols, int i1, int j1, int i2, int j2);
 * Given a list of images, this function returns a Kmean clustering of the images using intensity histograms for classification.
 */
 vector<vector< cv::Mat> > histoCluster(vector<cv::Mat>, int nbClusters);
+
+
+/*
+ * set the background to gray of the image.
+ */
+void setBackground(cv::Mat &image, cv::Scalar color);
+
+/*
+ * expand triangle to fill the gaps.
+ */
+void expandTriangle(Mat image, cv::Vec6f &triangle, int width);
 #endif

@@ -80,6 +80,16 @@ public:
   /* Convert a point in 3D unit sphere to that on the perspective camera. */
   Point2d convSpherePointtoPersCoord(PersCamera cam, Point3d point);
 
+  
+  /**
+  * Convert 3d points on the unit sphere to points on a given perspective camera
+  * @Inputs
+  * triangle3d:	vector of 3 points in 3d
+  * cam:	a PersCamera 
+  * @Outputs
+  * triangle2d:	a vector of 3 points in 2d
+  */
+  Vec6f conv3DTriangletoPers(vector<Point3d> triangle3d, PersCamera cam);
  /*
   * make 6 cube face images from an image in equirectangular format.
   *    Starting from panning of 0.0 degree: 

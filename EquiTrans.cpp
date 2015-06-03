@@ -385,6 +385,24 @@ Point2d EquiTrans::convSpherePointtoPersCoord(PersCamera cam, Point3d point){
   return i_p;
 }
 
+Vec6f EquiTrans::conv3DTriangletoPers(vector<Point3d> triangle3d, PersCamera cam){
+ 	Vec6f points2d;
+ 	
+ 	for(int i=0,j=0;i<triangle3d.size();i++,j=j+2){
+ 		Point2f p = convSpherePointtoPersCoord(cam,triangle3d[i]);
+ 		cout << "Point3D to convert to Persp: " << triangle3d[i] << endl;
+ 		
+ 		
+ 		float ip,jp;
+ 		p = toTopLeftCoord(p,cam.image);
+ 		cout << "Converted Point: " << p << endl;
+ 		points2d[j] = p.x;
+ 		points2d[j+1] = p.y;
+ 		//points2d.push_back(convSpherePointtoPersCoord(cam,triangle3d[i]));
+ 	}
+ 
+ 	return points2d;
+ }
 
 /*
  * Convert angles for a direction to images coordinates in equirectangular format.

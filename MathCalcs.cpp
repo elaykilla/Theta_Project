@@ -1488,6 +1488,39 @@ PointXYZRGB project2SphereWithAngle(PointXYZRGB u, PointXYZRGB v, double alpha, 
 	}
 }
 
+/**
+* Given 3 points in 3D, this function projects them to the surface of a sphere of radius r
+*
+*/
+Vec9f projectTriangle2Sphere(Vec9f triangle, double r){
+	//Result vec
+	Vec9f ptriangle;
+	
+	//Define origin
+	PointXYZRGB o; 
+	bool projected;
+	
+	//Get the points
+	for(int i=0;i<9;i=i+3){
+		PointXYZRGB p;
+		p.x = triangle[i];
+		p.y = triangle[i+1];
+		p.z = triangle[i+2];
+		
+		p = project2Sphere(o,p,r,projected);
+		if(!projected){
+			cout << "Error During projection. Point situated outside of sphere, please verify" << endl;
+			break;
+		}
+		
+		ptriangle[i] = p.x;
+		ptriangle[i+1] = p.y;
+		ptriangle[i+2] = p.z;
+	}
+	
+	return ptriangle;	
+
+}
 
 /** 
  * This function, given a point u(ux,uy,uz) located inside the sphere and direction vector v, gives the Points Pmin, Pmax, Tmin and Tmax

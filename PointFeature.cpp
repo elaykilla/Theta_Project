@@ -512,8 +512,9 @@ vector< vector<Point2f> > PointFeature::convVec6fToPoint2f(vector<Vec6f> &tri_li
   return point_list;
 }
 
+
 /*
- * convert Vec6f to Point3d
+ * convert Vec6f to Point2f
  */
 vector<Point2f> PointFeature::convVec6fToPoint2f(Vec6f vec){
 
@@ -529,6 +530,22 @@ vector<Point2f> PointFeature::convVec6fToPoint2f(Vec6f vec){
   }
 
   return point_list;
+}
+
+/* 
+ * Convert Point2f list to Vec6f
+ */
+Vec6f PointFeature::convPoint2fToVec6f(vector<Point2f> point_list){
+  int num = point_list.size();
+  Vec6f p6f;
+
+  int k = 0;
+  for(int i = 0;i < num;i++){
+    p6f[k++] = point_list[i].x;
+    p6f[k++] = point_list[i].y;
+  }
+
+  return p6f;
 }
 
 /*

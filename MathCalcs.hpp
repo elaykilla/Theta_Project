@@ -386,6 +386,13 @@ PointXYZRGB project2Sphere(PointXYZRGB u, PointXYZRGB v, double r, bool &project
 */
 PointXYZRGB project2SphereWithAngle(PointXYZRGB u, PointXYZRGB v, double alpha, double beta, double r, bool &projected);
 
+
+/**
+* Given 3 points in 3D, this function projects them to the surface of a sphere of radius r
+*
+*/
+Vec9f projectTriangle2Sphere(Vec9f triangle, double r);
+
 /** 
 * This function, given a point u(ux,uy,uz) located inside the sphere and direction vector v, gives the Points Pmin, Pmax, Tmin and Tmax
 * which correspond to the intersection between a horizontal line from u with the sphere

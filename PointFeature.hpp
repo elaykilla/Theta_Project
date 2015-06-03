@@ -19,9 +19,9 @@ class PointFeature {
 private:  
   Method method;
   int minHessian; // for SURF
-  vector< vector<Point2f> > convVec6fToPoint2f(vector<Vec6f> &tri_list);
-  vector<Point2f> convVec6fToPoint2f(Vec6f vec);   
-  vector<Point3d> convVec6fToPoint3d(Vec6f p); 
+
+
+
   Vec9f point3dToVec9f(vector<Point3d> p_list);
 
 public:
@@ -31,6 +31,14 @@ public:
   void showKeyPoints(Mat imge, vector<KeyPoint> &keypoints);
   void printPoints(vector<KeyPoint> &keypoints);
   void toSpherePoints(Mat image, vector<KeyPoint> &keypoints, vector<Point3d> &points);
+
+  /*
+   * Converters between Vec6f and Point2f/3d.
+   */
+  vector< vector<Point2f> > convVec6fToPoint2f(vector<Vec6f> &tri_list);
+  vector<Point2f> convVec6fToPoint2f(Vec6f vec);   
+  vector<Point3d> convVec6fToPoint3d(Vec6f p); 
+  Vec6f convPoint2fToVec6f(vector<Point2f> p_list);
   
   /**
   * Converts a list of 3d points into their equi corresponding points

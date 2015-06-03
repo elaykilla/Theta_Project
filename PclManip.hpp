@@ -16,30 +16,42 @@
 
 //public:
 /***************************************************Simple Functions **************************************/
-//Function returns the index of a given point in an array, if not found it gives the size of the 
-//Vector
+/**
+*Function returns the index of a given point in an array, if not found it gives the size of the 
+*Vector
+* @param p 	a PointXYZRGB 
+* @param points a vector of PointXYZRGB 
+* @return 	The index of the point in the array, or the size of the vector if not found
+* 
+*/
 int findPointInVector(PointXYZRGB p, vector<PointXYZRGB> points);
 
 /**
 * Simple function to convert a list of PointXYZRGB to a list of Point3D
+* @param points a vector of PointXYZRGB 
+* @return a vector of cv::Point3D 
 */
 vector<cv::Point3d> fromxyzrgbtoPoint3D(vector<PointXYZRGB> points);
 
 
 /**
 * Simple function to convert a list of Point3D  to a list of PointXYZRGB
+* @param points vector of cv::Point3D 
+* @return a vector PointXYZRGB 
 */
 vector<PointXYZRGB> fromPoint3Dtoxyzrgb(vector<cv::Point3d> points);
 
 
-/***************************************************End Simple Functions **************************************/
+/***************************************************End Simple Functions ******************/
 
 /***************************************************Image Manipulation PCL***********************************************/
 /**
 * This function computes the keypoints on a cloud of PointXYZRGB. 
-*******************FLANN compatibility problem between OpenCv and PCL ***************************
+* @param 
+* @param 
+* @param 
 */
-
+/*******************FLANN compatibility problem between OpenCv and PCL ***************************/
 void get3DKepoints(PointCloud<PointXYZRGB>::Ptr &points, float min_scale, int nr_octaves, int nr_scales_per_octave, float min_contrast, PointCloud<PointWithScale>::Ptr &keypoints_out);
 
 
