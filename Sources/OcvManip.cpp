@@ -520,7 +520,7 @@ void getKeypointsAndMatches(Mat image1, Mat image2, vector<KeyPoint> &keypoints1
 	//keypoints1 = getCubeKeypoints(image1);
 	//keypoints2 = getCubeKeypoints(image2);
 
-	matches = getMatches(image1, image2, keypoints1, keypoints2);
+	//matches = getMatches(image1, image2, keypoints1, keypoints2);
 
 	//matches = getFlannMatches(image1, image2, keypoints1, keypoints2);
 

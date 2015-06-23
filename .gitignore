@@ -16,6 +16,8 @@ Just*
 *.jpg
 *.png
 *.JPG
+*.mpeg
+*.MPEG
 
 #Text and object files
 *.obj
