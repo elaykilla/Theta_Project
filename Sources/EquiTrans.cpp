@@ -204,7 +204,7 @@ void EquiTrans::makeCubeFaces2(Mat src, Mat faces[6], PersCamera cams[6]){
   double v_fov_rad = M_PI/2;
   // side
   int i;
-  //cout << "makeCubeFaces2: Making sides" << endl;
+  cout << "makeCubeFaces2: Making sides" << endl;
   for(i = 0;i < 4;i++, pan_deg += 90.0){
     face = toPerspective(src, pan_deg, tilt_deg);
     faces[i] = face;
@@ -219,7 +219,7 @@ void EquiTrans::makeCubeFaces2(Mat src, Mat faces[6], PersCamera cams[6]){
      cams[i] = cam;
     //v_directions[i] = vd;
   }
-  //cout << "makeCubeFaces2 top i: " << i << endl;
+  cout << "makeCubeFaces2 top i: " << i << endl;
   // top
   pan_deg = 0.0, tilt_deg = 90.0;
   face = toPerspective(src, pan_deg, tilt_deg);
@@ -228,7 +228,7 @@ void EquiTrans::makeCubeFaces2(Mat src, Mat faces[6], PersCamera cams[6]){
   vd.pan = pan_deg, vd.tilt = tilt_deg;
   cam.setCamera(face, h_fov_rad, v_fov_rad, vd);
   cams[4] = cam;
-  //cout << "makeCubeFaces2 bottom i: " << i << endl;
+  cout << "makeCubeFaces2 bottom i: " << i << endl;
   //v_directions[i++] = vd;
 
   

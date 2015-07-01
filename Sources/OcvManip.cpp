@@ -335,6 +335,7 @@ vector<vector<cv::KeyPoint> > getMatchedCubeKeypoints(cv::Mat img1, cv::Mat img2
 		keypoints2 = matched_keypoints[1];
 		
 		
+		
 		//Convert matches keypoints to Equi Format 
 		for(int j=0;j<keypoints1.size();j++){
 			keypoint1 = keypoints1[j];
@@ -3224,7 +3225,7 @@ cv::Mat delaunayInterpolateCubeFromTriangles(cv::Mat img1, cv::Mat img2, double 
 				printf("Single Triangle Execution Time: %.2fs\n", (double)(clock() - t_int)/CLOCKS_PER_SEC);
 		
 				//For drawing purposes
-				//inter = drawTriangleOnImage(inter,triangle_inter_persp);
+				inter = drawTriangleOnImage(inter,triangle_inter_persp);
 		
 				img_inter_file << "OldPerpResults/PerspInter/Img Inter Perpspective " << i << ".JPG"; 
 				//imwrite(img_inter_file.str(), inter);
@@ -3232,7 +3233,7 @@ cv::Mat delaunayInterpolateCubeFromTriangles(cv::Mat img1, cv::Mat img2, double 
 		
 				//Draw inter with triangle
 		
-				imwrite(img_inter_file.str(), inter);
+				//imwrite(img_inter_file.str(), inter);
 				//triangle_inter_persp = tri_class.convToPersTriangle(result,cam_inter,triangle_inter);
 		
 		
@@ -3370,7 +3371,7 @@ cv::Mat delaunayInterpolateCubeFromTriangles(cv::Mat img1, cv::Mat img2, double 
 	else{
 		return trans_class.toPerspective(result,cam);
 	}
-	return result;
+	//return result;
 }
 
 /*

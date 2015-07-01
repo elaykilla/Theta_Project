@@ -58,7 +58,8 @@ void showInstructions(){
 	cout << "// Usage: load 3 image input3dtriangles outputfile" << endl;
 	cout << "// load 4: Takes 2 input images img1 and img2 and generates nb_inter interpolated images between the 2 images using triangulation and content from Equirectangular images and saves in out_folder" << endl;
 	cout << "// Usage: load 4 image1 image2 nb_interpolation out_folder" << endl;
-	cout << "// load 5: " << endl;
+	cout << "// load 5: Takes an image in equirectangular format and a folder as input. Then creates 6 faces of the cube using this image" << endl;
+	cout << "Usage: load 5 image_file output_folder" << endl;
 	cout << "// load 6: " << endl;
 	cout << "//////////////////////Load Usage //////////////////////////////////" << endl;
 
@@ -219,6 +220,29 @@ int main(int argc, char** argv)
  		return 1;
 	
 	}
+	
+	case 5: 
+	{
+	
+		if(argc<3){
+			cout << "Application usage is not correct, please refer to usage" << endl;
+			showInstructions();
+			return -1;
+		}
+		img1_file = argv[2];
+ 		string folder = argv[3];
+ 		
+ 		//Read image files
+ 		ori = imread(img1_file,1);
+ 		
+ 		if(!ori.data){
+ 			cout << "Please choose correct image. Error loading image file" << endl;
+ 			return -1;
+ 		}
+ 		getCubeFacesTest(ori,folder);
+ 		return 1;
+	
+	}
  	 
 	default:
 	  showInstructions();
@@ -262,7 +286,7 @@ int main(int argc, char** argv)
 
 
 	//Setup 3D visualizer
-	//visualization::PCLVisualizer viewer("3D viewer");
+	visualization::PCLVisualizer viewer("3D viewer");
 	//	visualization::CloudViewer cViewer ("Simple Cloud Viewer");
 	//	//viewer.setBackgroundColor (0, 0, 0);
 
@@ -595,13 +619,13 @@ int main(int argc, char** argv)
  	
  	
  	
- 	ori = cv::imread("Bottom/Bottom4.jpg",1);
-	templ = cv::imread("Bottom/Bottom5.jpg",1);
+ 	ori = cv::imread("../Tests/TestResultsNikko/Originals/Nikko (33).JPG",1);
+	templ = cv::imread("../Tests/TestResultsNikko/Originals/Nikko (34).JPG",1);
  	//testTriangleRead(ori, templ, 1, 0.5, "Txt_files/trianglesZenkoji4_5.txt", "Txt_files/Zenkoji4_5.txt","Txt_files/Zenkoji5.txt", 48, "TestResultsZenk/InterPersp4_5_");
  	
  	
  	//testTrianglePerspective(templ);
- 	//cloud = EquiToSphere(ori,1,0,0,0);
+ 	cloud = EquiToSphere(ori,1,0,0,0);
  	//testTriangleContent3D(ori, cloud,sightFlat);
  	
  	//testSingleTrianglePerspective(ori,templ,1,0.5);
@@ -631,8 +655,8 @@ int main(int argc, char** argv)
 	//}
 	//imageListToVideo(images,"TestResultsZenk/Originals5_6/NonInterpolatedVideo");
 	
-	
-	randomTest();
+	//testImageDiff(ori,templ);
+	randomTest(ori,templ);
 	/******************************************* End of Test Zone ***************************************************************/
 
 
@@ -645,7 +669,7 @@ int main(int argc, char** argv)
 	//cViewer.showCloud(sightFlat);
 	//viewer.addPointCloud(sightFlat, "Sphere");
 
-	//	viewer.addPointCloud(sight, "Sphere");
+		viewer.addPointCloud(cloud, "Sphere");
 	//viewer.addPointCloud(sight, "Sphere1");
 
 	//viewer.addPointCloud(allPtClouds[0], "Sphere");
@@ -655,16 +679,16 @@ int main(int argc, char** argv)
 	//imshow("Original",allImages[0]);
 
 	//viewer.addCoordinateSystem (radius*2);
-	//viewer.setPointCloudRenderingProperties (visualization::PCL_VISUALIZER_POINT_SIZE, 1, "Sphere");
+	viewer.setPointCloudRenderingProperties (visualization::PCL_VISUALIZER_POINT_SIZE, 1, "Sphere");
 	//viewer.registerKeyboardCallback (keyboardEventOccurred, (void*)&viewer);
-	//while (!viewer.wasStopped ()){
+	while (!viewer.wasStopped ()){
 		// This seems to cause trouble when having cloud viewer and viewr running
 		//cv::imshow("Keypoints 2D" , sightMat);
-	//	viewer.spinOnce (100);
+		viewer.spinOnce (100);
 
 		//cv::waitKey(0);
 //		boost::this_thread::sleep (boost::posix_time::microseconds (10000));
-	//}
+	}
 
 	//close viewer
 
