@@ -17,7 +17,7 @@
 //Define new types 
 //typedef Vec<float, 9> Vec9f;
 
-//#include "boost_headers.hpp"
+#include "boost_headers.hpp"
 /*
 * 
 */

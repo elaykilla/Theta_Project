@@ -107,7 +107,7 @@ void testImageDiff(cv::Mat lImg1, cv::Mat lImg2 ){
 
 		}
 	}
-
+	cv::namedWindow("Mixed",0);
 	imshow("Mixed", lImg3); 
 	waitKey(0);
 	//imwrite("outImg.jpg", lImg3);

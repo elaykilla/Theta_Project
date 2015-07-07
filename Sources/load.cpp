@@ -655,8 +655,8 @@ int main(int argc, char** argv)
 	//}
 	//imageListToVideo(images,"TestResultsZenk/Originals5_6/NonInterpolatedVideo");
 	
-	//testImageDiff(ori,templ);
-	randomTest(ori,templ);
+	testImageDiff(ori,templ);
+	//randomTest(ori,templ);
 	/******************************************* End of Test Zone ***************************************************************/
 
 

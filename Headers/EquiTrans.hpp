@@ -20,7 +20,9 @@ private:
   double hfov;  // Horizontal field of view in degrees
   double vfov;  // Vertical field of view in degrees
   
-  
+  /**
+  * Get current Field of View.
+  */
   int getFOV(Mat, int*, int*, double*);
   
   /*
@@ -29,6 +31,9 @@ private:
  */
   void getCubeCam(Mat, int*, int*, double*);
   
+  /**
+  * Set the Camera Parameters for the transform.
+  */
   void setCamera(int, int, double);
   
   /*
@@ -132,17 +137,32 @@ public:
 
   Mat toPerspective(Mat, double, double);
   
+  /**
+  * Extracts a perpective view from an Equirectangular Image using the given PersCamera
+  * parameters
+  * @input:
+  *	- image: Mat of the Omnidirectional Image
+  *	- cam: The Perspective camera to get image
+  * @output:
+  *	- Perpespective camera image
+  */
   Mat toPerspective(Mat image, PersCamera &cam);
   
-    /*
- * src: Equirectangular image
- * cam_phi_deg: camera pannng in degrees (center origin, left-right)
- * cam_theta_deg: camera tilting in degrees (center origin, botom-top)
- *
- *
- */
+  /**
+  * Extracts Perspective image using panning and tilting viewing angles
+  * @input:
+  * 	- src: Equirectangular image
+  * 	- cam_phi_deg: camera pannng in degrees (center origin, left-right)
+  * 	- cam_theta_deg: camera tilting in degrees (center origin, botom-top)
+  *
+  * @output:
+  *  	- Perspective camera image
+  */
   Mat toPerspectiveCore(Mat, double, double);
   
+  /**
+  * Removes the current Field of View settings
+  */
   void unsetFOV();
   
   /*
@@ -161,23 +181,87 @@ public:
   void toEquirectCore(double i_c, double j_c, double focal_length, ViewDirection vd, double d_rows, double d_ncols, double *ec_i, double *ec_j);
   
   
+  
+  /*
+ * Convert a 3d point on the unit sphere to image coordinates in equirectangular format.
+ *    Coordinate system in eqirectangular format: top-left origin
+ *      x: horizontal pixel coordinate
+ *      y: vertical pixel coordinate
+ */
   void convSpherePointToEquiCoord(Point3f point, Mat equi_img, double *x, double *y);
   
+  
+  /*
+ * Convert the image coordinates in equirectangular format to those in the perspectivei image.
+ *
+ * equi_point: image coordinates in equirectangular format (origin: top-left)
+ */
   Point2f toPersPoint(Mat image, PersCamera cam, Point2f point);
   
+  
+  /*
+ * Convert a perspective image to a portion in the equirectangular image.
+ * 
+ *  pers: perspective camera including its image.
+ *  equi: equirectangular image to render
+ */
   void toEquirectangular(PersCamera cam, Mat &image);
   
+  
+  /*
+ * Convert a traingle in perspective image to the portion in the equirectangular image.
+ * 
+ *  pers: perspective camera including its image.
+ *  tri:  triangle in the perspecive camera
+ *  equi: equirectangular image to render
+ */
   void toEquirectangular(PersCamera cam, Vec6f triangle, Mat &image);
   
+  
+  
+/*
+ * 3D rotation around the tilting axis. 
+ *    Y axis in Sacht's notation
+ *   
+ *    angle: rotational angle in radian
+ *    point: 3D point
+ */
   Point3d rotateTilt(double angle_rad, Point3d point);
+  
+  /*
+ * 3D rotation around the tilting axis. 
+ *    Y axis in Sacht's notation
+ *   
+ *    angle: rotational angle in radian
+ *    point: 3D point
+ */
   Point3d rotateTilt(Mat invTilt, Point3d point);
   
+  
+  /*
+ * 3D rotation around the panning axis. 
+ *    Z axis in Sacht's notation
+ *   
+ *    angle: rotational angle in radian
+ *    point: 3D point
+ */
   Point3d rotatePan(double angle_rad, Point3d point);
   
+  
+  /*
+ * Convert image cooridnates of a point in perpective camera to that in equirectangular.
+ *     p_p: point image coordinates. (origin: top-left).
+ */
   Point2f toEquiPoint(PersCamera cam, Mat image, Point2f point);
   
+  /*
+ * Convert coordinates of a point from center origin to top-left origin.
+ */
   Point2f toCenterCoord(Point2f point, Mat image);
   
+  /*
+ * Convert coordinates of a point from center origin to top-left origin.
+ */
   Point2f toTopLeftCoord(Point2f point, Mat image);
 };
 

@@ -15,7 +15,7 @@
 //#include "EquiTrans.hpp"
 #include "Triangle.hpp"
 #include "PointFeature.hpp"
-#include "boost_headers.hpp"
+//#include "boost_headers.hpp"
 #include "PclManip.hpp"
 
 
@@ -198,11 +198,14 @@ cv::Mat getDiffPerspInterpolate(cv::Mat img1, cv::Mat img2, PersCamera cam1, Per
 /**
 * Function to interpolate between 2 images having already extracted keypoints and matched them and computed
 * triangulation
-* Inputs:
-*	- Img1, Img2 
-*	- Triangles1, Triangles2: matched triangles
-* Outputs:
-*	- Interpolated image
+* @Input:
+*	- Img1, Img2 : Images to be used for interpolation
+*	- Triangles1, Triangles2: matched triangles given in Vec6 format
+*	- dist: the distance between the 2 images (linear)
+*	- pos : position for interpolating, pos must be between 0 and dist
+* @Output:
+*	- Interpolated image: Output interpolated image
+*	- trianglesInter: triangles of the interpolated image
 */
 cv::Mat interpolateWithGivenTriangles(cv::Mat image1, cv::Mat image2, vector<cv::Vec6f> triangles1, vector<cv::Vec6f> triangles2, vector<cv::Vec6f> &trianglesInter, double dist, double pos);
 
@@ -211,6 +214,7 @@ cv::Mat interpolateWithGivenTriangles(cv::Mat image1, cv::Mat image2, vector<cv:
 * Function to interpolate between 2 images using Delaunay triangulation using triangles on the surface of the sphere
 */
 cv::Mat delaunayInterpolateSphere(cv::Mat img1, cv::Mat img2, double dist, double pos);
+
 /** 
 * Function to interpolate n times between 2 images using Delaunay triangulation
 */
@@ -237,6 +241,7 @@ cv::Mat delaunayInterpolateCubeFromTriangles(cv::Mat img1, cv::Mat img2, double 
 */
 void optFlowMap(cv::Mat image1, cv::Mat image2, cv::Mat &flow);
 
+
 void lkOptFlowMap(cv::Mat image1, cv::Mat image2);
 
 
@@ -251,7 +256,9 @@ cv::Subdiv2D getDelaunayTriangles(vector<cv::KeyPoint> keypoints, int rows, int 
 */
 void getCorrespondingDelaunayTriangles(vector<cv::KeyPoint> keypoints1, vector<cv::KeyPoint> keypoints2, vector<cv::Vec6f> &trianglesList1, vector<cv::Vec6f> &trianglesList2);
 
-//Given a list of triangles using keypoints 1, this function calculates the relating triangles obtained using keypoint matches
+/**
+*Given a list of triangles using keypoints 1, this function calculates the relating triangles obtained using keypoint matches
+*/
 void makeCorrespondingDelaunayTriangles(vector<cv::Point2f> points1, vector<cv::Point2f> points2, vector<cv::Vec6f> &trianglesList1, vector<cv::Vec6f> &trianglesList2);
 
 
@@ -260,14 +267,23 @@ void makeCorrespondingDelaunayTriangles(vector<cv::Point2f> points1, vector<cv::
 * Given 2 images this function:
 * - Extracts and matches keypoints 
 * - Computes triangles in first image and gets matching triangles in 2nd image
+* @input:
+*	- image1, image2 : 2 input images (Mat)
+* @output:
+*	- triangles1, triangles2: matching triangles from matched keypoints of input images. 
 */
 void getMatchingTrianglesFromImages(Mat image1, Mat image2, vector<Vec6f> &triangles1, vector<Vec6f> &triangles2);
 /**
-* This function calculates the corresponding vertices of a triangle list from 2D (i,j) to 3D (x,y,z) using * the warping of the 2D image onto a Sphere 
+* This function calculates the corresponding vertices of a triangle list from 2D (i,j) to 3D (x,y,z) using the warping of the 2D image onto a Sphere 
 */
 void get3DSphereTriangles(int rows, int cols, double r, vector<Vec6f> triangles2D,vector<Vec9f> triangles3D);
 /**
 * This function find the position of a given triangle in a list of triangles. It returns -1 if no triangle is found. A triangle is represented as a list of 6 floating points
+* @input: 
+*	- triangle: in Vec6f format
+*	- trianglesList: List of triangles in Vec6f 
+* @output:
+*	- returns the position of the triangle in the List 
 */
 int findTriangleInVector(Vec6f triangle,vector<Vec6f> trianglesList );
 
@@ -290,7 +306,7 @@ vector<cv::Mat> getAffineTriangleTransforms (vector<Vec6f> triangles1, vector<Ve
 
 
 /**
-* This function determines wether a point is on a given faces
+* This function determines wether a point is on a given face
 * - Point defined by it's (i,j) coordinates on equirectangular image1
 * - a face is determined by the theta and phi angles of it's center point
 */

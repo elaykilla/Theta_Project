@@ -66,17 +66,32 @@ class Triangle {
 		 */
 		cv::Mat convToPersRectImageBarycentricTwo(cv::Mat equi_image, Vec9f triangle3D1, Vec9f triangle3D2);
 
-		/*
-		 * Covnert a trinagle in Point3d list to Vec9f
+		/**
+		 * Convert a triangle in Point3d list to Vec9f
+		 * @Input:
+		 * - points: a vector<Point3D> containing 3 points 
 		 */
 		Vec9f convPoint3dToVec9f(vector<cv::Point3d> points);
 
-		/*
+		/**
 		 * Get the perpective camera that includes the list of triangles.
-		 *     Triangles could be one or a pair of matching
+		 *     Triangles could be one or a pair of matching using triangle 
+		 * coordinates given in Equirectangular image positions
+		 * @Input:
+		 * - Equi_image: cv Mat representing the equirectangular Image
+		 * - vertices: a Vec6f (6 floating points representing coordinates of 3 points in 2d)
 		 */
 		PersCamera getPersCamParams(cv::Mat equi_image, cv::Vec6f vertices);
 
+
+		/** Get the perpective camera that includes the list of triangles.
+		 *     Triangles could be one or a pair of matching using triangle 
+		 * coordinates given in cartesian 3D coordinates image positions
+		 * @Input:
+		 * - Equi_image: cv Mat representing the equirectangular Image
+		 * - vertices: a Vec9f (9 floating points representing coordinates of 3 points in 3D)
+		 */
+		PersCamera getPersCamParams(Mat equi_image, Vec9f vertices);
 		/* Convert a triangle in Vec9f to Point3d format. */
 		vector<Point3d> convVec9fToPoint3d(Vec9f vertices);
 
@@ -95,10 +110,6 @@ class Triangle {
 		 */
 		void nPointsFOV(vector<Point3d> points, ViewDirection vd, Point3d center, double &h_fov, double &v_fov);
 		
-		/* in 3D on the unit sphere */
-		PersCamera getPersCamParams(Mat equi_image, Vec9f vertices);
-
-
 		/**
 		 * Same perspective camera containing both triangles
 		 */
