@@ -84,7 +84,7 @@ void getCubeFacesTest(cv::Mat image, string folder){
 
 }
 
-void testImageDiff(cv::Mat lImg1, cv::Mat lImg2 ){
+void testImageDiff(cv::Mat lImg1, cv::Mat lImg2, string output ){
 
 	//Mat lImg1 = imread("D://photos//Interp32-33//InterpolatedOmni0.jpg"); 
 	cv::Mat lImg1_;
@@ -119,7 +119,9 @@ void testImageDiff(cv::Mat lImg1, cv::Mat lImg2 ){
 	cv::namedWindow("Mixed",0);
 	imshow("Mixed", lImg3); 
 	waitKey(0);
-	//imwrite("outImg.jpg", lImg3);
+	ostringstream outfile;
+	outfile << output << ".JPG";
+	imwrite(outfile.str(), lImg3);
 
 
 }
