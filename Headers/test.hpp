@@ -18,16 +18,25 @@
 //class test {
 //////////////////////////////////////Rotate Image Test /////////////////////////////////
 
-void rotateImageTest(cv::Mat image, double y){
-	cv::Mat result;
-
-	result = rotateImagey(image,y);
-
-	cv::namedWindow("Original",0);
-	cv::namedWindow("Rotated ",0);
-
-	cv::imshow("Original", image);
-	cv::imshow("Rotated ", result);
+void rotateImageTest(string folder, string basename, int number, double y, string filename){
+	
+	vector <cv::Mat> images;
+	cv::Mat image;
+	for(int i=0;i<number;i++){
+		ostringstream image_name;
+		image_name << folder << "/" << basename << " ("<< i+1 <<")" <<".JPG" ;
+		image = imread(image_name.str(),1);
+		
+		if(!image.data){
+			cout << "Error with reading image: " << image_name.str() << endl;
+		}
+		
+		images.push_back(image);
+	}
+	
+	
+	
+	rotateMultipleImagesy(images, y, filename);
 
 }
 

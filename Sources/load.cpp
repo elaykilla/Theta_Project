@@ -286,7 +286,7 @@ int main(int argc, char** argv)
 
 
 	//Setup 3D visualizer
-	visualization::PCLVisualizer viewer("3D viewer");
+	//visualization::PCLVisualizer viewer("3D viewer");
 	//	visualization::CloudViewer cViewer ("Simple Cloud Viewer");
 	//	//viewer.setBackgroundColor (0, 0, 0);
 
@@ -619,13 +619,13 @@ int main(int argc, char** argv)
  	
  	
  	
- 	ori = cv::imread("../Tests/TestResultsNikko/Originals/Nikko (33).JPG",1);
-	templ = cv::imread("../Tests/TestResultsNikko/Originals/Nikko (34).JPG",1);
+ 	//ori = cv::imread("../Tests/TestResultsNikko/Originals/Nikko (33).JPG",1);
+	//templ = cv::imread("../Tests/TestResultsNikko/Originals/Nikko (34).JPG",1);
  	//testTriangleRead(ori, templ, 1, 0.5, "Txt_files/trianglesZenkoji4_5.txt", "Txt_files/Zenkoji4_5.txt","Txt_files/Zenkoji5.txt", 48, "TestResultsZenk/InterPersp4_5_");
  	
  	
  	//testTrianglePerspective(templ);
- 	cloud = EquiToSphere(ori,1,0,0,0);
+ 	//cloud = EquiToSphere(ori,1,0,0,0);
  	//testTriangleContent3D(ori, cloud,sightFlat);
  	
  	//testSingleTrianglePerspective(ori,templ,1,0.5);
@@ -655,8 +655,13 @@ int main(int argc, char** argv)
 	//}
 	//imageListToVideo(images,"TestResultsZenk/Originals5_6/NonInterpolatedVideo");
 	
-	testImageDiff(ori,templ);
+	//testImageDiff(ori,templ);
 	//randomTest(ori,templ);
+	//rotateImageTest("../Tests/TestRotation/Right", "Test", 48, 270, "../Tests/TestRotation/RotatedChurchRight/Right");
+	ori = imread("../Tests/TestRotation/Right/Right (31).JPG",1);
+	templ = rotateImagey(ori,270);
+	imwrite("../Tests/TestRotation/RotatedChurchRight/Right (31).JPG", templ);
+	
 	/******************************************* End of Test Zone ***************************************************************/
 
 
@@ -669,7 +674,7 @@ int main(int argc, char** argv)
 	//cViewer.showCloud(sightFlat);
 	//viewer.addPointCloud(sightFlat, "Sphere");
 
-		viewer.addPointCloud(cloud, "Sphere");
+	//	viewer.addPointCloud(cloud, "Sphere");
 	//viewer.addPointCloud(sight, "Sphere1");
 
 	//viewer.addPointCloud(allPtClouds[0], "Sphere");
@@ -679,16 +684,16 @@ int main(int argc, char** argv)
 	//imshow("Original",allImages[0]);
 
 	//viewer.addCoordinateSystem (radius*2);
-	viewer.setPointCloudRenderingProperties (visualization::PCL_VISUALIZER_POINT_SIZE, 1, "Sphere");
+	//viewer.setPointCloudRenderingProperties (visualization::PCL_VISUALIZER_POINT_SIZE, 1, "Sphere");
 	//viewer.registerKeyboardCallback (keyboardEventOccurred, (void*)&viewer);
-	while (!viewer.wasStopped ()){
+	//while (!viewer.wasStopped ()){
 		// This seems to cause trouble when having cloud viewer and viewr running
 		//cv::imshow("Keypoints 2D" , sightMat);
-		viewer.spinOnce (100);
+	//	viewer.spinOnce (100);
 
 		//cv::waitKey(0);
 //		boost::this_thread::sleep (boost::posix_time::microseconds (10000));
-	}
+	//}
 
 	//close viewer
 

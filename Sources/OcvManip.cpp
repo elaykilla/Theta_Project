@@ -197,6 +197,24 @@ Mat rotateImagey(Mat image, double y){
 	return rotated;
 }
 
+void rotateMultipleImagesy(vector<cv::Mat> images, double y, string name){
+	
+	
+	
+	
+	for(int i=0;i<images.size();i++){
+		ostringstream file;
+		file << name << i << ".jpg" ;
+		Mat rotated = rotateImagey(images[i],y);
+		imwrite(file.str(),rotated);
+	
+	}
+
+	return;
+}
+
+
+
 /**
  * This function returns a cv::vector containing the Keypoints from the input image using SURF
  */

@@ -66,6 +66,16 @@ rotate image y axis by y degrees celcius
 **/
 Mat rotateImagey(Mat image, double y);
 
+
+/**
+* rotate multiple images by y degrees celcius in y axis (along the columns) and save the outputs
+* @input:
+* images:	list of images
+* y	:	degrees to rotate
+* folder:	output folder
+*/
+void rotateMultipleImagesy(vector<cv::Mat> images, double y, string folder);
+
 /**
 * This function returns a cv::vector containing the Keypoints from the input image using SURF
 */
