@@ -657,13 +657,15 @@ int main(int argc, char** argv)
 	
 	//testImageDiff(ori,templ);
 	//randomTest(ori,templ);
-	//rotateImageTest("../Tests/TestRotation/Right", "Test", 48, 270, "../Tests/TestRotation/RotatedChurchRight/Right");
-	ori = imread("../Tests/TestRotation/Right/Right (31).JPG",1);
-	templ = imread("../Tests/TestRotation/Right/Right (30).JPG",1);
-	//imwrite("../Tests/TestRotation/RotatedChurchRight/Right (31).JPG", templ);
+
+	ori = imread("../Tests/TestRotation/Right/Right (14).JPG",1);
+	//templ = imread("../Tests/TestRotation/Right/Right (30).JPG",1);
 	
+	//rotateImageTest("../Tests/TestRotation/Inside", "Test", 48, 270, "../Tests/TestRotation/RotatedChurchRight/Right");
+	templ = rotateImagey(ori,20);
+	//testImageDiff(ori,templ,"diffImage");
+	imwrite("../Tests/TestRotation/Right/Right (14)_rotated-1.JPG", templ);
 	
-	testImageDiff(ori,templ,"diffImage");
 	/******************************************* End of Test Zone ***************************************************************/
 
 

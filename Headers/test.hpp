@@ -15,9 +15,15 @@
 //#include"Triangle.hpp"
 
 
+/**
+* This header contains many examples and test. This is used to test the different methods and * compare results generating using all the other classes. As a result, this can be ommitted without any real consequence.
+*/
 //class test {
 //////////////////////////////////////Rotate Image Test /////////////////////////////////
 
+/**
+* Rotate a list of images by a given angle given in degrees. 
+*/
 void rotateImageTest(string folder, string basename, int number, double y, string filename){
 	
 	vector <cv::Mat> images;
@@ -40,7 +46,9 @@ void rotateImageTest(string folder, string basename, int number, double y, strin
 
 }
 
-
+/**
+* Create 6 cubic faces for a given omnidirectional image in Equirectangular format
+*/
 void getCubeFacesTest(cv::Mat image, string folder){
 	cout << "getCubeFacesTest function called" << endl;
 	//Get bottom image and display
@@ -84,6 +92,10 @@ void getCubeFacesTest(cv::Mat image, string folder){
 
 }
 
+
+/**
+* Compute color map difference between 2 given image.
+*/
 void testImageDiff(cv::Mat lImg1, cv::Mat lImg2, string output ){
 
 	//Mat lImg1 = imread("D://photos//Interp32-33//InterpolatedOmni0.jpg"); 
@@ -134,6 +146,10 @@ void displaySphereTest(cv::Mat image1){
 
 
 ////////////////////////////////////////Test of 3D affine transformations
+
+/**
+* Verify that the computed 3D affine is correct.
+*/
 void ThreeDAffineTransformTest(){
 	Vec9f t1, t2; cv::Mat affine_transform(4,4,CV_32FC1);
 	//	
@@ -164,7 +180,9 @@ void ThreeDAffineTransformTest(){
 }
 
 
-
+/**
+* Project points in space onto the surface of a sphere using the direction towards the center of sphere.
+*/
 void projectToSphereTest(int nbPoints, double step, double radius, PointXYZRGB v,PointCloud<PointXYZRGB>::Ptr sight){
 	//	//hPointLine(u,v,linep);
 	PointXYZRGB iPoint,ikm;
@@ -231,6 +249,9 @@ void projectToSphereTest(int nbPoints, double step, double radius, PointXYZRGB v
 
 
 ///////////////////////////Test of get plane function and project to Sphere with this plane////////////////////////
+/**
+* 
+*/
 void getPlaneAndProjectToSphere(PointXYZRGB u, PointXYZRGB v,double radius, cv::Mat ori,PointCloud<PointXYZRGB>::Ptr &sight,PointCloud<PointXYZRGB>::Ptr &sightFlat){
 
 	//double xmin, xmax, ymin, ymax;
@@ -318,6 +339,10 @@ void getPlaneAndProjectToSphere(PointXYZRGB u, PointXYZRGB v,double radius, cv::
 
 
 /////////////////////////////Test of projection with Angle from 1 point////////////////////////
+
+/**
+* Project points to surface of sphere, using a given angle for projection. 
+*/
 void projectionWithAngleFromOnePointTest(PointXYZRGB u,PointXYZRGB v, int fac,double radius,PointCloud<PointXYZRGB>::Ptr sight ){
 
 	double alpha1, beta1;
@@ -410,6 +435,9 @@ void closestDirectionTest(double alpha, double angle){
 
 
 //////////////////////////////////Test of viewing angle origin ////////////////////////////////////
+/**
+* Given an angle, a direction and a Sphere, extract only points within that angle from the origin. This gives a viewing window from the origin.
+*/
 void viewingAngleOriginTest(PointXYZRGB u, PointXYZRGB v, double radius, int rows, int cols,PointCloud<PointXYZRGB>::Ptr &cloud, PointCloud<PointXYZRGB>::Ptr &sightFlat){
 	//Viewing angles theta is on the vertical angle and phi on the horizontal angle with phi in [0,2PI]
 	double theta,phi;
@@ -617,6 +645,9 @@ void viewingAngleOriginTest(PointXYZRGB u, PointXYZRGB v, double radius, int row
 
 
 	////////////////////////////////////Test of EquiTrans /////////////////////////////////////////////
+	/**
+	* Given an Image, a vertical angle and horizontal angle, this generates the perspective view with respect to the given angles. 
+	*/
 	void EquitransTest(Mat img, double phi, double theta ){
 		//img = cv::imread("test3.JPG",1);
 		if(!img.data){
@@ -701,7 +732,10 @@ void viewingAngleOriginTest(PointXYZRGB u, PointXYZRGB v, double radius, int row
 	//		//cout << "Number of points: " << sightFlat->size() << endl;
 	//	}
 	//}
-	//////////////////////////////////////  end Test point on ray ////////////////////////////////////	
+	//////////////////////////////////////  end Test point on ray ////////////////////////////////////
+	/**
+	* Test of keypoint extraction and matching.
+	*/	
 	void KeyPointAndMatchesTest(cv::Mat image1, cv::Mat image2){
 
 		cv::Mat imageMatches;
@@ -726,6 +760,9 @@ void viewingAngleOriginTest(PointXYZRGB u, PointXYZRGB v, double radius, int row
 
 
 	//////////////////////////////////////  EpipolarLinesTest ////////////////////////////////////
+	/**
+	* Test of epipolar line extration using perspective images
+	*/
 	void EpipolarLinesTest(cv::Mat top, cv::Mat bottom){
 
 		//	int row = top.rows;
@@ -754,7 +791,9 @@ void viewingAngleOriginTest(PointXYZRGB u, PointXYZRGB v, double radius, int row
 
 
 	////////////Test of circular slits///////////////////////////
-
+	/**
+	* Test of reconstruction using circular slits.
+	*/
 	void circulatSlitsTest(PointCloud<PointXYZRGB>::Ptr &cloud){
 		//	double newAngle;
 		//	double t,p;
@@ -807,7 +846,9 @@ void viewingAngleOriginTest(PointXYZRGB u, PointXYZRGB v, double radius, int row
 		//	cv::waitKey();
 	}
 	////////////Test of circular slits///////////////////////////
-
+	/**
+	* Test of basic image interpolation using linear blending.
+	*/
 	void interpolate2DTest(cv::Mat image1, cv::Mat image2, double dist, double pos){
 		cv::Mat interpolate = linearInterpolate(image1, image2, dist, pos);
 
@@ -822,11 +863,18 @@ void viewingAngleOriginTest(PointXYZRGB u, PointXYZRGB v, double radius, int row
 
 
 	}
-
+	
+	/**
+	* Test of interpolation directly on Sphere.
+	*/
 	void sphereInterpolateTest(cv::Mat image1, cv::Mat image2, double dist, double pos,PointCloud<PointXYZRGB>::Ptr &output ){
 		output = sphereInterpolate(image1, image2, dist, pos);
 
 	}
+	
+	/**
+	* Test of Extracting keypoints in 3D directly on Sphere.
+	*/	
 	void threeDKeypointsTest(PointCloud<PointXYZRGB>::Ptr &points, PointCloud<PointWithScale>::Ptr &outCloud){
 		cout << "test threeDKeypoints called with cloud: " << points->size() << endl; 
 		float min_scale = 0.025; //0.0005 
@@ -839,6 +887,9 @@ void viewingAngleOriginTest(PointXYZRGB u, PointXYZRGB v, double radius, int row
 
 	}
 
+	/**
+	* Test of optical flow map generation using 2 input images.
+	*/
 	void optFlowMapTest(cv::Mat image1, cv::Mat image2){
 		cv::Mat flow, cflow;
 
@@ -872,6 +923,9 @@ void viewingAngleOriginTest(PointXYZRGB u, PointXYZRGB v, double radius, int row
 	}
 
 
+	/**
+	* Test of line extraction
+	*/
 	void getLinesTest(cv::Mat image){
 		vector<cv::Vec4i> lines;
 		Mat imagebw;
@@ -894,6 +948,9 @@ void viewingAngleOriginTest(PointXYZRGB u, PointXYZRGB v, double radius, int row
 	}
 
 	/////////////////////////////////////// Testing triangulation ////////////////////////////////////////////
+	/**
+	* Test of delaunay triangulation on a single image.
+	*/
 	void delaunayTriangleTest(cv::Mat img, string name){
 
 		cv::Mat image = img.clone();
@@ -957,6 +1014,9 @@ void viewingAngleOriginTest(PointXYZRGB u, PointXYZRGB v, double radius, int row
 
 
 		///////////////////////////// Test to see if using triangle boudaries works /////////////////////////////
+		/**
+		* Test of triangulation with respect to Image boundaries on single image.
+		*/
 		void delaunayTriangleTestBound(cv::Mat img, string name){
 
 			cv::Mat image = img.clone();
@@ -1077,6 +1137,9 @@ void viewingAngleOriginTest(PointXYZRGB u, PointXYZRGB v, double radius, int row
 
 
 		////////////////////////////Delaunay Triangle interpolation matching Triangles test ////////////////////
+		/**
+		* Test of generating matching triangles on second image. 
+		*/
 		void delaunayMatchedTrianglesTest(cv::Mat img1, cv::Mat img2, PointCloud<PointXYZRGB>::Ptr &sightFlat ){
 
 			//For writing to files
@@ -1303,6 +1366,9 @@ void viewingAngleOriginTest(PointXYZRGB u, PointXYZRGB v, double radius, int row
 		}
 
 		//////////////////////////////Delaumay Interpolation test using Triangle Boudaries//////////////////////
+		/**
+		* Test to generated matched triangles with respect to image boundaries. 
+		*/
 		void delaunayMatchedTrianglesBoundTest(cv::Mat img1, cv::Mat img2, PointCloud<PointXYZRGB>::Ptr &sightFlat ){
 			cv::Mat image1(img1.rows, img1.cols + img1.cols/2,img1.type());
 			cv::Mat image2(img2.rows, img2.cols + img2.cols/2,img2.type());
@@ -1727,6 +1793,9 @@ void viewingAngleOriginTest(PointXYZRGB u, PointXYZRGB v, double radius, int row
 		//} 
 
 		////////////////////////////////////Test Multiple Interpolation /////////////////////////////////////
+		/**
+		* Test for generating multiple uniformally distanced interpolated images between 2 input images.
+		*/
 		void multipleInterpolateTest(Mat ori, Mat templ, int nb_inter, string out_folder){
 			cout << "MultipleInterpolateTest called" << endl;
 			cv::Mat result, temp;
@@ -1777,6 +1846,9 @@ void viewingAngleOriginTest(PointXYZRGB u, PointXYZRGB v, double radius, int row
 		////////////////////////////////////End Test Multiple Interpolation ////////////////////////////////
 
 		//////////////////////////////////// Test of Ply Writer ///////////////////////////////////
+		/**
+		* Test for writing 3D points using Ply writer
+		*/
 		void plyWriterTest(Mat img1, Mat img2){
 			//Vectors for keypoints
 			vector<cv::KeyPoint> keypoints1, keypoints2 ; 
@@ -1812,7 +1884,9 @@ void viewingAngleOriginTest(PointXYZRGB u, PointXYZRGB v, double radius, int row
 		//////////////////////////////////// End Test of Ply Writer ///////////////////////////////////
 
 
-
+		/**
+		* Test writing cloud points to obj file.
+		*/
 		void testCloudObj(PointCloud<PointXYZRGB>::Ptr cloud){
 			//For writing to files
 			ofstream logFile;
@@ -1853,6 +1927,9 @@ void viewingAngleOriginTest(PointXYZRGB u, PointXYZRGB v, double radius, int row
 		//////////////////////////////////// End Test of 2D to 3D keypoints ///////////////////////////////////
 
 		//////////////////////////////////// Test of 3D Triangulation ///////////////////////////////////
+		/**
+		* Test for generating 3D triangles using ball point algorithm.
+		*/
 		void test3DTriangulation(PointCloud<PointXYZRGB>::Ptr cloud){
 
 			cout << "test3DTriangulation: Started with cloud: " << cloud->points.size() << " points" << endl;
@@ -1888,6 +1965,9 @@ void viewingAngleOriginTest(PointXYZRGB u, PointXYZRGB v, double radius, int row
 		//////////////////////////////////// End Test of 3D Triangulation ///////////////////////////////////
 
 		//////////////////////////////////// Test of 2D to 3D keypoints ///////////////////////////////////
+		/**
+		* Test of conversion of keypoints from 2D to 3D
+		*/
 		void twoDToThreeDkeypoints(Mat img){
 			cout << "Launched twoDToThreeDkeypoints" << endl; 
 			//Keypoints vector
@@ -1976,7 +2056,10 @@ void viewingAngleOriginTest(PointXYZRGB u, PointXYZRGB v, double radius, int row
 				//		boost::this_thread::sleep (boost::posix_time::microseconds (10000));
 			}
 		}
-
+		
+		/**
+		* 
+		*/
 		void testKeypointConversion(cv::Mat image1, cv::Mat image2){
 			vector<cv::KeyPoint> keypoints1, keypoints2;
 
@@ -2029,6 +2112,9 @@ void viewingAngleOriginTest(PointXYZRGB u, PointXYZRGB v, double radius, int row
 		//////////////////////////////////// end of Test of 2D to 3D keypoints ///////////////////////////////////
 
 		//////////////////////// Test of 3D triangle reading and writting ///////////////////////////////////
+		/**
+		* Test of generating interpolated image from input 3D matched triangles
+		*/
 		cv::Mat testTriangleRead(cv::Mat img1, cv::Mat img2, double dist, double pos, string triangles_file, string points1_file, string points2_file, int nb_inter, string outfile){
 
 			PointFeature feat;
@@ -2062,6 +2148,9 @@ void viewingAngleOriginTest(PointXYZRGB u, PointXYZRGB v, double radius, int row
 
 		}
 
+		/**
+		* Test for extracting, matching and writing matched points into txt files.
+		*/
 		void testTriangleWrite(cv::Mat img1, cv::Mat img2, double dist, double pos, string outputfile1, string outputfile2){
 
 			cv::Mat result;
@@ -2200,6 +2289,9 @@ void viewingAngleOriginTest(PointXYZRGB u, PointXYZRGB v, double radius, int row
 		//////////////////////// End Test of 3D triangle reading and writting ///////////////////////////////////
 
 		//////////////////////// Test of single triangle perspective ///////////////////////////////////
+		/**
+		* Test of extracting perspective view from single triangle.
+		*/
 		void testTrianglePerspective(Mat image1){
 			cout << "TestTrianglePerspective: Beginning..." << endl;
 			//string file1 = "../images/R0010103_small.JPG";
@@ -2328,7 +2420,10 @@ void viewingAngleOriginTest(PointXYZRGB u, PointXYZRGB v, double radius, int row
 
 		}
 
-
+		
+		/**
+		* Test of copying individual triangle contents directly from Spheres.
+		*/
 		void testTriangleContent3D(cv::Mat image1, PointCloud<PointXYZRGB>::Ptr sphere, PointCloud<PointXYZRGB>::Ptr &content){
 			//Testing Barycentric
 			cv::Point2f p1,p2,p3,pp1,pp2,pp3;
@@ -2414,7 +2509,7 @@ void viewingAngleOriginTest(PointXYZRGB u, PointXYZRGB v, double radius, int row
 		}
 
 		/**
-		 *
+		 * Test for generating a single perspective image containing 2 triangles.
 		 */
 		cv::Mat testMultipleTrianglePerspective(Mat image, string triangles_file){
 			cout << "TestMultipleTrianglePerspective called" << endl;
@@ -2485,6 +2580,9 @@ void viewingAngleOriginTest(PointXYZRGB u, PointXYZRGB v, double radius, int row
 
 
 		//////////////////////// End of Test of single triangle perspective ///////////////////////////////////
+		/**
+		* Test fonction for random tests without any specific reason.
+		*/
 		void randomTest(cv::Mat image1, cv::Mat image2){
 
 	// Match the two images

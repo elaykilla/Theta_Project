@@ -53,7 +53,7 @@ vector<Mat> getHistograms(Mat img);
 
 ////////////////////////// KeyPoints and Matching ////////////////////////////////////////////////////
 /**
-* This function takes the image prefix name, adds the position i and saves in a cv::Mat
+* This function takes the image prefix name, adds the position i and saves in a cv::Mat.
 */
 void loadImagei(string name, int i, cv::Mat &image);
 /**
@@ -62,7 +62,7 @@ void loadImagei(string name, int i, cv::Mat &image);
 void loadImageTop(string name, cv::Mat &image, string topOrbottom);
 
 /**
-rotate image y axis by y degrees celcius
+Rotates image y axis by y degrees celcius.
 **/
 Mat rotateImagey(Mat image, double y);
 
@@ -103,37 +103,53 @@ vector<vector<cv::KeyPoint> > getMatchedCubeKeypoints(cv::Mat img1, cv::Mat img2
 */
 vector<cv::Point2f> convertKeypoints(vector<cv::KeyPoint> keypoints);
 
-//Ratio test
+/**
+* Ratio test to verify that distanace between matches respects a given ratio.
+*/
 int ratioTest(std::vector<std::vector<cv::DMatch> >& matches, float ratio);
 
-// Symetrie between matches
+/**
+* Symetrie between matches. Verify that matches from image1 to image2 are the same as the matches from image2 to image1. 
+*/
+
 void symmetryTest(const std::vector<std::vector<cv::DMatch> >& matches1,
 		const std::vector<std::vector<cv::DMatch> >& matches2,
 		std::vector<cv::DMatch>& symMatches);
 
 
-//Computes the matches between 2 images and returns matches using BruteForce
+/**
+* Computes the matches between 2 images and returns matches using BruteForce
+*/
 vector<cv::DMatch> getMatches(cv::Mat image1, cv::Mat image2,vector<cv::KeyPoint> keypoints1 ,vector<cv::KeyPoint> keypoints2);
 
-//Computes the matches between 2 images and returns matches using Flann
+/**
+*Computes the matches between 2 images and returns matches using Flann
+*/
 vector<cv::DMatch> getFlannMatches(cv::Mat image1, cv::Mat image2,vector<cv::KeyPoint> keypoints1 ,vector<cv::KeyPoint> keypoints2);
 
 //Computes the matches between 2 images and returns matches using BruteForce
 //vector<cv::DMatch> getSiftMatches(cv::Mat image1, cv::Mat image2);
 
 
-//Returns a vector of all matching points in image 1 and image 2 therefore: points1[i] matches to points2[i] 
+/**
+* Returns a vector of all matching points in image 1 and image 2 therefore: points1[i] matches to points2[i] 
+*/
 vector<vector<cv::Point2f> > getMatchedPoints(vector<cv::KeyPoint> keypoints1, vector<cv::KeyPoint> keypoints2, vector<cv::DMatch> matches);
 
 
-//Return a vector of matching keypoints in image1 and image2. Only returns the keypoints that have matches and therefore keypoints1[i] matches with keypoints2[i]  
+/** Return a vector of matching keypoints in image1 and image2. Only returns the keypoints that have * matches and therefore keypoints1[i] matches with keypoints2[i]  
+*/
 vector<vector<cv::KeyPoint> > getMatchedKeypoints(vector<cv::KeyPoint> keypoints1, vector<cv::KeyPoint> keypoints2, vector<cv::DMatch> matches);
 
-//Computes keypoints and matches between 2 images
+/**
+* Computes keypoints and matches between 2 images
+*/
 void getKeypointsAndMatches(Mat image1, Mat image2, vector<KeyPoint> &keypoints1, vector<KeyPoint> &keypoints2,vector<DMatch> &matches);
 
 
-//Computes Sift keypoints and matches between 2 images
+/**
+* Computes Sift keypoints and matches between 2 images
+*/
 void getSiftKeypointsAndMatches(Mat image1, Mat image2, vector<KeyPoint> &keypoints1, vector<KeyPoint> &keypoints2,vector<DMatch> &matches);
 
 
@@ -145,8 +161,15 @@ void drawEpipolarLines(Mat &image1, Mat &image2, Mat &imageMatches);
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /////////////////////////////////// Line Detection //////////////////////////////////////////////////////
+
+/**
+* Extract line features within the image
+*/
 vector<cv::Vec4i> getLinesProb(cv::Mat image);
 
+/**
+* Detect edges within the image 
+*/
 cv::Mat detectEdges(cv::Mat img);
 
 
@@ -337,13 +360,14 @@ bool onSameCubicFaceRaw(int rows, int cols, int i1, int j1, int i2, int j2);
 vector<vector< cv::Mat> > histoCluster(vector<cv::Mat>, int nbClusters);
 
 
-/*
- * set the background to gray of the image.
+/**
+ * set the background of the image to gray .
  */
 void setBackground(cv::Mat &image, cv::Scalar color);
 
-/*
+/**
  * expand triangle to fill the gaps.
  */
 void expandTriangle(Mat image, cv::Vec6f &triangle, int width);
+
 #endif

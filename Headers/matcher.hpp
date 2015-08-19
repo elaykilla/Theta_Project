@@ -1,5 +1,5 @@
 /*
- * @author: ELay Maiga
+ * @author: Robert Laganiere and ELay Maiga
  * A RobustMatcher using Ransac
  */
 

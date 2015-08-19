@@ -3089,7 +3089,7 @@ cv::Mat delaunayInterpolateCubeFromTriangles(cv::Mat img1, cv::Mat img2, double 
 	cout << "delaunayInterpolateCubeFromTriangles: Making " << nb_inter << " Interpolated images" << endl ;
 	
 	
-	//For calling functiona
+	//For calling functions
 	EquiTrans trans_class;
 	 PointFeature feat;
 	 Triangle tri_class;

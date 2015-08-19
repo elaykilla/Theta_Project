@@ -18,7 +18,7 @@
 //typedef Vec<float, 9> Vec9f;
 
 #include "boost_headers.hpp"
-/*
+/**
 * 
 */
 
@@ -27,11 +27,19 @@
 //	return floor(x + 0.5);
 //}
 
-
+/**
+*
+*/
 double findMin(float numbers[], int size);
 
+/**
+*
+*/
 double findMax(float numbers[], int size);
 
+/**
+*
+*/
 double norm(cv::Point2f p);
 
 /**
@@ -39,6 +47,9 @@ double norm(cv::Point2f p);
 */
 double norm(PointXYZRGB u);
 
+/**
+*
+*/
 double dotProduct(PointXYZRGB u, PointXYZRGB v);
 
 
@@ -46,6 +57,7 @@ double dotProduct(PointXYZRGB u, PointXYZRGB v);
 * The cross product of u and v
 */
 PointXYZRGB crossProduct(PointXYZRGB u, PointXYZRGB v);
+
 /**
 * returns weather or not u is in [a,b] 
 */
@@ -105,10 +117,12 @@ double triangleArea(double x1,double y1,double x2,double y2,double x3,double y3)
 * Calculate the area of a triangle defined by 3 points in 3D 
 */
 double triangleArea3D(PointXYZRGB p1,PointXYZRGB p2,PointXYZRGB p3 );
+
 /** 
 This function returns the area difference between 2 triangles
 */
 double triangleDifference(cv::Vec6f t1, cv::Vec6f t2);
+
 /** 
 * Given a point and a triangle, this function verifies where the point is located inside the triangle using the areas of the 4 triangles 
 */
@@ -261,7 +275,7 @@ void spheric2Cartesian(double r, double theta, double phi, PointXYZRGB &p);
 void spheric2CartesianSacht(double r, double theta, double phi, PointXYZRGB &p);
 
 
-/*Given a point (i,j) in a 2D image of Rows * Cols points, this function returns the coordinates of that point on 
+/** Given a point (i,j) in a 2D image of Rows * Cols points, this function returns the coordinates of that point on 
 * a Sphere of Radius r centered around (0,0)
 * @INPUTS
 * 	(i,j): the pixel coordinates of the point on the image
@@ -274,7 +288,7 @@ void spheric2CartesianSacht(double r, double theta, double phi, PointXYZRGB &p);
 void sphereCoordinates(float i, float j, double r, int rows, int cols, double &x, double &y, double &z);
 
 
-/*Given a point (i,j) in a 2D image of Rows * Cols points, this function returns the coordinates of that point on 
+/** Given a point (i,j) in a 2D image of Rows * Cols points, this function returns the coordinates of that point on 
 * a Sphere of Radius r centered around (0,0) considering image center coordinates
 * @INPUTS
 * 	(i,j): the pixel coordinates of the point on the image in center
@@ -297,13 +311,13 @@ void SphericFromPixelCoordinates(float i, float j, int rows, int cols, double &t
 */
 void SphericFromPixelCoordinatesSacht(float i, float j, int rows, int cols, double &theta, double &phi);
 
-/*
+/**
 * Applying sphereCoordinates to an array of points and returns a list of 3D points
 */
 vector<PointXYZRGB> sphereCoordinatesList(int rows, int cols, vector<cv::Point2f> points);
 
 
-/*
+/**
 * Applying sphereCoordinates to an array of points and returns a list of 3D points 
 * using Sacht notation
 */
@@ -347,7 +361,7 @@ void circularZcut(PointXYZRGB u, double r, PointXYZ Tmin, PointXYZ Tmax);
 
 
 
-/**This function returns the center of the ith sphere when rotating around an angle alpha 
+/** This function returns the center of the ith sphere when rotating around an angle alpha 
 and radius r
 *	@Input variables:
 *	alpha: rotating angle in degrees
@@ -361,7 +375,7 @@ and radius r
 void sphereCenter(double alpha, int i, double r, double &xc, double &zc);
 
 /**
-
+*
 */
 void translateCenter(double xc, double yc, double &x, double &y);
 
@@ -399,10 +413,7 @@ Vec9f projectTriangle2Sphere(Vec9f triangle, double r);
 */
 void getPlane(PointXYZRGB u, PointXYZRGB v, double r, PointXYZRGB &xmin, PointXYZRGB &xmax, PointXYZRGB &ymin, PointXYZRGB &ymax);
 
-/*
-* This function given a point u and and vector v, returns a sampling of ps*ps points on the Plane perpendicular to v passing
-* by u.
-* 
+/** This function given a point u and and vector v, returns a sampling of ps*ps points on the Plane * perpendicular to v passing by u.
 */
 
 void samplePlane(PointXYZRGB u, PointXYZRGB v, vector<PointXYZRGB> &points , double radius, int ps);

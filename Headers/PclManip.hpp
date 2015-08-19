@@ -16,9 +16,10 @@
 
 //public:
 /***************************************************Simple Functions **************************************/
+
 /**
-*Function returns the index of a given point in an array, if not found it gives the size of the 
-*Vector
+* Function returns the index of a given point in an array, if not found it gives the size of the 
+* Vector
 * @param p 	a PointXYZRGB 
 * @param points a vector of PointXYZRGB 
 * @return 	The index of the point in the array, or the size of the vector if not found
@@ -76,7 +77,7 @@ void get3DKepoints(PointCloud<PointXYZRGB>::Ptr &points, float min_scale, int nr
 PointCloud<PointXYZRGB>::Ptr EquiToSphere(cv::Mat ori, double radius, double xc, double yc, double zc);
 
 /**
-
+* This function is the inverse of the previous function. Given an image represented by a sphere in 3D, returns the image in equirectangular format.
 */
 void sphereToEqui(PointCloud<PointXYZRGB>::Ptr sphere, double r, int rows, int cols, cv::Mat &image);
 
