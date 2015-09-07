@@ -2144,7 +2144,7 @@ void viewingAngleOriginTest(PointXYZRGB u, PointXYZRGB v, double radius, int row
 			//imwrite("TestResultsZenk/InterpolatedBlended.JPG", result);
 			//namedWindow("Result Equi",0);
 			//imshow("Result Equi",result);
-			//return result;
+			return result;
 
 		}
 
